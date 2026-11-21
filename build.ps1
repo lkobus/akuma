@@ -4,6 +4,10 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$CncDdraw,
     [string]$Zig = "zig",
+    # Faixas de áudio já extraídas (trackNN.ogg). Se omitido, extrai do CUE com o ffmpeg.
+    [string]$Music,
+    [string]$Cue = ([IO.Path]::ChangeExtension($Image, '.cue')),
+    [string]$Ffmpeg = 'ffmpeg',
     [string]$Dialogues = (Join-Path $PSScriptRoot 'dialogues.json'),
     [string]$SlayersImg = 'C:\Taewool\Slayers\img',
     [string]$Output = (Join-Path $PSScriptRoot 'dist\Akuma-Portatil.zip')
@@ -40,6 +44,18 @@ try {
     & python (Join-Path $PSScriptRoot 'extract_cd.py') $imagePath $payload
     if ($LASTEXITCODE) { throw 'Falha ao extrair os dados do CD.' }
 
+    $musicDir = Join-Path $payload 'Music'
+    if ($Music) {
+        Copy-Item -LiteralPath (Resolve-Path -LiteralPath $Music).Path -Destination $musicDir -Recurse
+    }
+    elseif ((Test-Path -LiteralPath $Cue -PathType Leaf) -and (Get-Command -Name $Ffmpeg -CommandType Application -ErrorAction SilentlyContinue)) {
+        & python (Join-Path $PSScriptRoot 'extract_audio.py') $Cue $musicDir --ffmpeg $Ffmpeg
+        if ($LASTEXITCODE) { throw 'Falha ao extrair as faixas de áudio.' }
+    }
+    else {
+        Write-Warning 'Sem CUE ou ffmpeg: a música de CD não será incluída.'
+    }
+
     & python (Join-Path $PSScriptRoot 'patch_akuma.py') (Join-Path $payload 'AKUMA.EXE') (Join-Path $payload 'AkumaHD.exe') --player (Join-Path $payload 'MCIPLAY.EXE') --wrapper $wrapperDll (Join-Path $payload 'ddraw.dll')
     if ($LASTEXITCODE) { throw 'Falha ao preparar o executável.' }
 
@@ -61,7 +77,7 @@ try {
     if ($LASTEXITCODE) { throw 'Falha ao preparar as texturas do HUD.' }
     & python (Join-Path $PSScriptRoot 'quest_starts.py') $payload (Join-Path $stage 'quest_starts.h')
     if ($LASTEXITCODE) { throw 'Falha ao indexar os inícios de missão.' }
-    & $hudCompiler cc -target x86-windows-gnu -O2 -s -shared -I $stage -o $hud (Join-Path $PSScriptRoot 'AkumaHud.c') -luser32 -lgdi32
+    & $hudCompiler cc -target x86-windows-gnu -O2 -s -shared -I $stage -o $hud (Join-Path $PSScriptRoot 'AkumaHud.c') (Join-Path $PSScriptRoot 'CdAudio.c') -luser32 -lgdi32 -lwinmm
     if ($LASTEXITCODE) { throw 'Falha ao compilar o HUD x86.' }
     Copy-Item -LiteralPath $hud -Destination $payload
 

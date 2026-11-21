@@ -22,7 +22,7 @@ jobs:
         run: python -m pip install -r requirements.txt
 
       - name: Sintaxe dos scripts Python
-        run: python -m compileall -q extract_cd.py patch_akuma.py localize.py localize_dialogues.py menu_labels.py hud_skin.py quest_starts.py
+        run: python -m compileall -q extract_cd.py patch_akuma.py localize.py localize_dialogues.py menu_labels.py hud_skin.py quest_starts.py extract_audio.py
 
       - name: dialogues.json válido
         run: python -c "import json; json.load(open('dialogues.json', encoding='utf-8'))"

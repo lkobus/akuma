@@ -46,5 +46,5 @@ em uma máquina e use o endereço IPv4 dela na outra. O DirectPlay precisa
 estar disponível no Windows. A campanha e o modo Multi Play são entradas
 separadas do menu original.
 
-Os efeitos de áudio usam os arquivos do jogo. As faixas de música do CD
-continuam dependendo da mídia montada com as trilhas de áudio do CUE.
+Os efeitos de áudio e a música usam os arquivos da pasta do jogo (Music).
+Não é preciso montar o CD. Sem a pasta Music, o jogo tenta usar o CD real.

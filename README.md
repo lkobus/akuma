@@ -16,7 +16,8 @@ BIN e gera um ZIP portátil com:
 ## Como jogar (3 passos)
 
 1. Baixe o **jogo base** (`Akuma-Original.zip`) no nosso Discord e extraia.
-   Fica uma pasta `Akuma` com o jogo original, sem instalar nada e sem montar ISO.
+   Fica uma pasta `Akuma` com o jogo original e a trilha sonora em `Music`,
+   sem instalar nada e sem montar ISO.
 2. Baixe o **`Akuma-Patch.zip`** da [última release](../../releases/latest) e
    extraia **dentro da pasta `Akuma`**, aceitando substituir os arquivos.
 3. Abra `Jogar.exe`, escolha idioma e vídeo e clique em Jogar.
@@ -25,7 +26,7 @@ Os controles estão em [LEIA-ME.txt](LEIA-ME.txt).
 
 ## Como compilar do código-fonte (para quem vai modificar)
 
-Requisitos: Windows, Python 3.9+, [Zig 0.14.1](https://ziglang.org/download/)
+Requisitos: Windows, Python 3.9+, [ffmpeg](https://ffmpeg.org/) com libvorbis (para a música), [Zig 0.14.1](https://ziglang.org/download/)
 e o wrapper [cnc-ddraw v7.1.0.0](https://github.com/FunkyFr3sh/cnc-ddraw/releases/tag/v7.1.0.0)
 (`ddraw.dll`, `Shaders` e `LICENSE.txt` extraídos numa pasta).
 
@@ -36,7 +37,7 @@ python -m pip install -r requirements.txt
 
 A saída é `dist\Akuma-Portatil.zip`. Extraia e abra `Jogar.exe`. Esse build lê
 direto do seu BIN/CUE, então não depende do jogo base do Discord.
-Opções úteis: `-Zig` (caminho do `zig.exe`), `-SlayersImg` (pasta `img` do
+Opções úteis: `-Music` (pasta com faixas já extraídas), `-Ffmpeg`, `-Zig` (caminho do `zig.exe`), `-SlayersImg` (pasta `img` do
 Slayers, de onde vem a arte reaproveitada no HUD; padrão `C:\Taewool\Slayers\img`)
 e `-Output`. O build confere o hash do executável do CD e da DLL.
 
@@ -47,6 +48,8 @@ e `-Output`. O build confere o hash do executável do CD e da DLL.
 | `build.ps1` | Orquestra todo o build e monta o ZIP |
 | `make_overlay.ps1` | Compara o build com a pasta original e gera o `Akuma-Patch.zip` (só o que mudou) |
 | `extract_cd.py` | Extrai a pasta do jogo da trilha MODE2/2352 do BIN |
+| `extract_audio.py` | Extrai as faixas de áudio do CUE/BIN para `Music	rackNN.ogg` (usa o ffmpeg) |
+| `CdAudio.c` | Emula o CD de música: toca `Music\*.ogg` no lugar da mídia (usa `third_party/stb_vorbis.c`) |
 | `patch_akuma.py` | Adapta o EXE (DirectDraw local, player de vídeo, contador de FPS) |
 | `Launcher.cs` | Launcher em C# (.NET Framework 4, compilado com o `csc` do Windows) |
 | `AkumaHud.c` | DLL x86 do HUD, minimapa e câmera, compilada com `zig cc` |
@@ -116,5 +119,6 @@ gera o patch com `make_overlay.ps1` (veja [docs/mantenedor.md](docs/mantenedor.m
 O código e as traduções deste repositório usam a [licença MIT](LICENSE).
 O jogo e seus arquivos pertencem aos respectivos detentores; o patch os modifica
 para compatibilidade com o Windows atual.
+`third_party/stb_vorbis.c` é de domínio público (Sean Barrett).
 O ZIP gerado inclui o [cnc-ddraw](https://github.com/FunkyFr3sh/cnc-ddraw)
 (licença própria, copiada junto como `LICENSE-cnc-ddraw.txt`).

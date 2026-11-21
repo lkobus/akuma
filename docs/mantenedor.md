@@ -28,11 +28,12 @@
 Pré-requisitos: o BIN/CUE, Zig, cnc-ddraw v7.1.0.0 e a arte do Slayers (veja o README).
 
 ```powershell
-# 1. Cópia fiel (a mesma que vai para o Discord)
+# 1. Cópia fiel (a mesma que vai para o Discord): dados do CD + trilha sonora
 python extract_cd.py AKUMA.bin .work\orig
+python extract_audio.py AKUMA.cue .work\orig\Music
 
 # 2. Build completo
-.\build.ps1 -Image .\AKUMA.bin -CncDdraw .\.work\wrapper -Zig <caminho\zig.exe> -Output .\dist\Akuma-Portatil.zip
+.\build.ps1 -Image .\AKUMA.bin -CncDdraw .\.work\wrapper -Zig <caminho\zig.exe> -Music .\.work\orig\Music -Output .\dist\Akuma-Portatil.zip
 
 # 3. Patch: só o que difere da cópia fiel
 .\make_overlay.ps1 -Original .\.work\orig -Built .\dist\Akuma-Portatil.zip -Output .\dist\Akuma-Patch.zip
@@ -50,3 +51,5 @@ Antes de publicar, teste: extraia `Akuma-Original.zip` numa pasta limpa, extraia
 o patch por cima e abra `Jogar.exe`.
 
 Para a cópia fiel do Discord, compacte `.work\orig` numa pasta chamada `Akuma`.
+Passe `-Music` ao `build.ps1`: o Vorbis não é determinístico, e reencodar as
+faixas faria o patch incluí-las de novo.
