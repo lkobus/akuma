@@ -50,7 +50,7 @@ e `-Output`. O build confere o hash do executável do CD e da DLL.
 | `build.ps1` | Orquestra todo o build e monta o ZIP |
 | `make_overlay.ps1` | Compara o build com a pasta original e gera o `Akuma-Patch.zip` (só o que mudou) |
 | `extract_cd.py` | Extrai a pasta do jogo da trilha MODE2/2352 do BIN |
-| `extract_audio.py` | Extrai as faixas de áudio do CUE/BIN para `Music	rackNN.ogg` (usa o ffmpeg) |
+| `extract_audio.py` | Extrai as faixas de áudio do CUE/BIN para `Music\trackNN.ogg` (usa o ffmpeg) |
 | `CdAudio.c` | Emula o CD de música: toca `Music\*.ogg` no lugar da mídia (usa `third_party/stb_vorbis.c`) |
 | `patch_akuma.py` | Adapta o EXE (DirectDraw local, player de vídeo, contador de FPS) |
 | `Launcher.cs` | Launcher em C# (.NET Framework 4, compilado com o `csc` do Windows) |
