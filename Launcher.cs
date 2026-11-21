@@ -95,7 +95,10 @@ internal sealed class Launcher : Form, IMessageFilter
     private bool hasSample;
     private bool gameEnded;
     private int gameExitCode;
-    private readonly Label[] fieldLabels = new Label[5];
+    private readonly Label[] fieldLabels = new Label[5];   // [0] não é mais usado (idioma virou bandeiras)
+    private static readonly string[] LanguageNames = { "Português (Brasil)", "English", "한국어", "繁體中文" };
+    private readonly FlagButton[] flags = new FlagButton[4];
+    private readonly ToolTip flagTips = new ToolTip();
 
     private string WrapperIni { get { return Path.Combine(folder, "ddraw.ini"); } }
     private string LauncherIni { get { return Path.Combine(folder, "Akuma.ini"); } }
@@ -124,7 +127,20 @@ internal sealed class Launcher : Form, IMessageFilter
         var heading = new Label { Text = "Akuma · Demon Spawn", Dock = DockStyle.Fill,
             Font = new Font("Segoe UI", 15, FontStyle.Bold),
             TextAlign = ContentAlignment.MiddleLeft };
-        shell.Controls.Add(heading, 0, 0);
+        // Bandeiras no cabeçalho: um clique escolhe o idioma, em qualquer aba.
+        var header = new Panel { Dock = DockStyle.Fill };
+        var flagBar = new FlowLayoutPanel { Dock = DockStyle.Right, AutoSize = true, WrapContents = false,
+            FlowDirection = FlowDirection.LeftToRight, Padding = new Padding(0, 6, 0, 0) };
+        for (int i = 0; i < flags.Length; ++i)
+        {
+            int index = i;
+            flags[i] = new FlagButton(i);
+            flags[i].Click += delegate { language.SelectedIndex = index; };
+            flagBar.Controls.Add(flags[i]);
+        }
+        header.Controls.Add(heading);
+        header.Controls.Add(flagBar);
+        shell.Controls.Add(header, 0, 0);
         tabs.ImageList = new ImageList { ImageSize = new Size(18, 18), ColorDepth = ColorDepth.Depth32Bit };
         tabs.ImageList.Images.Add(SystemIcons.Application);
         tabs.ImageList.Images.Add(SystemIcons.Shield);
@@ -159,7 +175,8 @@ internal sealed class Launcher : Form, IMessageFilter
         testRelay.Click += TestRelay;
         online.CheckedChanged += delegate { UpdateOnlineEnabled(); };
 
-        fieldLabels[0] = AddChoice(layout, "Idioma", language, new object[] { "Português", "English", "한국어" });
+        // O idioma é escolhido pelas bandeiras do cabeçalho; o ComboBox só guarda o estado.
+        language.Items.AddRange(LanguageNames);
         fieldLabels[1] = AddChoice(layout, "Modo", mode, new object[] { "Janela", "Tela cheia sem bordas" });
         fieldLabels[2] = AddChoice(layout, "Resolução da janela", resolution, new object[] {
             "Original · 640 × 480", "1024 × 768", "1280 × 1024", "1600 × 900", "1920 × 1080"
@@ -310,7 +327,12 @@ internal sealed class Launcher : Form, IMessageFilter
 
     private void LoadSettings()
     {
-        language.SelectedIndex = ReadIndex("language", language.Items.Count);
+        // Primeira execução: usa o idioma do Windows (pt → Português, ko → 한국어, resto → English).
+        CultureInfo culture = CultureInfo.CurrentUICulture;
+        string system = culture.TwoLetterISOLanguageName;
+        bool traditional = system == "zh" && (culture.Name == "zh-TW" || culture.Name == "zh-HK" ||
+            culture.Name == "zh-MO" || culture.Name.IndexOf("Hant", StringComparison.OrdinalIgnoreCase) >= 0);
+        language.SelectedIndex = ReadIndex("language", language.Items.Count, system == "pt" ? 0 : system == "ko" ? 2 : traditional ? 3 : 1);
         Rectangle desktop = Screen.PrimaryScreen.WorkingArea;
         int defaultResolution = desktop.Width >= 1600 && desktop.Height >= 940 ? 3 : 1;
         resolution.SelectedIndex = ReadIndex("resolution", Resolutions.Length, defaultResolution);
@@ -434,8 +456,12 @@ internal sealed class Launcher : Form, IMessageFilter
             && value >= 0 && value < count ? value : fallback;
     }
 
-    private string TextInLanguage(string portuguese, string english, string korean)
+    private static readonly string[] LanguageCodes = { "pt", "en", "ko", "zh" };
+
+    // O chinês é opcional: onde não há tradução, mostra o inglês.
+    private string TextInLanguage(string portuguese, string english, string korean, string chinese = null)
     {
+        if (language.SelectedIndex == 3) return chinese ?? english;
         if (language.SelectedIndex == 2) return korean;
         if (language.SelectedIndex == 1) return english;
         return portuguese;
@@ -443,15 +469,19 @@ internal sealed class Launcher : Form, IMessageFilter
 
     private void ApplyLanguage()
     {
-        fieldLabels[0].Text = TextInLanguage("Idioma", "Language", "언어");
-        fieldLabels[1].Text = TextInLanguage("Modo", "Display mode", "화면 모드");
-        fieldLabels[2].Text = TextInLanguage("Resolução da janela", "Window resolution", "창 해상도");
-        fieldLabels[3].Text = TextInLanguage("Filtro gráfico", "Graphics filter", "그래픽 필터");
-        fieldLabels[4].Text = TextInLanguage("Limite de FPS", "FPS limit", "FPS 제한");
-        videoTab.Text = TextInLanguage("Vídeo", "Video", "화면");
-        controlsTab.Text = TextInLanguage("Controles", "Controls", "조작");
-        originalTab.Text = TextInLanguage("Referência", "Reference", "참고");
-        onlineTab.Text = TextInLanguage("Online", "Online", "온라인");
+        for (int i = 0; i < flags.Length; ++i)
+        {
+            flags[i].Selected = i == language.SelectedIndex;
+            flagTips.SetToolTip(flags[i], LanguageNames[i]);
+        }
+        fieldLabels[1].Text = TextInLanguage("Modo", "Display mode", "화면 모드", "顯示模式");
+        fieldLabels[2].Text = TextInLanguage("Resolução da janela", "Window resolution", "창 해상도", "視窗解析度");
+        fieldLabels[3].Text = TextInLanguage("Filtro gráfico", "Graphics filter", "그래픽 필터", "圖形濾鏡");
+        fieldLabels[4].Text = TextInLanguage("Limite de FPS", "FPS limit", "FPS 제한", "FPS 上限");
+        videoTab.Text = TextInLanguage("Vídeo", "Video", "화면", "畫面");
+        controlsTab.Text = TextInLanguage("Controles", "Controls", "조작", "操作");
+        originalTab.Text = TextInLanguage("Referência", "Reference", "참고", "參考");
+        onlineTab.Text = TextInLanguage("Online", "Online", "온라인", "線上");
         online.Text = TextInLanguage("Jogar online por um relay (Multi Play pela internet)",
             "Play online through a relay (Multi Play over the internet)", "릴레이로 온라인 플레이 (인터넷 멀티플레이)");
         onlineLabels[0].Text = TextInLanguage("Relay (nome ou IP:porta)", "Relay (name or IP:port)", "릴레이 (이름 또는 IP:포트)");
@@ -492,14 +522,14 @@ internal sealed class Launcher : Form, IMessageFilter
         lockCursor.Text = TextInLanguage("Prender mouse na janela (Ctrl+Tab solta)",
             "Capture mouse in window (Ctrl+Tab releases)", "창에 마우스 고정 (Ctrl+Tab으로 해제)");
         intro.Text = TextInLanguage("Reproduzir abertura", "Play intro videos", "오프닝 영상 재생");
-        play.Text = TextInLanguage("Jogar", "Play", "게임 시작");
+        play.Text = TextInLanguage("Jogar", "Play", "게임 시작", "開始遊戲");
 
         int modeSelection = mode.SelectedIndex;
         int resolutionSelection = resolution.SelectedIndex;
         int filterSelection = filter.SelectedIndex;
         int limitSelection = limit.SelectedIndex;
-        mode.Items[0] = TextInLanguage("Janela", "Windowed", "창 모드");
-        mode.Items[1] = TextInLanguage("Tela cheia sem bordas", "Borderless fullscreen", "테두리 없는 전체 화면");
+        mode.Items[0] = TextInLanguage("Janela", "Windowed", "창 모드", "視窗");
+        mode.Items[1] = TextInLanguage("Tela cheia sem bordas", "Borderless fullscreen", "테두리 없는 전체 화면", "無邊框全螢幕");
         resolution.Items[0] = TextInLanguage("Original", "Original", "원본") + " · 640 × 480";
         filter.Items[0] = TextInLanguage("Suave", "Smooth", "부드럽게");
         filter.Items[1] = TextInLanguage("Pixelado", "Pixelated", "픽셀 유지");
@@ -592,7 +622,7 @@ internal sealed class Launcher : Form, IMessageFilter
             {
                 WorkingDirectory = folder,
                 UseShellExecute = false,
-                Arguments = (intro.Checked ? "-show-intro " : "-skip-intro ") + new[] { "pt", "en", "ko" }[language.SelectedIndex],
+                Arguments = (intro.Checked ? "-show-intro " : "-skip-intro ") + LanguageCodes[language.SelectedIndex],
             };
             // Keep each extracted copy bound to its own wrapper configuration.
             start.EnvironmentVariables["CNC_DDRAW_CONFIG_FILE"] = WrapperIni;
@@ -600,7 +630,7 @@ internal sealed class Launcher : Form, IMessageFilter
             start.EnvironmentVariables["AKUMA_WASD_CAMERA"] = wasdCamera.Checked ? "1" : "0";
             start.EnvironmentVariables["AKUMA_BINDINGS"] = String.Join(",", Array.ConvertAll(bindings,
                 value => value.ToString(CultureInfo.InvariantCulture)));
-            start.EnvironmentVariables["AKUMA_LANGUAGE"] = new[] { "pt", "en", "ko" }[language.SelectedIndex];
+            start.EnvironmentVariables["AKUMA_LANGUAGE"] = LanguageCodes[language.SelectedIndex];
             start.EnvironmentVariables["AKUMA_EXCLUSIVE_PARTY"] = exclusiveParty.Checked ? "1" : "0";
             start.EnvironmentVariables["AKUMA_CLICK_MARKER"] = clickMarker.Checked ? "1" : "0";
             start.EnvironmentVariables["AKUMA_SMOOTH_CAMERA"] = smoothCamera.Checked ? "1" : "0";
@@ -707,6 +737,169 @@ internal sealed class Launcher : Form, IMessageFilter
         if (badge != null) badge.Dispose();
         if (game != null) game.Dispose();
         base.OnFormClosed(args);
+    }
+}
+
+// Bandeira clicável desenhada em GDI+ (emoji de bandeira não renderiza no Windows).
+// Kind: 0 = Brasil, 1 = Reino Unido, 2 = Coreia do Sul, 3 = Taiwan. Um clique aciona Click.
+internal sealed class FlagButton : Control
+{
+    public readonly int Kind;
+    private bool selected, hover;
+
+    public FlagButton(int kind)
+    {
+        Kind = kind;
+        SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer |
+            ControlStyles.ResizeRedraw | ControlStyles.Selectable | ControlStyles.StandardClick, true);
+        TabStop = true;
+        Cursor = Cursors.Hand;
+        Size = new Size(46, 34);
+        Margin = new Padding(3, 0, 0, 0);
+    }
+
+    public bool Selected
+    {
+        get { return selected; }
+        set { if (selected != value) { selected = value; Invalidate(); } }
+    }
+
+    protected override void OnMouseEnter(EventArgs e) { hover = true; Invalidate(); base.OnMouseEnter(e); }
+    protected override void OnMouseLeave(EventArgs e) { hover = false; Invalidate(); base.OnMouseLeave(e); }
+    protected override void OnGotFocus(EventArgs e) { Invalidate(); base.OnGotFocus(e); }
+    protected override void OnLostFocus(EventArgs e) { Invalidate(); base.OnLostFocus(e); }
+
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        if (e.KeyCode == Keys.Space || e.KeyCode == Keys.Enter) { OnClick(EventArgs.Empty); e.Handled = true; }
+        base.OnKeyDown(e);
+    }
+
+    protected override bool IsInputKey(Keys key) { return key == Keys.Space || base.IsInputKey(key); }
+
+    protected override void OnPaint(PaintEventArgs e)
+    {
+        Graphics g = e.Graphics;
+        g.Clear(Parent != null ? Parent.BackColor : SystemColors.Control);
+        g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+        var r = new RectangleF(5, 5, Width - 10, Height - 10);
+        var state = g.Save();
+        g.SetClip(r);
+        DrawFlag(g, r);
+        g.Restore(state);
+        // Bandeiras não selecionadas ficam esmaecidas até o mouse passar por cima.
+        if (!selected && !hover)
+            using (var veil = new SolidBrush(Color.FromArgb(120, SystemColors.Control))) g.FillRectangle(veil, r);
+        using (var edge = new Pen(Color.FromArgb(90, 0, 0, 0))) g.DrawRectangle(edge, r.X, r.Y, r.Width, r.Height);
+        if (selected)
+            using (var ring = new Pen(SystemColors.Highlight, 3)) g.DrawRectangle(ring, 2, 2, Width - 5, Height - 5);
+        else if (Focused)
+            using (var ring = new Pen(SystemColors.ControlDark, 1) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dot })
+                g.DrawRectangle(ring, 2, 2, Width - 5, Height - 5);
+    }
+
+    private void DrawFlag(Graphics g, RectangleF r)
+    {
+        float cx = r.X + r.Width / 2, cy = r.Y + r.Height / 2;
+        if (Kind == 0)
+        {
+            using (var green = new SolidBrush(Color.FromArgb(0, 156, 59))) g.FillRectangle(green, r);
+            using (var yellow = new SolidBrush(Color.FromArgb(255, 223, 0)))
+                g.FillPolygon(yellow, new[] {
+                    new PointF(cx, r.Y + r.Height * 0.10f), new PointF(r.Right - r.Width * 0.07f, cy),
+                    new PointF(cx, r.Bottom - r.Height * 0.10f), new PointF(r.X + r.Width * 0.07f, cy) });
+            float d = r.Height * 0.52f;
+            using (var blue = new SolidBrush(Color.FromArgb(0, 39, 118))) g.FillEllipse(blue, cx - d / 2, cy - d / 2, d, d);
+            using (var band = new Pen(Color.White, Math.Max(1f, r.Height * 0.07f)))
+                g.DrawArc(band, cx - d * 0.42f, cy - d * 0.42f, d * 0.84f, d * 0.84f, 200, 110);
+        }
+        else if (Kind == 1)
+        {
+            using (var blue = new SolidBrush(Color.FromArgb(1, 33, 105))) g.FillRectangle(blue, r);
+            using (var white = new Pen(Color.White, r.Height * 0.22f))
+            {
+                g.DrawLine(white, r.X, r.Y, r.Right, r.Bottom);
+                g.DrawLine(white, r.X, r.Bottom, r.Right, r.Y);
+            }
+            using (var red = new Pen(Color.FromArgb(200, 16, 46), r.Height * 0.08f))
+            {
+                g.DrawLine(red, r.X, r.Y, r.Right, r.Bottom);
+                g.DrawLine(red, r.X, r.Bottom, r.Right, r.Y);
+            }
+            using (var white = new SolidBrush(Color.White))
+            {
+                g.FillRectangle(white, r.X, cy - r.Height * 0.19f, r.Width, r.Height * 0.38f);
+                g.FillRectangle(white, cx - r.Width * 0.11f, r.Y, r.Width * 0.22f, r.Height);
+            }
+            using (var red = new SolidBrush(Color.FromArgb(200, 16, 46)))
+            {
+                g.FillRectangle(red, r.X, cy - r.Height * 0.11f, r.Width, r.Height * 0.22f);
+                g.FillRectangle(red, cx - r.Width * 0.06f, r.Y, r.Width * 0.12f, r.Height);
+            }
+        }
+        else if (Kind == 3)
+        {
+            using (var red = new SolidBrush(Color.FromArgb(254, 0, 0))) g.FillRectangle(red, r);
+            var canton = new RectangleF(r.X, r.Y, r.Width / 2, r.Height / 2);
+            using (var blue = new SolidBrush(Color.FromArgb(0, 0, 149))) g.FillRectangle(blue, canton);
+            float sx = canton.X + canton.Width / 2, sy = canton.Y + canton.Height / 2, ray = canton.Height * 0.46f;
+            using (var white = new SolidBrush(Color.White))
+            using (var rays = new Pen(Color.White, Math.Max(1f, canton.Height * 0.12f)))
+            {
+                for (int i = 0; i < 12; ++i)
+                {
+                    double a = i * Math.PI / 6;
+                    g.DrawLine(rays, sx, sy, sx + (float)Math.Cos(a) * ray, sy + (float)Math.Sin(a) * ray);
+                }
+                using (var blueRing = new SolidBrush(Color.FromArgb(0, 0, 149)))
+                {
+                    float b = canton.Height * 0.36f;
+                    g.FillEllipse(blueRing, sx - b / 2, sy - b / 2, b, b);
+                }
+                float c = canton.Height * 0.27f;
+                g.FillEllipse(white, sx - c / 2, sy - c / 2, c, c);
+            }
+        }
+        else
+        {
+            using (var white = new SolidBrush(Color.White)) g.FillRectangle(white, r);
+            float d = r.Height * 0.52f, rad = d / 2;
+            var state = g.Save();
+            g.TranslateTransform(cx, cy);
+            g.RotateTransform(-33.7f);
+            using (var red = new SolidBrush(Color.FromArgb(205, 46, 58)))
+            using (var blue = new SolidBrush(Color.FromArgb(0, 71, 160)))
+            {
+                g.FillPie(red, -rad, -rad, d, d, 180, 180);
+                g.FillPie(blue, -rad, -rad, d, d, 0, 180);
+                g.FillEllipse(red, -rad, -rad / 2, rad, rad);
+                g.FillEllipse(blue, 0, -rad / 2, rad, rad);
+            }
+            g.Restore(state);
+            // Quatro trigramas (Geon, Gam, Gon, Ri): barras inteiras ou partidas nos cantos.
+            string[] pattern = { "SSS", "PSP", "SPS", "PPP" };
+            for (int corner = 0; corner < 4; ++corner)
+            {
+                float sx = (corner & 1) == 0 ? -1 : 1, sy = corner < 2 ? -1 : 1;
+                var s2 = g.Save();
+                g.TranslateTransform(cx + sx * r.Width * 0.33f, cy + sy * r.Height * 0.30f);
+                g.RotateTransform((float)(Math.Atan2(sy * r.Height, sx * r.Width) * 180 / Math.PI) + 90);
+                float len = r.Height * 0.46f, thick = Math.Max(1f, r.Height * 0.075f), gap = thick * 1.0f;
+                using (var black = new SolidBrush(Color.Black))
+                    for (int bar = 0; bar < 3; ++bar)
+                    {
+                        float y = (bar - 1) * (thick + gap) - thick / 2;
+                        if (pattern[corner][bar] == 'S')
+                            g.FillRectangle(black, -len / 2, y, len, thick);
+                        else
+                        {
+                            g.FillRectangle(black, -len / 2, y, len * 0.42f, thick);
+                            g.FillRectangle(black, len * 0.08f, y, len * 0.42f, thick);
+                        }
+                    }
+                g.Restore(s2);
+            }
+        }
     }
 }
 

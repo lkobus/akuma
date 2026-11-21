@@ -17,12 +17,16 @@ LABELS = {
     "en": ("Single Player", "Multiplayer", "Quit Game", "New Game",
            "Load Game", "Main Menu", "Save Game", "Load Game",
            "Options", "Return to Menu", "Resume Game"),
+    "zh": ("單人遊戲", "多人遊戲", "離開遊戲", "新遊戲",
+           "讀取遊戲", "主選單", "儲存遊戲", "讀取遊戲",
+           "選項", "返回選單", "繼續遊戲"),
 }
 LABEL_BLOCKS = (0, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11)
 
 
 def font_path(tag):
-    path = Path(os.environ["WINDIR"]) / "Fonts" / ("malgunbd.ttf" if tag == "ko" else "segoeuib.ttf")
+    name = {"ko": "malgunbd.ttf", "zh": "msjhbd.ttc"}.get(tag, "segoeuib.ttf")
+    path = Path(os.environ["WINDIR"]) / "Fonts" / name
     if not path.is_file():
         raise FileNotFoundError("Fonte de menu do Windows ausente: " + str(path))
     return path
@@ -156,7 +160,7 @@ if __name__ == "__main__":
             (args.folder / (name + "-" + lang + ".gos")).write_bytes(menu_bank(source, lang, rgb555))
     for name, rgb555 in (("icon1", False), ("icon10", True)):
         source = (args.folder / (name + ".gos")).read_bytes()
-        for lang, encoding in (("pt", "cp1252"), ("ko", "cp949"), ("en", "ascii")):
+        for lang, encoding in (("pt", "cp1252"), ("ko", "cp949"), ("en", "ascii"), ("zh", "cp950")):
             localized = (args.folder / ("lang-" + lang + ".gos")).read_bytes().decode(encoding)
             names = localized.splitlines()[487:529]
             if len(names) != 42:

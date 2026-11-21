@@ -7,7 +7,7 @@ import re
 
 
 EVENTS = ("sam.evt", "under.evt", "multi1.evt", "multi2.evt")
-LANGS = (("pt", "cp1252"), ("ko", "cp949"), ("en", "ascii"))
+LANGS = (("pt", "cp1252"), ("ko", "cp949"), ("en", "ascii"), ("zh", "cp950"))
 # Match only player-visible parameters. Event names, flags and jump labels are
 # keys in the script and must keep their original bytes.
 COMMAND = re.compile(rb'^[ \t]*(?:@[ \t]*(?:TALK|FACE|ORDER)\b|(?:CASE|MENT)\b)[^"\r\n]*"([^"\r\n]+)"',
@@ -25,6 +25,13 @@ SPEAKERS = {
     "White Lady": ("Dama Branca", "백의 부인"),
     "Eastern Demon": ("Demônio do Leste", "동쪽 악마"),
     "Western Demon": ("Demônio do Oeste", "서쪽 악마"),
+}
+
+
+ZH_SPEAKERS = {
+    "Blacksmith": "鐵匠", "Shopkeeper": "店主", "Item Merchant": "道具商人", "Village Chief": "村長",
+    "Witch": "女巫", "Jeweler": "珠寶商", "Trainer": "教官", "Retired General": "退役將軍",
+    "White Lady": "白衣夫人", "Eastern Demon": "東方惡魔", "Western Demon": "西方惡魔",
 }
 
 
@@ -66,13 +73,16 @@ def clean(value, encoding, limit):
     return (value + "...").encode(encoding, errors="replace")
 
 
-def variant(data, lang_index, encoding, catalog):
+def variant(data, lang_index, encoding, catalog, zh):
     lines = []
     for line, match, source in payloads(data):
         if source is not None:
-            texts = SPEAKERS.get(source) if lang_index < 2 else None
-            texts = texts or catalog.get(key(source))
-            text = texts[lang_index] if texts is not None and len(texts) > lang_index else None
+            if lang_index == 3:   # Traditional Chinese lives in its own optional catalog
+                text = ZH_SPEAKERS.get(source) or zh.get(key(source))
+            else:
+                texts = SPEAKERS.get(source) if lang_index < 2 else None
+                texts = texts or catalog.get(key(source))
+                text = texts[lang_index] if texts is not None and len(texts) > lang_index else None
             if text:
                 limit = 62 if TALK.match(line) else 55
                 if source.startswith("<") and source.endswith(">"):
@@ -84,12 +94,13 @@ def variant(data, lang_index, encoding, catalog):
     return b"".join(lines)
 
 
-def build(folder, catalog):
+def build(folder, catalog, zh=None):
+    zh = zh or {}
     for name in EVENTS:
         path = folder / name
         original = path.read_bytes()
         for i, (tag, encoding) in enumerate(LANGS):
-            path.with_stem(path.stem + "-" + tag).write_bytes(variant(original, i, encoding, catalog))
+            path.with_stem(path.stem + "-" + tag).write_bytes(variant(original, i, encoding, catalog, zh))
 
 
 if __name__ == "__main__":
@@ -97,5 +108,7 @@ if __name__ == "__main__":
     parser.add_argument("folder", type=Path)
     parser.add_argument("catalog", type=Path)
     args = parser.parse_args()
-    build(args.folder, json.loads(args.catalog.read_text(encoding="utf-8-sig")))
+    zh_path = args.catalog.with_name("dialogues-zh.json")   # optional: {hash: "繁體中文"}
+    zh = json.loads(zh_path.read_text(encoding="utf-8-sig")) if zh_path.is_file() else {}
+    build(args.folder, json.loads(args.catalog.read_text(encoding="utf-8-sig")), zh)
 

@@ -4,6 +4,7 @@
 #include <windows.h>
 #include <ddraw.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -35,6 +36,7 @@ enum { GAME_WIDTH = 640, HEIGHT = 480, WIDE_WIDTH = 854, CAMPAIGN_SCENE = 13 };
 #define NET_LOCAL_ID (*(const volatile DWORD *)(uintptr_t)0x4998D8)
 static void net_log_party(void);
 static void install_dialog_hook(void);
+static void install_crash_log(void);
 static void note_estimated_hit(const void *actor);
 static BOOL net_log_enabled(void);
 static void net_log_line(char direction, DWORD from, DWORD to, DWORD flags, const unsigned char *data, DWORD size);
@@ -116,7 +118,7 @@ static unsigned binding_down, party_selection, party_present;
 static const unsigned char *party_map;
 static int party_map_id;
 static unsigned item_code_page = 1252;
-enum { PORTUGUESE, ENGLISH, KOREAN };
+enum { PORTUGUESE, ENGLISH, KOREAN, CHINESE };
 static unsigned hud_language;
 static const unsigned char *previous_world_map;
 static const unsigned char *dialogue_camera_map;
@@ -253,6 +255,55 @@ static BOOL world_view_active(void)
     return world_draw_active() && !GAME_PAUSED && !*(const DWORD *)(GAME_VIEW + 0xE4);
 }
 
+// English strings the original engine draws itself (gameplay notices) or that live in its
+// multiplayer dialog resources. They are not in lang.gos, so they are translated here.
+// Columns: Portuguese, Korean, Traditional Chinese. English keeps the original text.
+typedef struct { const char *en; const WCHAR *text[3]; } Phrase;
+
+static const Phrase game_messages[] = {
+    {"No place to take this item", {L"Sem lugar para pegar este item", L"이 아이템을 가질 곳이 없습니다", L"沒有地方可以拿取此道具"}},
+    {"Overflow the limit of weight to take", {L"Peso máximo excedido", L"소지 가능 무게를 초과했습니다", L"超過可負重量上限"}},
+    {"Not in the same region", {L"Não está na mesma região", L"같은 지역에 있지 않습니다", L"不在同一個區域"}},
+    {"The Teleport Gate of the other side is not operated",
+        {L"O Portal de Teleporte do outro lado não está ativado", L"반대편 이동 관문이 작동하지 않습니다", L"另一端的傳送門尚未啟動"}},
+    {"No room to take this item", {L"Sem espaço para pegar este item", L"이 아이템을 넣을 공간이 없습니다", L"沒有空間放置此道具"}},
+    {"No Weapons", {L"Sem armas", L"무기 없음", L"沒有武器"}},
+};
+
+static const Phrase dialog_texts[] = {
+    {"SELECT CHARACTER", {L"ESCOLHER PERSONAGEM", L"주인공 고르기", L"選擇角色"}},
+    {"Enter character's name", {L"Digite o nome do personagem", L"주인공 이름을 정하세요", L"請輸入角色名稱"}},
+    {"OK", {L"OK", L"확인", L"確定"}},
+    {"CANCEL", {L"Cancelar", L"취소", L"取消"}},
+    {"Cancel", {L"Cancelar", L"취소", L"取消"}},
+    {"MULTIPLAY SETTING", {L"CONFIGURAÇÃO MULTIJOGADOR", L"멀티 플레이 설정", L"多人遊戲設定"}},
+    {"Choose connection type", {L"Escolha o tipo de conexão", L"연결할 방법을 선택하세요", L"請選擇連線方式"}},
+    {"Host IP Address", {L"Endereço IP do host", L"IP 주소", L"主機 IP 位址"}},
+    {"Select Modem", {L"Selecionar modem", L"모뎀 선택", L"選擇數據機"}},
+    {"Telephone number to call", {L"Número de telefone para ligar", L"상대 전화 번호", L"要撥打的電話號碼"}},
+    {"Fail to initialize...", {L"Falha ao inicializar...", L"초기화 실패...", L"初始化失敗..."}},
+    {"Check your settings", {L"Verifique suas configurações", L"설정 사항을 확인해 보세요", L"請檢查您的設定"}},
+    {"Input New Host Name", {L"Nome da nova sala", L"만들 방의 이름", L"新主機名稱"}},
+    {"Max. Number of Players", {L"Máximo de jogadores", L"참여 가능한 최대 사람수", L"最大玩家人數"}},
+    {"World", {L"Mundo", L"세계", L"地上世界"}},
+    {"Underworld", {L"Submundo", L"지하세계", L"地下世界"}},
+    {"- Above Level 20", {L"- Nível 20 ou mais", L"- 레벨 20이상", L"- 等級 20 以上"}},
+    {"Select Host", {L"Entrar", L"들어 가기", L"加入主機"}},
+    {"Find Host", {L"Procurar salas", L"방 보기", L"搜尋主機"}},
+    {"Hosting", {L"Criar sala", L"방 만들기", L"建立主機"}},
+};
+
+// Returns the translation of an exact English string (ignoring trailing blanks), or NULL.
+static const WCHAR *phrase_for(const Phrase *table, unsigned count, const char *text, int length)
+{
+    if (hud_language == ENGLISH || !text) return NULL;
+    while (length > 0 && (text[length - 1] == ' ' || text[length - 1] == '\r' || text[length - 1] == '\n')) --length;
+    for (unsigned i = 0; i < count; ++i)
+        if ((int)strlen(table[i].en) == length && !memcmp(table[i].en, text, (size_t)length))
+            return table[i].text[hud_language == PORTUGUESE ? 0 : hud_language == KOREAN ? 1 : 2];
+    return NULL;
+}
+
 static void capture_hint(NativeHint *hint, HDC dc, int x, int y, const char *text, int count)
 {
     hint->count = min(count, (int)sizeof(hint->text) - 1);
@@ -293,6 +344,8 @@ __declspec(dllexport) BOOL WINAPI HudHoverText(HDC dc, int x, int y, const char 
             return TRUE;
         }
     }
+    const WCHAR *translated = phrase_for(game_messages, COUNT(game_messages), text, count);
+    if (translated) return TextOutW(dc, x, y, translated, lstrlenW(translated));
     return TextOutA(dc, x, y, text, count);
 }
 
@@ -1147,36 +1200,42 @@ static BOOL quest_in_log(unsigned order)
 
 typedef struct {
     unsigned order, finished;
-    const WCHAR *npc[3], *step[3];
+    const WCHAR *npc[4], *step[4];
 } QuestLead;
 
 // These dialogue branches can introduce a quest without a previous quest
 // item. The progress flag is set by the same script when the offer is taken.
 static const QuestLead quest_leads[] = {
-    {101, 0, {L"Chefe da vila", L"Village Chief", L"마을 촌장"},
+    {101, 0, {L"Chefe da vila", L"Village Chief", L"마을 촌장", L"村長"},
         {L"Escolha “Está bem…”, depois “Dizes mais” e aceite buscar o presente na Vila Mantis.",
          L"Choose “OK!”, then “Tell me more”, and agree to fetch the gift in Mantis Village.",
-         L"“좋아”, “더 말해줘”를 선택하고 만티스 마을에서 선물을 가져오겠다고 하세요."}},
-    {103, 0, {L"Lojista", L"Shopkeeper", L"상점 주인"},
+         L"“좋아”, “더 말해줘”를 선택하고 만티스 마을에서 선물을 가져오겠다고 하세요.",
+         L"選擇「好!」,再選「多告訴我一些」,並答應去螳螂村取回禮物。"}},
+    {103, 0, {L"Lojista", L"Shopkeeper", L"상점 주인", L"店主"},
         {L"Pergunte sobre os demônios perto da vila.",
          L"Ask about the demons around the village.",
-         L"마을 주변의 악마에 대해 물어보세요."}},
-    {107, 44, {L"Mercador de itens", L"Item Merchant", L"아이템 상인"},
+         L"마을 주변의 악마에 대해 물어보세요.",
+         L"詢問村子附近惡魔的事。"}},
+    {107, 44, {L"Mercador de itens", L"Item Merchant", L"아이템 상인", L"道具商人"},
         {L"Escolha conversar e pergunte sobre o pedido.",
          L"Choose Chat and ask about the request.",
-         L"대화를 선택하고 부탁에 대해 물어보세요."}},
-    {104, 0, {L"Ferreiro", L"Blacksmith", L"대장장이"},
+         L"대화를 선택하고 부탁에 대해 물어보세요.",
+         L"選擇交談,並詢問委託的事。"}},
+    {104, 0, {L"Ferreiro", L"Blacksmith", L"대장장이", L"鐵匠"},
         {L"Converse sobre a espada e pergunte pelos materiais.",
          L"Talk about a sword and ask about the materials.",
-         L"검에 대해 이야기하고 재료를 물어보세요."}},
-    {109, 0, {L"Joalheiro", L"Jeweler", L"보석상"},
+         L"검에 대해 이야기하고 재료를 물어보세요.",
+         L"談談劍的事,並詢問材料。"}},
+    {109, 0, {L"Joalheiro", L"Jeweler", L"보석상", L"珠寶商"},
         {L"Pergunte como conseguir uma boa joia.",
          L"Ask how to get a good jewel.",
-         L"좋은 보석을 얻는 방법을 물어보세요."}},
-    {117, 0, {L"Joalheiro", L"Jeweler", L"보석상"},
+         L"좋은 보석을 얻는 방법을 물어보세요.",
+         L"詢問如何取得好寶石。"}},
+    {117, 0, {L"Joalheiro", L"Jeweler", L"보석상", L"珠寶商"},
         {L"Converse sobre a vila e ofereça ajuda.",
          L"Ask about the village and offer to help.",
-         L"마을에 대해 묻고 도와주겠다고 하세요."}},
+         L"마을에 대해 묻고 도와주겠다고 하세요.",
+         L"詢問村子的事,並表示願意幫忙。"}},
 };
 
 static BOOL quest_flag_on_party(const unsigned char *map, unsigned flag)
@@ -1649,14 +1708,30 @@ static void paint_loot_names(HDC dc, const RECT *hint_box)
     if (old_font) SelectObject(dc, old_font);
 }
 
+// Native text is ANSI bytes in the game's language (cp949/cp950 for Korean/Chinese). Convert it to
+// UTF-16 so GDI draws it correctly whatever the system code page is.
+static int hint_to_wide(const NativeHint *hint, WCHAR *out, int capacity)
+{
+    const WCHAR *translated = phrase_for(game_messages, COUNT(game_messages), hint->text, hint->count);
+    if (translated) {
+        int length = lstrlenW(translated);
+        if (length >= capacity) length = capacity - 1;
+        memcpy(out, translated, (size_t)length * sizeof(WCHAR));
+        return length;
+    }
+    return hint->count > 0 ? MultiByteToWideChar(item_code_page, 0, hint->text, hint->count, out, capacity) : 0;
+}
+
 static void paint_native_hint(HDC dc, const NativeHint *hint, RECT *occupied)
 {
+    WCHAR wide[192];
+    int chars = hint_to_wide(hint, wide, COUNT(wide));
     HGDIOBJ previous = hint->font ? SelectObject(dc, hint->font) : NULL;
     SetBkMode(dc, TRANSPARENT);
     SetTextColor(dc, hint->color);
     SIZE size;
-    if (GetTextExtentPoint32A(dc, hint->text, hint->count, &size)
-        && TextOutA(dc, hint->x, hint->y, hint->text, hint->count)) {
+    if (chars && GetTextExtentPoint32W(dc, wide, chars, &size)
+        && TextOutW(dc, hint->x, hint->y, wide, chars)) {
         RECT box = {hint->x, hint->y, hint->x + size.cx, hint->y + size.cy};
         UnionRect(occupied, occupied, &box);
     }
@@ -1679,7 +1754,9 @@ static void paint_actor_hints(HDC dc, RECT *occupied)
     for (unsigned i = 0; i < world_hint_count; ++i) {
         const NativeHint *hint = &world_hint[i];
         SIZE size;
-        if (!hint->count || !GetTextExtentPoint32A(dc, hint->text, hint->count, &size)) continue;
+        WCHAR wide[192];
+        int chars = hint_to_wide(hint, wide, COUNT(wide));
+        if (!chars || !GetTextExtentPoint32W(dc, wide, chars, &size)) continue;
         int pad = hint->piece ? 0 : 5;
         if (hint->piece) {
             ++piece_index;
@@ -1689,8 +1766,8 @@ static void paint_actor_hints(HDC dc, RECT *occupied)
         if (width <= 6) break;
         RECT box = {x, y, x + width, min(BELT_Y - 3, y + size.cy + 5)};
         SetTextColor(dc, hint->color);
-        if (ExtTextOutA(dc, x + pad, y + 2, ETO_OPAQUE | ETO_CLIPPED,
-                &box, hint->text, hint->count, NULL)) {
+        if (ExtTextOutW(dc, x + pad, y + 2, ETO_OPAQUE | ETO_CLIPPED,
+                &box, wide, chars, NULL)) {
             UnionRect(&combined, &combined, &box);
             x = box.right + (hint->piece ? 0 : 4);
         }
@@ -1715,6 +1792,21 @@ static void paint_name_hint(HDC dc, const char *label, int x, int y, BOOL align_
     WCHAR text[160];
     int bytes = (int)strnlen(label, 159);
     int chars = bytes ? MultiByteToWideChar(item_code_page, 0, label, bytes, text, COUNT(text)) : 0;
+    if (chars && hud_language == CHINESE) {
+        // Some names reach the HUD in English; show the Chinese name when we have one.
+        static const WCHAR *const names[][2] = {
+            {L"Blacksmith", L"鐵匠"}, {L"Shopkeeper", L"店主"}, {L"Item Merchant", L"道具商人"},
+            {L"Village Chief", L"村長"}, {L"Witch", L"女巫"}, {L"Jeweler", L"珠寶商"}, {L"Trainer", L"教官"},
+            {L"Retired General", L"退役將軍"}, {L"White Lady", L"白衣夫人"},
+            {L"Eastern Demon", L"東方惡魔"}, {L"Western Demon", L"西方惡魔"},
+        };
+        for (unsigned n = 0; n < COUNT(names); ++n)
+            if (chars == lstrlenW(names[n][0]) && !wcsncmp(text, names[n][0], (size_t)chars)) {
+                chars = lstrlenW(names[n][1]);
+                wcsncpy(text, names[n][1], COUNT(text) - 1);
+                break;
+            }
+    }
     SIZE size;
     if (chars && GetTextExtentPoint32W(dc, text, chars, &size)) {
         int width = min(size.cx + 12, presented_world_right - WORLD_TOP - 8);
@@ -1758,16 +1850,17 @@ static void paint_hover_hint(HDC dc, RECT *occupied)
 
 static void paint_quest_lead(HDC dc)
 {
-    static const WCHAR *const next[] = {L"Como começar uma missão", L"Start a quest", L"퀘스트 시작하기"};
-    static const WCHAR *const target[] = {L"Fale com", L"Talk to", L"대화 상대"};
-    static const WCHAR *const empty[] = {L"Sem missões ativas", L"No active quests", L"진행 중인 퀘스트 없음"};
+    static const WCHAR *const next[] = {L"Como começar uma missão", L"Start a quest", L"퀘스트 시작하기", L"如何開始任務"};
+    static const WCHAR *const target[] = {L"Fale com", L"Talk to", L"대화 상대", L"對話對象"};
+    static const WCHAR *const empty[] = {L"Sem missões ativas", L"No active quests", L"진행 중인 퀘스트 없음", L"沒有進行中的任務"};
     static const WCHAR *const upcoming[] = {
-        L"Próxima oferta conhecida", L"Next known quest offer", L"다음 퀘스트 제안",
+        L"Próxima oferta conhecida", L"Next known quest offer", L"다음 퀘스트 제안", L"下一個已知任務",
     };
     static const WCHAR *const explore[] = {
         L"Nenhuma oferta conhecida neste mapa. Procure uma missão nos diálogos das vilas.",
         L"No known offer on this map. Look for quests in village conversations.",
         L"이 지도에는 알려진 의뢰가 없습니다. 마을에서 대화해 보세요.",
+        L"此地圖沒有已知的委託。請在村莊的對話中尋找任務。",
     };
     static HFONT title_font, body_font;
     if (!title_font) title_font = CreateFontW(-18, 0, 0, 0, FW_SEMIBOLD, FALSE, FALSE, FALSE,
@@ -1803,6 +1896,7 @@ static void paint_quest_lead(HDC dc)
                 L"Disponível a partir do ano %u · %ls",
                 L"Available from year %u · %ls",
                 L"%u년부터 가능 · %ls",
+                L"%u 年起可接 · %ls",
             };
             swprintf(name, COUNT(name), year_format[lang], suggestion.year, lead->npc[lang]);
         } else {
@@ -1819,11 +1913,13 @@ static void paint_quest_lead(HDC dc)
             L"Procure o ! amarelo. Aceite para registrar a missão.",
             L"Find the yellow !. Accept to add the quest.",
             L"노란색 ! 표시를 찾으세요. 수락하면 일지에 추가됩니다.",
+            L"尋找黃色的 !,接受後會加入任務日誌。",
         };
         static const WCHAR *const waiting[] = {
             L"Jogue com a partida despausada. A barra ao lado do ano mostra o progresso.",
             L"Keep playing with the game unpaused. The bar beside the year shows your progress.",
             L"일시 정지를 풀고 플레이하세요. 연도 옆 막대가 진행 상황을 보여 줍니다.",
+            L"請取消暫停繼續遊玩。年份旁的進度條會顯示進度。",
         };
         SetTextColor(dc, RGB(222, 175, 113));
         if (suggestion.year) {
@@ -1838,7 +1934,7 @@ static void paint_quest_lead(HDC dc)
 
 static void paint_drop_hint(HDC dc)
 {
-    static const WCHAR *const text[] = {L"Soltar item aqui", L"Drop item here", L"여기에 아이템 버리기"};
+    static const WCHAR *const text[] = {L"Soltar item aqui", L"Drop item here", L"여기에 아이템 버리기", L"在此丟棄物品"};
     static HFONT font;
     if (!font) font = CreateFontW(-15, 0, 0, 0, FW_SEMIBOLD, FALSE, FALSE, FALSE,
         DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, ANTIALIASED_QUALITY,
@@ -2043,7 +2139,7 @@ static void paint_steel_frame(HDC dc, const RECT *r)
 // their life, inside a frame that matches the wooden sidebar. Up to seven rows.
 static void paint_party_panel(HDC dc)
 {
-    static const WCHAR *const title[] = {L"Jogadores", L"Players", L"플레이어"};
+    static const WCHAR *const title[] = {L"Jogadores", L"Players", L"플레이어", L"玩家"};
     const unsigned char *map = GAME_MAP;
     if (!map) return;
     RECT frame = party_frame();
@@ -2051,7 +2147,7 @@ static void paint_party_panel(HDC dc)
     HGDIOBJ old_font = SelectObject(dc, ui_font(12, FW_SEMIBOLD));
     int old_mode = SetBkMode(dc, TRANSPARENT);
     SetTextColor(dc, RGB(226, 226, 226));
-    const WCHAR *label = title[hud_language < 3 ? hud_language : 1];
+    const WCHAR *label = title[hud_language < 4 ? hud_language : 1];
     ExtTextOutW(dc, frame.left + 12, frame.top + 9, 0, NULL, label, lstrlenW(label), NULL);
     fill_rect(dc, frame.left + 10, frame.top + 25, frame.right - 10, frame.top + 26, RGB(78, 94, 122));
     SelectObject(dc, ui_font(11, FW_SEMIBOLD));
@@ -2684,6 +2780,7 @@ static void paint(const DDSURFACEDESC *src, const DDSURFACEDESC *dst, BOOL later
 
 __declspec(dllexport) HRESULT WINAPI HudMode(GameVideo *video, DWORD width, DWORD height, DWORD bits)
 {
+    install_crash_log();
     install_dialog_hook();
     char enabled[2] = "";
     char camera_keys[2] = "";
@@ -2702,10 +2799,13 @@ __declspec(dllexport) HRESULT WINAPI HudMode(GameVideo *video, DWORD width, DWOR
             start = end + 1;
         }
     }
-    if (GetEnvironmentVariableA("AKUMA_LANGUAGE", language, sizeof(language)) == 2)
-        hud_language = strcmp(language, "ko") == 0 ? KOREAN
+    int chinese = 0;
+    if (GetEnvironmentVariableA("AKUMA_LANGUAGE", language, sizeof(language)) == 2) {
+        chinese = strcmp(language, "zh") == 0;
+                hud_language = strcmp(language, "ko") == 0 ? KOREAN : chinese ? CHINESE
             : strcmp(language, "en") == 0 ? ENGLISH : PORTUGUESE;
-    item_code_page = hud_language == KOREAN ? 949 : 1252;
+    }
+    item_code_page = hud_language == KOREAN ? 949 : chinese ? 950 : 1252;
     {
         char smooth[2] = "";
         smooth_camera = GetEnvironmentVariableA("AKUMA_SMOOTH_CAMERA", smooth, sizeof(smooth)) == 1 && smooth[0] == '1';
@@ -3670,11 +3770,73 @@ static void adapt_dialog(HWND dialog)
     }
 }
 
+static void translate_control(HWND window)
+{
+    WCHAR wide[160];
+    char text[160];
+    if (!GetWindowTextW(window, wide, COUNT(wide))) return;
+    int length = WideCharToMultiByte(1252, 0, wide, -1, text, sizeof(text), NULL, NULL);
+    if (length <= 1) return;
+    const WCHAR *translated = phrase_for(dialog_texts, COUNT(dialog_texts), text, length - 1);
+    if (translated) SetWindowTextW(window, translated);
+}
+
+static BOOL CALLBACK translate_child(HWND window, LPARAM unused)
+{
+    (void)unused;
+    translate_control(window);
+    return TRUE;
+}
+
+static void translate_dialog(HWND dialog)
+{
+    translate_control(dialog);
+    EnumChildWindows(dialog, translate_child, 0);
+}
+
 static LRESULT CALLBACK dialog_hook(int code, WPARAM wparam, LPARAM lparam)
 {
-    if (code == HC_ACTION && ((const CWPRETSTRUCT *)lparam)->message == WM_INITDIALOG)
+    if (code == HC_ACTION && ((const CWPRETSTRUCT *)lparam)->message == WM_INITDIALOG) {
+        translate_dialog(((const CWPRETSTRUCT *)lparam)->hwnd);
         adapt_dialog(((const CWPRETSTRUCT *)lparam)->hwnd);
+    }
     return CallNextHookEx(NULL, code, wparam, lparam);
+}
+
+// Crash log: writes crash.txt (code, address, module+offset, registers, stack) when the game
+// dies from an unhandled exception, so a failure can be diagnosed from a file.
+static LONG WINAPI crash_filter(EXCEPTION_POINTERS *info)
+{
+    FILE *file = fopen("crash.txt", "a");
+    if (file) {
+        const CONTEXT *c = info->ContextRecord;
+        HMODULE module = NULL;
+        char name[MAX_PATH] = "?";
+        GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+            (LPCSTR)info->ExceptionRecord->ExceptionAddress, &module);
+        if (module) GetModuleFileNameA(module, name, sizeof(name));
+        const char *base = strrchr(name, '\\');
+        char lang[8] = "";
+        GetEnvironmentVariableA("AKUMA_LANGUAGE", lang, sizeof(lang));
+        fprintf(file, "exception %08lX at %p (%s+%lX) lang=%s", info->ExceptionRecord->ExceptionCode,
+            info->ExceptionRecord->ExceptionAddress, base ? base + 1 : name,
+            (unsigned long)((uintptr_t)info->ExceptionRecord->ExceptionAddress - (uintptr_t)module), lang);
+        if (info->ExceptionRecord->NumberParameters >= 2)
+            fprintf(file, " access=%lu addr=%08lX", (unsigned long)info->ExceptionRecord->ExceptionInformation[0],
+                (unsigned long)info->ExceptionRecord->ExceptionInformation[1]);
+        fprintf(file, "\neax=%08lX ebx=%08lX ecx=%08lX edx=%08lX esi=%08lX edi=%08lX ebp=%08lX esp=%08lX\nstack:",
+            c->Eax, c->Ebx, c->Ecx, c->Edx, c->Esi, c->Edi, c->Ebp, c->Esp);
+        const DWORD *stack = (const DWORD *)c->Esp;
+        for (int i = 0; i < 24 && !IsBadReadPtr(stack + i, 4); ++i) fprintf(file, " %08lX", stack[i]);
+        fprintf(file, "\n\n");
+        fclose(file);
+    }
+    return EXCEPTION_CONTINUE_SEARCH;
+}
+
+static void install_crash_log(void)
+{
+    SetUnhandledExceptionFilter(crash_filter);
 }
 
 static void install_dialog_hook(void)
