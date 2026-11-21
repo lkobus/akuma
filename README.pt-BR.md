@@ -9,7 +9,9 @@ BIN e gera um ZIP portátil com:
 - launcher (`Jogar.exe`) com presets de vídeo, idioma e controles;
 - janela redimensionável, tela cheia sem bordas e filtros gráficos (cnc-ddraw);
 - HUD lateral em 16:9, minimapa arrastável, zoom de câmera e contador de FPS;
-- português, inglês e coreano para menus, interface, mapas e diálogos de NPCs.
+- português, inglês e coreano para menus, interface, mapas e diálogos de NPCs;
+- **Multi Play online** por um servidor relay, sem VPN e sem abrir portas
+  (veja [Online play](docs/wiki/Online-Play.md), em inglês).
 
 > **O repositório contém só código e traduções.** O patch pronto fica na aba
 > **Releases** e o jogo base (cópia fiel dos arquivos do CD) fica no Discord.
@@ -25,6 +27,10 @@ BIN e gera um ZIP portátil com:
 3. Abra `Jogar.exe`, escolha idioma e vídeo e clique em Jogar.
 
 Os controles estão em [LEIA-ME.txt](LEIA-ME.txt).
+
+Para jogar o Multi Play pela internet, use a aba **Online** do launcher. Guia:
+[Online play](docs/wiki/Online-Play.md). Para rodar o seu próprio relay:
+[Hosting a relay](docs/wiki/Hosting-a-Relay.md).
 
 ## Como compilar do código-fonte (para quem vai modificar)
 
@@ -55,10 +61,16 @@ e `-Output`. O build confere o hash do executável do CD e da DLL.
 | `patch_akuma.py` | Adapta o EXE (DirectDraw local, player de vídeo, contador de FPS) |
 | `Launcher.cs` | Launcher em C# (.NET Framework 4, compilado com o `csc` do Windows) |
 | `AkumaHud.c` | DLL x86 do HUD, minimapa e câmera, compilada com `zig cc` |
+| `NetShim.c` | Na mesma DLL: ganha as chamadas Winsock do provedor TCP/IP do DirectPlay para registrá-las e levar o jogo por um relay |
+| `relay/` | `akuma-relay.c` (servidor relay em C, Windows e Linux), `build.ps1`, `PROTOCOL.md` |
+| `relays.txt` | Lista de relays da aba Online do launcher |
 | `hud_skin.py`, `quest_starts.py` | Geram cabeçalhos C a partir dos dados extraídos |
 | `localize.py`, `menu_labels.py`, `localize_dialogues.py` | Idiomas |
 | `translations.txt`, `dialogues.json` | Textos traduzidos (a edição é por aqui) |
 | `docs/widescreen.md` | Como o motor foi investigado e os endereços usados |
+| `docs/netcode.md` | O protocolo de mensagens do DirectPlay do jogo |
+| `docs/winsock-flow.md` | Como o provedor TCP/IP usa o Winsock: portas, descoberta, endereços (inglês) |
+| `docs/wiki/` | Páginas da wiki: jogo online e como hospedar um relay (inglês) |
 
 ## Como modificar o projeto
 

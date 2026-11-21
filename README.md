@@ -10,7 +10,9 @@ on modern Windows, with:
 - a resizable window, borderless fullscreen and graphics filters (cnc-ddraw);
 - a 16:9 side HUD, a draggable minimap, camera zoom and an FPS counter;
 - CD music played from files, so no disc or ISO is needed;
-- Portuguese, English and Korean for menus, interface, maps and NPC dialogue.
+- Portuguese, English and Korean for menus, interface, maps and NPC dialogue;
+- **online Multi Play** through a relay server, with no VPN and no port forwarding
+  (see [Online play](docs/wiki/Online-Play.md)).
 
 > **This repository only contains code and translations.** The ready-made patch
 > is published under **Releases**, and the base game (a faithful copy of the CD
@@ -27,6 +29,10 @@ on modern Windows, with:
 3. Run `Jogar.exe`, pick your language and video options, and click *Jogar* (Play).
 
 Controls and shortcuts are listed in [LEIA-ME.txt](LEIA-ME.txt) (Portuguese).
+
+To play Multi Play over the internet, open the **Online** tab of the launcher. Setup guide:
+[Online play](docs/wiki/Online-Play.md). To run your own relay:
+[Hosting a relay](docs/wiki/Hosting-a-Relay.md).
 
 ## Building from source (for modders)
 
@@ -61,10 +67,17 @@ The build verifies the hash of the CD executable and of the wrapper DLL.
 | `patch_akuma.py` | Adapts the EXE (local DirectDraw, video player, FPS counter) |
 | `Launcher.cs` | C# launcher (.NET Framework 4, built with the `csc` that ships with Windows) |
 | `AkumaHud.c` | x86 DLL for the HUD, minimap and camera, built with `zig cc` |
+| `NetShim.c` | Inside the same DLL: hooks the DirectPlay TCP/IP provider's Winsock calls to log them and to carry the game through a relay |
+| `relay/` | `akuma-relay.c` (the relay server, C, Windows and Linux), `build.ps1`, `PROTOCOL.md` |
+| `relays.txt` | List of relays shown in the launcher's Online tab |
+| `dev-build.ps1` | Fast development build and install (`-WinsockLog`, `-RelayLocal`, `-Kit` for test kits) |
 | `hud_skin.py`, `quest_starts.py` | Generate C headers from the extracted data |
 | `localize.py`, `menu_labels.py`, `localize_dialogues.py` | Languages |
 | `translations.txt`, `dialogues.json` | Translated text (edit these to fix translations) |
 | `docs/widescreen.md` | How the engine was investigated, with the addresses used (Portuguese) |
+| `docs/netcode.md` | The game's DirectPlay message protocol (Portuguese) |
+| `docs/winsock-flow.md` | How the DirectPlay TCP/IP provider uses Winsock: ports, discovery, addresses |
+| `docs/wiki/` | Wiki pages: online play and hosting a relay (copy them to the GitHub wiki) |
 
 ## How to modify the project
 
