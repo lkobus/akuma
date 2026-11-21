@@ -1,0 +1,4 @@
+# Akuma Online relay list. One relay per line: "name region host:port".
+# It appears in the Online tab of the launcher. Lines starting with # are comments.
+brasil     BR  45.71.242.115:47700
+singapore  SG  159.223.59.19:47700

@@ -1,9 +1,11 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
+using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
@@ -59,6 +61,16 @@ internal sealed class Launcher : Form, IMessageFilter
     private readonly TabPage videoTab = new TabPage();
     private readonly TabPage controlsTab = new TabPage();
     private readonly TabPage originalTab = new TabPage();
+    private readonly TabPage onlineTab = new TabPage();
+    private readonly CheckBox online = new CheckBox { AutoSize = true };
+    private readonly ComboBox relay = new ComboBox();
+    private readonly TextBox netName = new TextBox { MaxLength = 32 };
+    private readonly TextBox netPass = new TextBox { MaxLength = 32, UseSystemPasswordChar = true };
+    private readonly TextBox nick = new TextBox { MaxLength = 32 };
+    private readonly Button testRelay = new Button { AutoSize = true };
+    private readonly Label onlineInfo = new Label { AutoSize = true, MaximumSize = new Size(470, 0) };
+    private readonly Label[] onlineLabels = new Label[4];
+    private readonly List<string[]> relays = new List<string[]>();
     private readonly Label originalKeys = new Label { AutoSize = true };
     private readonly Label bindingHint = new Label { AutoSize = true, MaximumSize = new Size(470, 0) };
     private readonly Button resetBindings = new Button { AutoSize = true };
@@ -117,7 +129,8 @@ internal sealed class Launcher : Form, IMessageFilter
         tabs.ImageList.Images.Add(SystemIcons.Application);
         tabs.ImageList.Images.Add(SystemIcons.Shield);
         tabs.ImageList.Images.Add(SystemIcons.Information);
-        tabs.TabPages.AddRange(new[] {videoTab, controlsTab, originalTab});
+        tabs.ImageList.Images.Add(SystemIcons.Question);
+        tabs.TabPages.AddRange(new[] {videoTab, controlsTab, originalTab, onlineTab});
         for (int i = 0; i < tabs.TabCount; ++i) tabs.TabPages[i].ImageIndex = i;
         tabs.SelectedIndexChanged += delegate { CancelCapture(); };
         shell.Controls.Add(tabs, 0, 1);
@@ -134,6 +147,17 @@ internal sealed class Launcher : Form, IMessageFilter
         var layout = PageLayout(videoTab);
         var controls = PageLayout(controlsTab);
         AddWide(PageLayout(originalTab), originalKeys);
+        var onlineLayout = PageLayout(onlineTab);
+        AddWide(onlineLayout, online);
+        relay.DropDownStyle = ComboBoxStyle.DropDown;
+        onlineLabels[0] = AddField(onlineLayout, relay);
+        onlineLabels[1] = AddField(onlineLayout, netName);
+        onlineLabels[2] = AddField(onlineLayout, netPass);
+        onlineLabels[3] = AddField(onlineLayout, nick);
+        AddWide(onlineLayout, testRelay);
+        AddWide(onlineLayout, onlineInfo);
+        testRelay.Click += TestRelay;
+        online.CheckedChanged += delegate { UpdateOnlineEnabled(); };
 
         fieldLabels[0] = AddChoice(layout, "Idioma", language, new object[] { "Português", "English", "한국어" });
         fieldLabels[1] = AddChoice(layout, "Modo", mode, new object[] { "Janela", "Tela cheia sem bordas" });
@@ -265,6 +289,17 @@ internal sealed class Launcher : Form, IMessageFilter
         return caption;
     }
 
+    private static Label AddField(TableLayoutPanel layout, Control field)
+    {
+        int row = layout.RowCount++;
+        layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        var caption = new Label { AutoSize = true, Anchor = AnchorStyles.Left };
+        layout.Controls.Add(caption, 0, row);
+        field.Dock = DockStyle.Fill;
+        layout.Controls.Add(field, 1, row);
+        return caption;
+    }
+
     private static void AddWide(TableLayoutPanel layout, Control control)
     {
         int row = layout.RowCount++;
@@ -300,7 +335,96 @@ internal sealed class Launcher : Form, IMessageFilter
         showFps.Checked = Native.ReadIni(LauncherIni, "video", "show_fps", "1") == "1";
         resolution.Enabled = mode.SelectedIndex == 0;
         intro.Checked = ReadIndex("intro", 2) != 0;
+        LoadRelays();
+        online.Checked = Native.ReadIni(LauncherIni, "online", "enabled", "0") == "1";
+        relay.Text = Native.ReadIni(LauncherIni, "online", "relay", "");
+        netName.Text = Native.ReadIni(LauncherIni, "online", "network", "");
+        netPass.Text = Native.ReadIni(LauncherIni, "online", "password", "");
+        nick.Text = Native.ReadIni(LauncherIni, "online", "nick", "");
+        UpdateOnlineEnabled();
 
+    }
+
+    private static string RelayLabel(string[] entry)
+    {
+        return entry[0] + (entry[1].Length > 0 ? " · " + entry[1] : "") + " · " + entry[2];
+    }
+
+    // relays.txt: "nome regiao host:porta" por linha, # comenta. Fica ao lado do Jogar.exe.
+    private void LoadRelays()
+    {
+        relays.Clear();
+        relay.Items.Clear();
+        string path = Path.Combine(folder, "relays.txt");
+        if (!File.Exists(path)) return;
+        foreach (string raw in File.ReadAllLines(path))
+        {
+            string line = raw.Trim();
+            if (line.Length == 0 || line[0] == '#') continue;
+            string[] part = line.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+            if (part.Length < 2) continue;
+            var entry = part.Length == 2 ? new[] { part[0], "", part[1] } : new[] { part[0], part[1], part[2] };
+            relays.Add(entry);
+            relay.Items.Add(RelayLabel(entry));
+        }
+    }
+
+    // O que foi digitado ou escolhido na lista vira host:porta.
+    private string RelayAddress()
+    {
+        string text = relay.Text.Trim();
+        foreach (string[] entry in relays)
+            if (String.Equals(text, RelayLabel(entry), StringComparison.OrdinalIgnoreCase) ||
+                String.Equals(text, entry[0], StringComparison.OrdinalIgnoreCase)) return entry[2];
+        return text;
+    }
+
+    private static bool ParseAddress(string address, out string host, out int port)
+    {
+        host = address;
+        port = 47700;
+        int colon = address.LastIndexOf(':');
+        if (colon >= 0)
+        {
+            host = address.Substring(0, colon);
+            if (!Int32.TryParse(address.Substring(colon + 1), out port) || port < 1 || port > 65535) return false;
+        }
+        return host.Length > 0 && host.IndexOf(' ') < 0;
+    }
+
+    private void UpdateOnlineEnabled()
+    {
+        relay.Enabled = netName.Enabled = netPass.Enabled = nick.Enabled = testRelay.Enabled = online.Checked;
+    }
+
+    private void TestRelay(object sender, EventArgs args)
+    {
+        string host;
+        int port;
+        if (!ParseAddress(RelayAddress(), out host, out port))
+        {
+            onlineInfo.Text = TextInLanguage("Endereço inválido. Use nome ou IP, e opcionalmente :porta.",
+                "Invalid address. Use a name or IP, optionally with :port.", "잘못된 주소입니다. 이름 또는 IP[:포트]를 입력하세요.");
+            return;
+        }
+        onlineInfo.Text = TextInLanguage("Testando…", "Testing…", "테스트 중…");
+        onlineInfo.Refresh();
+        var watch = Stopwatch.StartNew();
+        try
+        {
+            using (var client = new TcpClient())
+            {
+                IAsyncResult result = client.BeginConnect(host, port, null, null);
+                if (!result.AsyncWaitHandle.WaitOne(4000)) throw new TimeoutException();
+                client.EndConnect(result);
+                onlineInfo.Text = String.Format(TextInLanguage("Relay respondeu em {0} ms.", "Relay answered in {0} ms.", "릴레이 응답 {0} ms."), watch.ElapsedMilliseconds);
+            }
+        }
+        catch (Exception)
+        {
+            onlineInfo.Text = TextInLanguage("Não consegui conectar ao relay (endereço, porta ou firewall).",
+                "Could not reach the relay (address, port or firewall).", "릴레이에 연결할 수 없습니다 (주소, 포트, 방화벽).");
+        }
     }
 
     private int ReadIndex(string key, int count, int fallback = 0)
@@ -327,6 +451,19 @@ internal sealed class Launcher : Form, IMessageFilter
         videoTab.Text = TextInLanguage("Vídeo", "Video", "화면");
         controlsTab.Text = TextInLanguage("Controles", "Controls", "조작");
         originalTab.Text = TextInLanguage("Referência", "Reference", "참고");
+        onlineTab.Text = TextInLanguage("Online", "Online", "온라인");
+        online.Text = TextInLanguage("Jogar online por um relay (Multi Play pela internet)",
+            "Play online through a relay (Multi Play over the internet)", "릴레이로 온라인 플레이 (인터넷 멀티플레이)");
+        onlineLabels[0].Text = TextInLanguage("Relay (nome ou IP:porta)", "Relay (name or IP:port)", "릴레이 (이름 또는 IP:포트)");
+        onlineLabels[1].Text = TextInLanguage("Rede (nome)", "Network (name)", "네트워크 이름");
+        onlineLabels[2].Text = TextInLanguage("Senha da rede", "Network password", "네트워크 비밀번호");
+        onlineLabels[3].Text = TextInLanguage("Apelido", "Nickname", "닉네임");
+        testRelay.Text = TextInLanguage("Testar relay", "Test relay", "릴레이 테스트");
+        if (onlineInfo.Text.Length == 0)
+            onlineInfo.Text = TextInLanguage(
+                "Todos que usarem o mesmo relay, o mesmo nome de rede e a mesma senha entram na mesma LAN virtual. Depois é só usar Multi Play, TCP/IP, deixar o IP vazio e procurar. Quem cria o nome da rede define a senha. A senha ainda trafega sem criptografia.",
+                "Everyone using the same relay, network name and password joins the same virtual LAN. Then use Multi Play, TCP/IP, leave the IP empty and search. Whoever creates the network sets its password. The password is not encrypted yet.",
+                "같은 릴레이, 네트워크 이름, 비밀번호를 쓰면 같은 가상 LAN에 접속합니다. 멀티플레이, TCP/IP에서 IP를 비우고 검색하세요. 비밀번호는 아직 암호화되지 않습니다.");
         string[] actions = new[] {
             TextInLanguage("Selecionar retrato", "Select portrait", "초상화 선택"),
             TextInLanguage("Alternar seleção de todos", "Toggle entire party", "파티 전체 선택 전환"),
@@ -423,12 +560,33 @@ internal sealed class Launcher : Form, IMessageFilter
         Native.WriteIni(LauncherIni, "video", "click_marker", clickMarker.Checked ? "1" : "0");
         Native.WriteIni(LauncherIni, "video", "smooth_camera", smoothCamera.Checked ? "1" : "0");
         Native.WriteIni(LauncherIni, "video", "intro", intro.Checked ? "1" : "0");
+        Native.WriteIni(LauncherIni, "online", "enabled", online.Checked ? "1" : "0");
+        Native.WriteIni(LauncherIni, "online", "relay", relay.Text.Trim());
+        Native.WriteIni(LauncherIni, "online", "network", netName.Text.Trim());
+        Native.WriteIni(LauncherIni, "online", "password", netPass.Text);
+        Native.WriteIni(LauncherIni, "online", "nick", nick.Text.Trim());
     }
 
     private void StartGame(object sender, EventArgs args)
     {
         try
         {
+            string relayAddress = RelayAddress(), relayHost;
+            int relayPort;
+            string network = netName.Text.Trim().Length > 0 ? netName.Text.Trim() : "akuma";
+            if (online.Checked)
+            {
+                bool nameOk = System.Text.RegularExpressions.Regex.IsMatch(network, "^[A-Za-z0-9_. -]{1,32}$");
+                if (!ParseAddress(relayAddress, out relayHost, out relayPort) || !nameOk)
+                {
+                    tabs.SelectedTab = onlineTab;
+                    onlineInfo.Text = TextInLanguage(
+                        "Confira o relay (nome ou IP:porta) e o nome da rede (letras, números, espaço, ponto, hífen e sublinhado).",
+                        "Check the relay (name or IP:port) and the network name (letters, digits, space, dot, hyphen, underscore).",
+                        "릴레이와 네트워크 이름을 확인하세요.");
+                    return;
+                }
+            }
             SaveSettings();
             var start = new ProcessStartInfo(Path.Combine(folder, "AkumaHD.exe"))
             {
@@ -447,6 +605,17 @@ internal sealed class Launcher : Form, IMessageFilter
             start.EnvironmentVariables["AKUMA_CLICK_MARKER"] = clickMarker.Checked ? "1" : "0";
             start.EnvironmentVariables["AKUMA_SMOOTH_CAMERA"] = smoothCamera.Checked ? "1" : "0";
             start.EnvironmentVariables["AKUMA_PIXEL_ZOOM"] = filter.SelectedIndex == 1 ? "1" : "0";
+            if (online.Checked)
+            {
+                start.EnvironmentVariables["AKUMA_RELAY"] = relayAddress;
+                start.EnvironmentVariables["AKUMA_NET"] = network;
+                start.EnvironmentVariables["AKUMA_NETPASS"] = netPass.Text;
+                start.EnvironmentVariables["AKUMA_NICK"] = nick.Text.Trim().Length > 0 ? nick.Text.Trim() : "jogador";
+            }
+            else
+            {
+                start.EnvironmentVariables["AKUMA_RELAY_OFF"] = "1";   // ignora rede.txt
+            }
             game = Process.Start(start);
             play.Enabled = false;
             hasSample = false;
@@ -616,7 +785,7 @@ internal static class Native
 
     internal static string ReadIni(string file, string section, string key, string fallback)
     {
-        var value = new StringBuilder(32);
+        var value = new StringBuilder(260);
         GetPrivateProfileString(section, key, fallback, value, value.Capacity, file);
         return value.ToString();
     }

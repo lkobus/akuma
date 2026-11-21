@@ -260,6 +260,8 @@ static void find_music(void)
     }
 }
 
+void NetShimAttach(void);
+
 BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved)
 {
     (void)instance; (void)reserved;
@@ -269,6 +271,7 @@ BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved)
         find_music();
         HMODULE game = GetModuleHandleA(NULL);
         if (game) hook_imports(game);
+        NetShimAttach();
     }
     return TRUE;
 }
