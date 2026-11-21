@@ -70,6 +70,8 @@ try {
     Copy-Item -LiteralPath $wrapperLicense -Destination (Join-Path $payload 'LICENSE-cnc-ddraw.txt')
     Copy-Item -LiteralPath (Join-Path $wrapperPath 'Shaders') -Destination $payload -Recurse
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'ddraw.ini') -Destination $payload
+    # Fit the multiplayer dialogs to the game window (see dialog_hook in AkumaHud.c).
+    New-Item -ItemType File -Path (Join-Path $payload 'dialogscale.enable') | Out-Null
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'LEIA-ME.txt') -Destination $payload
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'relays.txt') -Destination $payload
 
