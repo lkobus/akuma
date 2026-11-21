@@ -283,6 +283,8 @@ static const Phrase dialog_texts[] = {
     {"Telephone number to call", {L"Número de telefone para ligar", L"상대 전화 번호", L"要撥打的電話號碼"}},
     {"Fail to initialize...", {L"Falha ao inicializar...", L"초기화 실패...", L"初始化失敗..."}},
     {"Check your settings", {L"Verifique suas configurações", L"설정 사항을 확인해 보세요", L"請檢查您的設定"}},
+    {"Fail to initialize...\nCheck your settings", {L"Falha ao inicializar...\nVerifique suas configurações", L"초기화 실패...\n설정 사항을 확인해 보세요", L"初始化失敗...\n請檢查您的設定"}},
+    {"Fail to initialize...\r\nCheck your settings", {L"Falha ao inicializar...\r\nVerifique suas configurações", L"초기화 실패...\r\n설정 사항을 확인해 보세요", L"初始化失敗...\r\n請檢查您的設定"}},
     {"Input New Host Name", {L"Nome da nova sala", L"만들 방의 이름", L"新主機名稱"}},
     {"Max. Number of Players", {L"Máximo de jogadores", L"참여 가능한 최대 사람수", L"最大玩家人數"}},
     {"World", {L"Mundo", L"세계", L"地上世界"}},
@@ -3666,6 +3668,11 @@ static BOOL CALLBACK scale_dialog_child(HWND child, LPARAM param)
     if (old && GetObjectA(old, sizeof(face), &face)) {
         face.lfHeight = (LONG)(face.lfHeight * job->scale);
         face.lfWidth = 0;
+        if (hud_language == CHINESE || hud_language == KOREAN) {
+            // The dialog font is the bitmap "System" font, which has no CJK glyphs (they show as ?).
+            lstrcpyA(face.lfFaceName, hud_language == CHINESE ? "Microsoft JhengHei" : "Malgun Gothic");
+            face.lfCharSet = DEFAULT_CHARSET;
+        }
         HFONT bigger = CreateFontIndirectA(&face);
         if (bigger) SendMessageA(child, WM_SETFONT, (WPARAM)bigger, TRUE);
     }
@@ -3788,10 +3795,45 @@ static BOOL CALLBACK translate_child(HWND window, LPARAM unused)
     return TRUE;
 }
 
+// With a relay configured in the launcher, the TCP/IP provider only makes sense as "relay": every
+// socket of the game is routed to it. Rename the entry and tell players to leave the IP empty.
+static BOOL relay_mode(void)
+{
+    char relay[8] = "", off[2] = "";
+    if (GetEnvironmentVariableA("AKUMA_RELAY_OFF", off, sizeof(off)) == 1 && off[0] == '1') return FALSE;
+    return GetEnvironmentVariableA("AKUMA_RELAY", relay, sizeof(relay)) > 0;
+}
+
+static void relay_dialog(HWND dialog)
+{
+    static const WCHAR *const entry[] = {L"Servidor Relay (Internet)", L"Relay Server (Internet)",
+        L"릴레이 서버 (인터넷)", L"中繼伺服器 (網際網路)"};
+    static const WCHAR *const hint[] = {L"Deixe vazio para procurar salas no relay", L"Leave empty to find rooms on the relay",
+        L"비워 두면 릴레이의 방을 찾습니다", L"留空以搜尋中繼伺服器上的房間"};
+    HWND list = GetDlgItem(dialog, 1011), label = GetDlgItem(dialog, 1016);
+    if (!list || !label || !relay_mode()) return;
+    LRESULT count = SendMessageW(list, LB_GETCOUNT, 0, 0);
+    for (LRESULT i = 0; i < count; ++i) {
+        WCHAR name[128] = L"";
+        if (SendMessageW(list, LB_GETTEXTLEN, (WPARAM)i, 0) >= (LRESULT)COUNT(name)) continue;
+        SendMessageW(list, LB_GETTEXT, (WPARAM)i, (LPARAM)name);
+        if (!wcsstr(name, L"TCP")) continue;
+        LRESULT selected = SendMessageW(list, LB_GETCURSEL, 0, 0);
+        LRESULT data = SendMessageW(list, LB_GETITEMDATA, (WPARAM)i, 0);
+        SendMessageW(list, LB_DELETESTRING, (WPARAM)i, 0);
+        SendMessageW(list, LB_INSERTSTRING, (WPARAM)i, (LPARAM)entry[hud_language]);
+        SendMessageW(list, LB_SETITEMDATA, (WPARAM)i, (LPARAM)data);
+        if (selected != LB_ERR) SendMessageW(list, LB_SETCURSEL, (WPARAM)selected, 0);
+        break;
+    }
+    SetWindowTextW(label, hint[hud_language]);
+}
+
 static void translate_dialog(HWND dialog)
 {
     translate_control(dialog);
     EnumChildWindows(dialog, translate_child, 0);
+    relay_dialog(dialog);
 }
 
 static LRESULT CALLBACK dialog_hook(int code, WPARAM wparam, LPARAM lparam)
