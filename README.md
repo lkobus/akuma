@@ -9,12 +9,21 @@ BIN e gera um ZIP portátil com:
 - HUD lateral em 16:9, minimapa arrastável, zoom de câmera e contador de FPS;
 - português, inglês e coreano para menus, interface, mapas e diálogos de NPCs.
 
-> **Este repositório contém só código e traduções.** Nenhum arquivo do jogo
-> (BIN/CUE, EXE, DLL, imagens, ZIP completo) é distribuído aqui, e você precisa
-> da sua própria cópia do CD. Projeto de fãs, sem vínculo com os detentores
-> dos direitos de Akuma.
+> **O repositório contém só código e traduções.** O patch pronto fica na aba
+> **Releases** e o jogo base (cópia fiel dos arquivos do CD) fica no Discord.
+> Projeto de fãs, sem vínculo com os detentores dos direitos de Akuma.
 
-## Como usar
+## Como jogar (3 passos)
+
+1. Baixe o **jogo base** (`Akuma-Original.zip`) no nosso Discord e extraia.
+   Fica uma pasta `Akuma` com o jogo original, sem instalar nada e sem montar ISO.
+2. Baixe o **`Akuma-Patch.zip`** da [última release](../../releases/latest) e
+   extraia **dentro da pasta `Akuma`**, aceitando substituir os arquivos.
+3. Abra `Jogar.exe`, escolha idioma e vídeo e clique em Jogar.
+
+Os controles estão em [LEIA-ME.txt](LEIA-ME.txt).
+
+## Como compilar do código-fonte (para quem vai modificar)
 
 Requisitos: Windows, Python 3.9+, [Zig 0.14.1](https://ziglang.org/download/)
 e o wrapper [cnc-ddraw v7.1.0.0](https://github.com/FunkyFr3sh/cnc-ddraw/releases/tag/v7.1.0.0)
@@ -25,18 +34,18 @@ python -m pip install -r requirements.txt
 .\build.ps1 -Image 'C:\Midia\AKUMA.bin' -CncDdraw 'C:\Ferramentas\cnc-ddraw'
 ```
 
-A saída é `dist\Akuma-Portatil.zip`. Extraia e abra `Jogar.exe`.
+A saída é `dist\Akuma-Portatil.zip`. Extraia e abra `Jogar.exe`. Esse build lê
+direto do seu BIN/CUE, então não depende do jogo base do Discord.
 Opções úteis: `-Zig` (caminho do `zig.exe`), `-SlayersImg` (pasta `img` do
 Slayers, de onde vem a arte reaproveitada no HUD; padrão `C:\Taewool\Slayers\img`)
 e `-Output`. O build confere o hash do executável do CD e da DLL.
-
-Os controles e atalhos do jogo estão em [LEIA-ME.txt](LEIA-ME.txt).
 
 ## Estrutura
 
 | Arquivo | Função |
 | --- | --- |
 | `build.ps1` | Orquestra todo o build e monta o ZIP |
+| `make_overlay.ps1` | Compara o build com a pasta original e gera o `Akuma-Patch.zip` (só o que mudou) |
 | `extract_cd.py` | Extrai a pasta do jogo da trilha MODE2/2352 do BIN |
 | `patch_akuma.py` | Adapta o EXE (DirectDraw local, player de vídeo, contador de FPS) |
 | `Launcher.cs` | Launcher em C# (.NET Framework 4, compilado com o `csc` do Windows) |
@@ -97,13 +106,15 @@ O CI precisa passar e o dono do projeto precisa aprovar. Detalhes em
 
 ## Releases
 
-Cada release traz o **Kit de Build** (`Akuma-Build-Kit-vX.Y.Z.zip`): código-fonte,
-launcher pré-compilado e `SHA256SUMS.txt`. O jogo completo em ZIP **não** é
-publicado, pois contém arquivos do CD; cada pessoa gera o seu com a própria mídia.
+Cada release traz o **`Akuma-Patch.zip`**: só os arquivos novos ou alterados
+(executável, HUD, launcher, wrapper de vídeo, idiomas e diálogos), cerca de 4 MB.
+Ele é feito para ser extraído sobre a pasta do jogo base. Quem mantém o projeto
+gera o patch com `make_overlay.ps1` (veja [docs/mantenedor.md](docs/mantenedor.md)).
 
 ## Licença
 
 O código e as traduções deste repositório usam a [licença MIT](LICENSE).
-O jogo, o CD e seus arquivos pertencem aos respectivos detentores.
+O jogo e seus arquivos pertencem aos respectivos detentores; o patch os modifica
+para compatibilidade com o Windows atual.
 O ZIP gerado inclui o [cnc-ddraw](https://github.com/FunkyFr3sh/cnc-ddraw)
 (licença própria, copiada junto como `LICENSE-cnc-ddraw.txt`).
