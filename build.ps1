@@ -71,13 +71,14 @@ try {
     Copy-Item -LiteralPath (Join-Path $wrapperPath 'Shaders') -Destination $payload -Recurse
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'ddraw.ini') -Destination $payload
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'LEIA-ME.txt') -Destination $payload
+    Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'relays.txt') -Destination $payload
 
     $hud = Join-Path $stage 'AkumaHud.dll'
     & python (Join-Path $PSScriptRoot 'hud_skin.py') (Join-Path $payload 'Img\Pan01-4.pcx') (Join-Path $stage 'hud_skin.h') $slayersImgPath
     if ($LASTEXITCODE) { throw 'Falha ao preparar as texturas do HUD.' }
     & python (Join-Path $PSScriptRoot 'quest_starts.py') $payload (Join-Path $stage 'quest_starts.h')
     if ($LASTEXITCODE) { throw 'Falha ao indexar os inícios de missão.' }
-    & $hudCompiler cc -target x86-windows-gnu -O2 -s -shared -I $stage -o $hud (Join-Path $PSScriptRoot 'AkumaHud.c') (Join-Path $PSScriptRoot 'CdAudio.c') -luser32 -lgdi32 -lwinmm
+    & $hudCompiler cc -target x86-windows-gnu -O2 -s -shared -I $stage -o $hud (Join-Path $PSScriptRoot 'AkumaHud.c') (Join-Path $PSScriptRoot 'CdAudio.c') (Join-Path $PSScriptRoot 'NetShim.c') -luser32 -lgdi32 -lwinmm -lws2_32
     if ($LASTEXITCODE) { throw 'Falha ao compilar o HUD x86.' }
     Copy-Item -LiteralPath $hud -Destination $payload
 

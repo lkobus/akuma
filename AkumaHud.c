@@ -25,8 +25,19 @@ enum { GAME_WIDTH = 640, HEIGHT = 480, WIDE_WIDTH = 854, CAMPAIGN_SCENE = 13 };
 #define GAME_VIDEO ((GameVideo *)(uintptr_t)0x49B9E0)
 #define GAME_MAP (*(const unsigned char * const volatile *)(uintptr_t)0x4B9EAC)
 #define GAME_VIEW (*(unsigned char * const volatile *)(uintptr_t)0x49B8F8)
-#define GAME_PAUSED (*(volatile const DWORD *)(uintptr_t)0x49B8E0)
+// Opening the chat sets 0x49B8E0 (paused) and 0x49B8DC (chat open) together, but
+// the world keeps running. Only a pause without the chat is a real pause menu.
+#define GAME_CHAT_OPEN (*(volatile const DWORD *)(uintptr_t)0x49B8DC)
+#define GAME_PAUSED ((*(volatile const DWORD *)(uintptr_t)0x49B8E0) && !GAME_CHAT_OPEN)
 #define CAMPAIGN_TICKS (*(const DWORD *)(uintptr_t)0x49B8E8)
+#define NET_MULTI (*(const volatile DWORD *)(uintptr_t)0x49B8CC)
+#define NET_HOST (*(const volatile DWORD *)(uintptr_t)0x4998DC)
+#define NET_LOCAL_ID (*(const volatile DWORD *)(uintptr_t)0x4998D8)
+static void net_log_party(void);
+static void install_dialog_hook(void);
+static void note_estimated_hit(const void *actor);
+static BOOL net_log_enabled(void);
+static void net_log_line(char direction, DWORD from, DWORD to, DWORD flags, const unsigned char *data, DWORD size);
 #define WORLD_CLIP_LEFT (*(LONG *)(uintptr_t)0x48F470)
 #define WORLD_CLIP_TOP (*(LONG *)(uintptr_t)0x48F474)
 #define WORLD_CLIP_RIGHT (*(LONG *)(uintptr_t)0x48F478)
@@ -285,9 +296,22 @@ __declspec(dllexport) BOOL WINAPI HudHoverText(HDC dc, int x, int y, const char 
     return TextOutA(dc, x, y, text, count);
 }
 
-static unsigned party_bit(const unsigned char *actor)
+static BOOL party_member(const unsigned char *actor)
 {
-    if (!actor || !*(const int *)(actor + 0x750) || !*(const int *)(actor + 0x40)) return 0;
+    return actor && *(const int *)(actor + 0x750) && *(const int *)(actor + 0x40);
+}
+
+static unsigned party_bit(const unsigned char * const *actors, unsigned index)
+{
+    const unsigned char *actor = actors[index];
+    if (!party_member(actor)) return 0;
+    if (NET_MULTI) {
+        // Each player controls their own hero and the game draws the local ones in
+        // list order, so a lone visitor hero of any kind sits in the first portrait.
+        unsigned rank = 0;
+        for (unsigned i = 0; i < index; ++i) rank += party_member(actors[i]);
+        return 1u << (rank < 2 ? rank : 2);
+    }
     int kind = *(const int *)(actor + 0x34);
     return kind == 1 ? 1 : kind == 2 ? 2 : 4;
 }
@@ -298,7 +322,7 @@ static unsigned sync_party(const unsigned char *map, unsigned restore)
     unsigned char * const *actors = (unsigned char * const *)(map + 0x14AAC);
     for (unsigned i = 0; i < 20; ++i) {
         unsigned char *actor = actors[i];
-        unsigned bit = party_bit(actor);
+        unsigned bit = party_bit((const unsigned char * const *)actors, i);
         if (!bit) continue;
         int *flag = (int *)(actor + 0x2AC);
         present |= bit;
@@ -353,6 +377,15 @@ __declspec(dllexport) int WINAPI HudDamageMob(const unsigned char *actor, int di
     typedef int (__thiscall *DamageMob)(const unsigned char *, int, int, int);
     int before = *(const int *)(actor + 0x300);
     int result = ((DamageMob)(uintptr_t)0x43E620)(actor, direction, amount, kind);
+    // A visitor only sends the hit to the host (message 0x45 with the damage in
+    // its fifth byte) and leaves the mob's life alone, so show the number it sent.
+    if (NET_MULTI && !NET_HOST) {
+        if (amount > 0) {
+            note_estimated_hit(actor);
+            add_damage(actor, 0x2DC, before, before - amount, (kind & 255) != 0 ? 2 : 0);
+        }
+        return result;
+    }
     add_damage(actor, 0x2DC, before, *(const int *)(actor + 0x300), (kind & 255) != 0 ? 2 : 0);
     return result;
 }
@@ -1151,7 +1184,7 @@ static BOOL quest_flag_on_party(const unsigned char *map, unsigned flag)
     typedef int (__thiscall *HasFlag)(const void *, unsigned);
     const unsigned char * const *actors = (const unsigned char * const *)(map + 0x14AAC);
     for (unsigned i = 0; i < 20; ++i) {
-        if (party_bit(actors[i])
+        if (party_bit(actors, i)
             && ((HasFlag)(uintptr_t)0x44A730)(actors[i] + 0x59C, flag)) return TRUE;
     }
     return FALSE;
@@ -1825,9 +1858,244 @@ static void paint_drop_hint(HDC dc)
     if (old_font) SelectObject(dc, old_font);
 }
 
+static void fill_rect(HDC dc, int left, int top, int right, int bottom, COLORREF color)
+{
+    RECT box = {left, top, right, bottom};
+    SetDCBrushColor(dc, color);
+    FillRect(dc, &box, (HBRUSH)GetStockObject(DC_BRUSH));
+}
+
+static void outlined_text(HDC dc, int x, int y, const WCHAR *text, int count, COLORREF color)
+{
+    SetTextColor(dc, RGB(0, 0, 0));
+    for (int dy = -1; dy <= 1; ++dy)
+        for (int dx = -1; dx <= 1; ++dx)
+            if (dx || dy) ExtTextOutW(dc, x + dx, y + dy, 0, NULL, text, count, NULL);
+    SetTextColor(dc, color);
+    ExtTextOutW(dc, x, y, 0, NULL, text, count, NULL);
+}
+
+// Other players' heroes (a0 in the party list). Their maximum life is not
+// replicated, so the highest value seen for each player stands in for it.
+static int ally_peak(const unsigned char *actor)
+{
+    static struct { DWORD owner; int peak; } peaks[24];
+    int life = *(const int *)(actor + 0x810), top = *(const int *)(actor + 0x7E0);
+    DWORD owner = *(const DWORD *)(actor + 0x754);
+    unsigned slot = 0;
+    while (slot < COUNT(peaks) - 1 && peaks[slot].owner && peaks[slot].owner != owner) ++slot;
+    peaks[slot].owner = owner;
+    if (top > peaks[slot].peak) peaks[slot].peak = top;
+    if (life > peaks[slot].peak) peaks[slot].peak = life;
+    return peaks[slot].peak > 0 ? peaks[slot].peak : 1;
+}
+
+static COLORREF life_color(int life, int peak)
+{
+    int percent = life * 100 / peak;
+    return percent > 50 ? RGB(64, 200, 64) : percent > 25 ? RGB(230, 190, 40) : RGB(220, 50, 40);
+}
+
+static void paint_life_bar(HDC dc, int left, int top, int width, int height, int life, int peak)
+{
+    int fill = (int)((long long)width * (life > 0 ? life : 0) / peak);
+    if (fill > width) fill = width;
+    fill_rect(dc, left - 1, top - 1, left + width + 1, top + height + 1, RGB(0, 0, 0));
+    fill_rect(dc, left, top, left + width, top + height, RGB(70, 24, 24));
+    if (life > 0) fill_rect(dc, left, top, left + (fill > 0 ? fill : 1), top + height, life_color(life, peak));
+}
+
+static HFONT ui_font(int height, int weight)
+{
+    static HFONT fonts[64];
+    static int sizes[64];
+    for (unsigned i = 0; i < COUNT(fonts); ++i) {
+        if (fonts[i] && sizes[i] == height * 1000 + weight) return fonts[i];
+        if (!fonts[i]) {
+            fonts[i] = CreateFontW(-height, 0, 0, 0, weight, FALSE, FALSE, FALSE, DEFAULT_CHARSET,
+                OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, ANTIALIASED_QUALITY, DEFAULT_PITCH, L"Segoe UI");
+            sizes[i] = height * 1000 + weight;
+            return fonts[i];
+        }
+    }
+    return NULL;
+}
+
+static int ansi_to_wide(const char *text, int bytes, WCHAR *out, int capacity)
+{
+    return bytes > 0 ? MultiByteToWideChar(item_code_page, 0, text, bytes, out, capacity) : 0;
+}
+
+static void paint_ally_marks(HDC dc)
+{
+    const unsigned char *map = GAME_MAP;
+    if (!map) return;
+    int camera_x = *(const int *)(map + 0x14) * TILE, camera_y = *(const int *)(map + 0x18) * TILE;
+    int width = presented_world_right - WORLD_TOP, span = displayed_view.columns * TILE;
+    // Everything follows the zoom, down to a small readable minimum.
+    int name_size = width * 12 / span < 10 ? 10 : 12;
+    HGDIOBJ old_font = SelectObject(dc, ui_font(name_size, FW_SEMIBOLD));
+    int old_mode = SetBkMode(dc, TRANSPARENT);
+    const unsigned char * const *actors = (const unsigned char * const *)(map + 0x14AAC);
+    for (unsigned i = 0; i < 20; ++i) {
+        const unsigned char *actor = actors[i];
+        if (!actor || party_member(actor) || !*(const int *)(actor + 0x40)) continue;
+        int life = *(const int *)(actor + 0x810), peak = ally_peak(actor);
+        if (life <= 0) continue;
+        int x = WORLD_TOP + (*(const int *)(actor + 0x0C) - camera_x) * width / span;
+        int y = WORLD_TOP + (*(const int *)(actor + 0x10) - camera_y) * VIEW_HEIGHT / displayed_view.height;
+        int bar_width = max(14, 34 * width / span), bar_top = y - 60 * width / span;
+        int left = x - bar_width / 2;
+        if (left < WORLD_TOP + 2 || left + bar_width > presented_world_right - 9
+            || bar_top < WORLD_TOP + 14 || bar_top > BELT_Y - 8) continue;
+        paint_life_bar(dc, left, bar_top, bar_width, 4, life, peak);
+        WCHAR name[32];
+        int chars = ansi_to_wide((const char *)(actor + 0x740), (int)strnlen((const char *)(actor + 0x740), 15), name, 31);
+        SIZE size;
+        if (chars && GetTextExtentPoint32W(dc, name, chars, &size)) {
+            int text_left = clamp(x - size.cx / 2, WORLD_TOP + 2, presented_world_right - size.cx - 10);
+            outlined_text(dc, text_left, bar_top - size.cy - 1, name, chars, RGB(255, 244, 214));
+        }
+    }
+    SetBkMode(dc, old_mode);
+    if (old_font) SelectObject(dc, old_font);
+}
+
+// Chat lines the game keeps in the chat object: five pointers at +0x34 with their
+// remaining display time at +0x48. The newest is last. Drawn bottom-up with a size
+// that does not depend on the zoom.
+static void paint_chat_lines(HDC dc)
+{
+    const unsigned char *chat = *(const unsigned char * const *)(uintptr_t)0x4998E4;
+    if (!chat) return;
+    HGDIOBJ old_font = SelectObject(dc, ui_font(16, FW_SEMIBOLD));
+    int old_mode = SetBkMode(dc, TRANSPARENT);
+    int bottom = GAME_CHAT_OPEN ? BELT_Y - 52 : BELT_Y - 12;
+    for (int k = 4; k >= 0; --k) {
+        const char *line = *(const char * const *)(chat + 0x34 + 4 * k);
+        if (!line || !*(const int *)(chat + 0x48 + 4 * k) || IsBadReadPtr(line, 2)) continue;
+        WCHAR text[80];
+        int chars = ansi_to_wide(line, (int)strnlen(line, 49), text, 79);
+        SIZE size;
+        if (!chars || !GetTextExtentPoint32W(dc, text, chars, &size)) continue;
+        bottom -= size.cy + 2;
+        if (bottom < WORLD_TOP + 24) break;
+        outlined_text(dc, WORLD_TOP + 12, bottom, text, chars, RGB(236, 236, 236));
+    }
+    SetBkMode(dc, old_mode);
+    if (old_font) SelectObject(dc, old_font);
+}
+
+// The native chat input is parked out of sight, so show what is being typed.
+static void paint_chat_input(HDC dc)
+{
+    const unsigned char *chat = *(const unsigned char * const *)(uintptr_t)0x4998E4;
+    HWND edit = chat ? *(HWND const *)(chat + 0x28) : NULL;
+    if (!edit || !IsWindow(edit)) return;
+    char typed[160] = "";
+    GetWindowTextA(edit, typed, sizeof(typed));
+    WCHAR text[200];
+    int chars = ansi_to_wide(typed, (int)strlen(typed), text, 170);
+    if (((GetTickCount() / 500) & 1) && chars < 170) text[chars++] = L'_';
+    HGDIOBJ old_font = SelectObject(dc, ui_font(17, FW_NORMAL));
+    int world = presented_world_right - WORLD_TOP;
+    int box_width = min(560, world - 40);
+    RECT box = {WORLD_TOP + (world - box_width) / 2, BELT_Y - 44, 0, BELT_Y - 14};
+    box.right = box.left + box_width;
+    fill_rect(dc, box.left - 2, box.top - 2, box.right + 2, box.bottom + 2, RGB(200, 170, 90));
+    fill_rect(dc, box.left, box.top, box.right, box.bottom, RGB(24, 20, 18));
+    SetBkMode(dc, TRANSPARENT);
+    SetTextColor(dc, RGB(255, 244, 214));
+    SIZE size;
+    int first = 0;
+    while (first < chars && GetTextExtentPoint32W(dc, text + first, chars - first, &size)
+        && size.cx > box_width - 16) ++first;
+    ExtTextOutW(dc, box.left + 8, box.top + 4, ETO_CLIPPED, &box, text + first, chars - first, NULL);
+    if (old_font) SelectObject(dc, old_font);
+}
+
+// Same look as the dialogue box: a thin steel frame around a darkened, see-through
+// background (the darkening is done on the pixels in paint_sidebar).
+static RECT party_frame(void)
+{
+    RECT frame = {hud[2].x - 3, hud[2].y - 4, hud[3].x + hud[3].width + 3, hud[3].y + hud[3].height + 3};
+    return frame;
+}
+
+// Seven layers, outside in, sampled from the NPC dialogue box: outer steel line, a
+// blue-grey step, a dark navy band, a step back up and the inner steel line.
+static void paint_steel_frame(HDC dc, const RECT *r)
+{
+    static const COLORREF layers[7] = {
+        RGB(58, 62, 74), RGB(150, 156, 168), RGB(78, 94, 122), RGB(26, 40, 66),
+        RGB(14, 20, 34), RGB(56, 74, 112), RGB(100, 112, 146),
+    };
+    for (int i = 0; i < 7; ++i) {
+        // One pixel wide ring per layer, so the darkened interior stays visible.
+        fill_rect(dc, r->left + i, r->top + i, r->right - i, r->top + i + 1, layers[i]);
+        fill_rect(dc, r->left + i, r->bottom - i - 1, r->right - i, r->bottom - i, layers[i]);
+        fill_rect(dc, r->left + i, r->top + i, r->left + i + 1, r->bottom - i, layers[i]);
+        fill_rect(dc, r->right - i - 1, r->top + i, r->right - i, r->bottom - i, layers[i]);
+    }
+}
+
+// Replaces the two native name bars under the portrait: the other players, with
+// their life, inside a frame that matches the wooden sidebar. Up to seven rows.
+static void paint_party_panel(HDC dc)
+{
+    static const WCHAR *const title[] = {L"Jogadores", L"Players", L"플레이어"};
+    const unsigned char *map = GAME_MAP;
+    if (!map) return;
+    RECT frame = party_frame();
+    paint_steel_frame(dc, &frame);
+    HGDIOBJ old_font = SelectObject(dc, ui_font(12, FW_SEMIBOLD));
+    int old_mode = SetBkMode(dc, TRANSPARENT);
+    SetTextColor(dc, RGB(226, 226, 226));
+    const WCHAR *label = title[hud_language < 3 ? hud_language : 1];
+    ExtTextOutW(dc, frame.left + 12, frame.top + 9, 0, NULL, label, lstrlenW(label), NULL);
+    fill_rect(dc, frame.left + 10, frame.top + 25, frame.right - 10, frame.top + 26, RGB(78, 94, 122));
+    SelectObject(dc, ui_font(11, FW_SEMIBOLD));
+    int row = 0, y = frame.top + 31;
+    const unsigned char * const *actors = (const unsigned char * const *)(map + 0x14AAC);
+    for (unsigned i = 0; i < 20 && row < 7; ++i) {
+        const unsigned char *actor = actors[i];
+        if (!actor || party_member(actor) || !*(const int *)(actor + 0x40)) continue;
+        int life = *(const int *)(actor + 0x810), peak = ally_peak(actor);
+        WCHAR name[32];
+        int chars = ansi_to_wide((const char *)(actor + 0x740), (int)strnlen((const char *)(actor + 0x740), 15), name, 31);
+        SetTextColor(dc, life > 0 ? RGB(236, 236, 236) : RGB(140, 140, 146));
+        RECT clip = {frame.left + 12, y, frame.right - 10, y + 14};
+        if (chars) ExtTextOutW(dc, clip.left, y, ETO_CLIPPED, &clip, name, chars, NULL);
+        paint_life_bar(dc, frame.left + 12, y + 15, frame.right - frame.left - 26, 3, life, peak);
+        y += 21;
+        ++row;
+    }
+    SetBkMode(dc, old_mode);
+    if (old_font) SelectObject(dc, old_font);
+}
+
+static void paint_netplay_overlays(IDirectDrawSurface3 *target)
+{
+    if (!NET_MULTI || GAME_SCENE != CAMPAIGN_SCENE || !presented_hud) return;
+    BOOL world = presented_wide_world && !presented_quest && !presented_dialogue && !presented_menu
+        && (world_view_active() || GAME_CHAT_OPEN);
+    BOOL side = sidebar_ready;
+    if (!world && !side) return;
+    HDC dc;
+    if (FAILED(IDirectDrawSurface3_GetDC(target, &dc))) return;
+    if (side) paint_party_panel(dc);
+    if (world) {
+        paint_ally_marks(dc);
+        paint_chat_lines(dc);
+        if (GAME_CHAT_OPEN) paint_chat_input(dc);
+    }
+    IDirectDrawSurface3_ReleaseDC(target, dc);
+}
+
 static void paint_text_overlays(IDirectDrawSurface3 *target)
 {
     if (presented_pause) return;
+    paint_netplay_overlays(target);
     if (presented_menu && !presented_world_map && pointer_x >= 0 && pointer_x < SIDE_X
         && pointer_y >= 0 && pointer_y < BELT_Y && hovered_orb() < 0) {
         MapRect sheet = {campaign_menu.x, campaign_menu.y, campaign_menu.width, campaign_menu.height};
@@ -1980,6 +2248,20 @@ static void draw_pointer(const DDSURFACEDESC *dst)
         for (int x = 0; x < SPRITE_SIZE && pointer_x + x < WIDE_WIDTH; ++x)
             if (cursor_sprite[y][x] != SPRITE_TRANSPARENT) line[x] = cursor_sprite[y][x];
     }
+}
+
+static BOOL supported(const DDSURFACEDESC *pixels, DWORD width);
+
+// The text overlays are drawn through GDI after the pixel pass, so the pointer
+// is drawn once more over them and always stays on top.
+static void redraw_pointer(IDirectDrawSurface3 *target)
+{
+    if (!presented_hud || !cursor_ready) return;
+    DDSURFACEDESC dst = {0};
+    dst.dwSize = sizeof(dst);
+    if (FAILED(IDirectDrawSurface3_Lock(target, NULL, &dst, DDLOCK_WAIT, NULL))) return;
+    if (supported(&dst, WIDE_WIDTH)) draw_pointer(&dst);
+    IDirectDrawSurface3_Unlock(target, NULL);
 }
 
 static void draw_selection(const DDSURFACEDESC *dst)
@@ -2221,6 +2503,13 @@ static void paint_world_smooth(const DDSURFACEDESC *src, const DDSURFACEDESC *ds
 
 static void paint_sidebar(const DDSURFACEDESC *dst)
 {
+    if (NET_MULTI) {
+        RECT area = party_frame();
+        for (int y = area.top + 3; y < area.bottom - 3; ++y) {
+            uint16_t *to = (uint16_t *)row(dst->lpSurface, dst->lPitch, y);
+            for (int x = area.left + 3; x < area.right - 3; ++x) to[x] = dim_pixel(dim_pixel(to[x]));
+        }
+    }
     for (unsigned i = 0; i < NAV_START; ++i) {
         const Panel *p = &hud[i];
         for (int y = 0; y < p->height; ++y) {
@@ -2230,6 +2519,7 @@ static void paint_sidebar(const DDSURFACEDESC *dst)
                 memcpy(to, from, p->width * sizeof(*to));
                 continue;
             }
+            if (NET_MULTI && i >= 2) continue;
             const uint16_t *background = portrait_background[p->source_y + y - hud[1].source_y];
             for (int x = 0; x < p->width; ++x)
                 if (from[x] != background[x]) to[x] = from[x];
@@ -2394,6 +2684,7 @@ static void paint(const DDSURFACEDESC *src, const DDSURFACEDESC *dst, BOOL later
 
 __declspec(dllexport) HRESULT WINAPI HudMode(GameVideo *video, DWORD width, DWORD height, DWORD bits)
 {
+    install_dialog_hook();
     char enabled[2] = "";
     char camera_keys[2] = "";
     char configured[96] = "", exclusive[2] = "", pixels[2] = "", language[3] = "", marker[2] = "";
@@ -2526,9 +2817,102 @@ static BOOL click_toolbar(unsigned index)
         p->source_x + p->width / 2, p->source_y + p->height / 2) != 0;
 }
 
+// The chat input is a native EDIT child that keeps keyboard focus. It is drawn at
+// fixed pixels over the scaled output and blinks in the wrong place, so park it
+// out of sight; paint_chat_input shows the typed text instead.
+static void place_chat_edit(void)
+{
+    static HWND parked;
+    if (!GAME_CHAT_OPEN) {
+        parked = NULL;
+        return;
+    }
+    const unsigned char *chat = *(const unsigned char * const *)(uintptr_t)0x4998E4;
+    HWND edit = chat ? *(HWND const *)(chat + 0x28) : NULL;
+    if (!edit || edit == parked || !IsWindow(edit)) return;
+    SetWindowPos(edit, NULL, -4000, -4000, 520, 24, SWP_NOACTIVATE | SWP_NOZORDER);
+    parked = edit;
+}
+
+// Native chat lines are drawn in a corner with a small font and shrink away when the
+// camera zooms out. In multiplayer the HUD draws them (paint_chat_lines) instead.
+__declspec(dllexport) void WINAPI HudChatLines(void *chat)
+{
+    typedef void (__thiscall *NativeChat)(void *);
+    if (NET_MULTI && wide_mode && show_hud) return;
+    ((NativeChat)(uintptr_t)0x423940)(chat);
+}
+
+// Life changes that the game does not report through the damage hooks: another
+// player's hero, and (on a visitor) mobs hurt by the host.
+static struct { const void *actor; DWORD tick; } estimated_hits[16];
+static unsigned next_estimated_hit;
+
+static void note_estimated_hit(const void *actor)
+{
+    estimated_hits[next_estimated_hit].actor = actor;
+    estimated_hits[next_estimated_hit].tick = GetTickCount();
+    next_estimated_hit = (next_estimated_hit + 1) % COUNT(estimated_hits);
+}
+
+static BOOL recent_estimated_hit(const void *actor)
+{
+    DWORD now = GetTickCount();
+    for (unsigned i = 0; i < COUNT(estimated_hits); ++i)
+        if (estimated_hits[i].actor == actor && now - estimated_hits[i].tick < 1200) return TRUE;
+    return FALSE;
+}
+
+static void track_netplay_damage(void)
+{
+    static const unsigned char *tracked_map;
+    static int mob_life[128];
+    static struct { DWORD owner; int life; } hero_life[24];
+    const unsigned char *map = GAME_MAP;
+    if (!NET_MULTI || !map || GAME_SCENE != CAMPAIGN_SCENE) {
+        tracked_map = NULL;
+        return;
+    }
+    if (map != tracked_map) {
+        tracked_map = map;
+        memset(mob_life, 0, sizeof(mob_life));
+        memset(hero_life, 0, sizeof(hero_life));
+    }
+    const unsigned char * const *actors = (const unsigned char * const *)(map + 0x14AAC);
+    for (unsigned i = 0; i < 20; ++i) {
+        const unsigned char *actor = actors[i];
+        if (!actor || party_member(actor) || !*(const int *)(actor + 0x40)) continue;
+        int life = *(const int *)(actor + 0x810);
+        DWORD owner = *(const DWORD *)(actor + 0x754);
+        unsigned slot = 0;
+        while (slot < COUNT(hero_life) - 1 && hero_life[slot].owner && hero_life[slot].owner != owner) ++slot;
+        hero_life[slot].owner = owner;
+        if (hero_life[slot].life > 0 && life < hero_life[slot].life)
+            add_damage(actor, 0x790, hero_life[slot].life, life, 1);
+        hero_life[slot].life = life;
+    }
+    if (NET_HOST) return;
+    const unsigned char * const *mobs = (const unsigned char * const *)(map + 0x14AFC + 4);
+    for (unsigned id = 0; id < COUNT(mob_life); ++id) {
+        const unsigned char *mob = mobs[id];
+        if (!mob || IsBadReadPtr(mob, 0x304)) {
+            mob_life[id] = 0;
+            continue;
+        }
+        int life = *(const int *)(mob + 0x300);
+        if (life < 0 || life > 200000) continue;
+        if (mob_life[id] > 0 && life < mob_life[id] && !recent_estimated_hit(mob))
+            add_damage(mob, 0x2DC, mob_life[id], life, 0);
+        mob_life[id] = life;
+    }
+}
+
 __declspec(dllexport) void WINAPI HudFlush(void)
 {
+    net_log_party();
     if (!wide_mode || !output_surface || !GAME_VIDEO->primary) return;
+    place_chat_edit();
+    track_netplay_damage();
     DWORD now = GetTickCount();
     DWORD frame = FRAME_COUNT;
     DWORD active = GAME_SCENE;
@@ -2598,6 +2982,7 @@ __declspec(dllexport) void WINAPI HudFlush(void)
     IDirectDrawSurface3_Unlock(input, NULL);
     if (painted) {
         paint_text_overlays(target);
+        redraw_pointer(target);
         RECT full = {0, 0, WIDE_WIDTH, HEIGHT};
         if (target != output_surface && FAILED(IDirectDrawSurface3_Blt(output_surface, &full,
             target, &full, DDBLT_WAIT, NULL))) return;
@@ -2752,8 +3137,27 @@ static void focus_party(HWND window, unsigned slot)
     GAME_WNDPROC(window, WM_RBUTTONUP, 0, position);
 }
 
+// Closing the window ends the process without the DirectPlay cleanup the game does
+// when it leaves the session through its menu, so the other players keep a ghost
+// of this one until the connection times out. Run the same steps first (all three
+// are safe to repeat: they test the interface pointer).
+static void leave_net_session(void)
+{
+    typedef void (__thiscall *Destroy)(void *, DWORD);
+    typedef void (__thiscall *Close)(void *);
+    static BOOL left;
+    if (left || !NET_MULTI) return;
+    left = TRUE;
+    if (net_log_enabled()) net_log_line('L', 0, 0, 0, NULL, 0);
+    void *session = (void *)(uintptr_t)0x49B9A8;
+    ((Destroy)(uintptr_t)0x401FC0)(session, NET_LOCAL_ID);
+    ((Close)(uintptr_t)0x401B10)(session);
+    ((Close)(uintptr_t)0x401B20)(session);
+}
+
 __declspec(dllexport) LRESULT CALLBACK HudWindow(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
 {
+    if (message == WM_CLOSE || message == WM_DESTROY) leave_net_session();
     BOOL key_down = message == WM_KEYDOWN || message == WM_SYSKEYDOWN;
     BOOL key_up = message == WM_KEYUP || message == WM_SYSKEYUP;
     if (key_down || key_up) {
@@ -2987,3 +3391,368 @@ __declspec(dllexport) LRESULT CALLBACK HudWindow(HWND window, UINT message, WPAR
 
 
 
+
+// Opt-in network trace. Create a file named netlog.enable beside the game (or
+// set AKUMA_NETLOG=1) and every DirectPlay Send/Receive is appended to
+// netlog.txt as: ms dir host me from to flags size hex. Nothing is written
+// otherwise, so it costs one flag test per message.
+enum { NET_LOG_BYTES = 4096 };
+static HANDLE net_log = INVALID_HANDLE_VALUE;
+static int net_log_state = -1;
+static DWORD net_log_start;
+
+static BOOL net_log_enabled(void)
+{
+    if (net_log_state < 0) {
+        char flag[2] = "";
+        BOOL on = GetEnvironmentVariableA("AKUMA_NETLOG", flag, sizeof(flag)) == 1 && flag[0] == '1';
+        if (!on) on = GetFileAttributesA("netlog.enable") != INVALID_FILE_ATTRIBUTES;
+        if (on) {
+            net_log = CreateFileA("netlog.txt", FILE_APPEND_DATA, FILE_SHARE_READ, NULL, OPEN_ALWAYS,
+                FILE_ATTRIBUTE_NORMAL, NULL);
+            if (net_log == INVALID_HANDLE_VALUE) {
+                // Another copy of the game already owns netlog.txt.
+                char other[40];
+                wsprintfA(other, "netlog-%lu.txt", GetCurrentProcessId());
+                net_log = CreateFileA(other, FILE_APPEND_DATA, FILE_SHARE_READ, NULL, OPEN_ALWAYS,
+                    FILE_ATTRIBUTE_NORMAL, NULL);
+            }
+            on = net_log != INVALID_HANDLE_VALUE;
+            net_log_start = GetTickCount();
+        }
+        net_log_state = on;
+    }
+    return net_log_state == 1;
+}
+
+static void net_log_line(char direction, DWORD from, DWORD to, DWORD flags, const unsigned char *data, DWORD size)
+{
+    static const char digits[] = "0123456789abcdef";
+    char line[96 + NET_LOG_BYTES * 2];
+    int length = wsprintfA(line, "%lu %c %lu %lu %lu %lu %lu %lu ", GetTickCount() - net_log_start, direction,
+        NET_HOST, NET_LOCAL_ID, from, to, flags, size);
+    DWORD shown = data ? (size < NET_LOG_BYTES ? size : NET_LOG_BYTES) : 0;
+    for (DWORD i = 0; i < shown; ++i) {
+        line[length++] = digits[data[i] >> 4];
+        line[length++] = digits[data[i] & 15];
+    }
+    line[length++] = '\n';
+    DWORD written;
+    WriteFile(net_log, line, (DWORD)length, &written, NULL);
+}
+
+__declspec(dllexport) void WINAPI HudNetSend(DWORD from, DWORD to, DWORD flags, const void *data, DWORD size)
+{
+    if (net_log_enabled()) net_log_line('S', from, to, flags, data, size);
+}
+
+__declspec(dllexport) void WINAPI HudNetRecv(DWORD from, DWORD to, const void *data, DWORD size)
+{
+    if (net_log_enabled()) net_log_line('R', from, to, 0, data, size);
+}
+
+// Every two seconds, with the same flag, dump what the HUD sees of the party
+// and of the name labels, so multiplayer HUD problems can be read from the log:
+//   <ms> P scene multi host me map wide hud
+//        actors  [slot k<hero kind> a<+0x750> l<+0x40> o<owner id> hp/max s<selected> @x,y]
+//        hints   "text"@x,y
+static void net_log_party(void)
+{
+    if (!net_log_enabled()) return;
+    DWORD now = GetTickCount();
+    static DWORD last;
+    if (last && now - last < 2000) return;
+    last = now;
+    const unsigned char *map = GAME_MAP;
+    char line[3072];
+    int length = wsprintfA(line, "%lu P scene=%lu multi=%lu host=%lu me=%lu map=%lx wide=%d hud=%d zoom=%u chat=%lu pause=%lu held=%d menu=%d",
+        now - net_log_start, GAME_SCENE, NET_MULTI, NET_HOST, NET_LOCAL_ID, (unsigned long)(uintptr_t)map,
+        wide_mode, show_hud, zoom_level, GAME_CHAT_OPEN, *(const DWORD *)(uintptr_t)0x49B8E0,
+        loot_held(), presented_menu);
+    if (map) {
+        // map+0x14AAC holds up to 20 heroes: the local ones (a1) and, in multiplayer, the
+        // other players' (a0). The HUD party code only accepts a1.
+        const unsigned char * const *actors = (const unsigned char * const *)(map + 0x14AAC);
+        for (unsigned i = 0; i < 20 && length < 2000; ++i) {
+            const unsigned char *actor = actors[i];
+            if (!actor) continue;
+            char name[17] = "";
+            for (int c = 0; c < 16; ++c) {
+                unsigned char ch = actor[0x740 + c];
+                if (!ch) break;
+                name[c] = ch < 32 || ch == '"' ? '?' : (char)ch;
+            }
+            length += wsprintfA(line + length, " [%u \"%s\" k%d a%d l%d o%lu hp%d/%d s%d @%d,%d v%lx]", i, name,
+                *(const int *)(actor + 0x34), *(const int *)(actor + 0x750), *(const int *)(actor + 0x40),
+                *(const unsigned long *)(actor + 0x754), *(const int *)(actor + 0x810),
+                *(const int *)(actor + 0x7E0), *(const int *)(actor + 0x2AC),
+                *(const int *)(actor + 0x0C) >> 5, *(const int *)(actor + 0x10) >> 5,
+                *(const unsigned long *)actor);
+        }
+    }
+    for (unsigned i = 0; i < world_hint_count && length < 2900; ++i) {
+        const NativeHint *hint = &world_hint[i];
+        length += wsprintfA(line + length, " \"");
+        for (int c = 0; c < hint->count && c < 40 && length < 2950; ++c) {
+            unsigned char ch = (unsigned char)hint->text[c];
+            line[length++] = ch < 32 || ch == '"' ? '?' : (char)ch;
+        }
+        length += wsprintfA(line + length, "\"@%d,%d", hint->x, hint->y);
+    }
+    if (notice_hint.count)
+        length += wsprintfA(line + length, " notice=\"%.40s\"@%d,%d", notice_hint.text, notice_hint.x, notice_hint.y);
+    if (GAME_CHAT_OPEN) {
+        const unsigned char *chat = *(const unsigned char * const *)(uintptr_t)0x4998E4;
+        HWND edit = chat ? *(HWND const *)(chat + 0x28) : NULL;
+        HWND parent = *(HWND const *)(uintptr_t)0x49B8A4;
+        RECT box = {0}, client = {0};
+        if (edit && IsWindow(edit)) GetWindowRect(edit, &box);
+        if (parent) GetClientRect(parent, &client);
+        length += wsprintfA(line + length, " edit=%lx vis=%d rect=%ld,%ld,%ld,%ld client=%ldx%ld",
+            (unsigned long)(uintptr_t)edit, edit ? IsWindowVisible(edit) : 0, box.left, box.top, box.right,
+            box.bottom, client.right, client.bottom);
+    }
+    line[length++] = '\n';
+    DWORD written;
+    WriteFile(net_log, line, (DWORD)length, &written, NULL);
+}
+
+// The multiplayer screens (character, host and connection) are native dialogs laid
+// out for 640x480 that the game places at its original window rectangle. Centre
+// them in the game window and, with dialogscale.enable (or AKUMA_DIALOG_SCALE=1),
+// scale the dialog, its controls and their fonts to the window. With the netlog
+// flag on, each dialog and its controls are recorded ("D" lines).
+static BOOL dialog_scaling(void)
+{
+    static int state = -1;
+    if (state < 0) {
+        char flag[2] = "";
+        state = (GetEnvironmentVariableA("AKUMA_DIALOG_SCALE", flag, sizeof(flag)) == 1 && flag[0] == '1')
+            || GetFileAttributesA("dialogscale.enable") != INVALID_FILE_ATTRIBUTES;
+    }
+    return state == 1;
+}
+
+static void net_log_text(const char *text)
+{
+    if (!net_log_enabled()) return;
+    char line[1024];
+    int length = wsprintfA(line, "%lu D %.900s\n", GetTickCount() - net_log_start, text);
+    DWORD written;
+    WriteFile(net_log, line, (DWORD)length, &written, NULL);
+}
+
+static struct { HWND dialog; double scale; int offset_x, offset_y; } dialog_layout;
+
+typedef struct { HWND dialog; double scale; int offset_x, offset_y, count; char text[700]; } DialogJob;
+
+static BOOL CALLBACK scale_dialog_child(HWND child, LPARAM param)
+{
+    DialogJob *job = (DialogJob *)param;
+    if (GetParent(child) != job->dialog) return TRUE;
+    RECT box;
+    char name[24] = "";
+    GetWindowRect(child, &box);
+    MapWindowPoints(NULL, job->dialog, (POINT *)&box, 2);
+    GetClassNameA(child, name, sizeof(name));
+    int used = lstrlenA(job->text);
+    if (used < (int)sizeof(job->text) - 80)
+        wsprintfA(job->text + used, " [%d %s %d,%d,%d,%d]", GetDlgCtrlID(child), name,
+            box.left, box.top, box.right - box.left, box.bottom - box.top);
+    ++job->count;
+    if (job->scale <= 1.0) return TRUE;
+    HFONT old = (HFONT)SendMessageA(child, WM_GETFONT, 0, 0);
+    LOGFONTA face;
+    if (old && GetObjectA(old, sizeof(face), &face)) {
+        face.lfHeight = (LONG)(face.lfHeight * job->scale);
+        face.lfWidth = 0;
+        HFONT bigger = CreateFontIndirectA(&face);
+        if (bigger) SendMessageA(child, WM_SETFONT, (WPARAM)bigger, TRUE);
+    }
+    MoveWindow(child, job->offset_x + (int)(box.left * job->scale), job->offset_y + (int)(box.top * job->scale),
+        (int)((box.right - box.left) * job->scale), (int)((box.bottom - box.top) * job->scale), TRUE);
+    return TRUE;
+}
+
+typedef struct { DWORD pid; HWND found; long area; } WindowSearch;
+
+static BOOL CALLBACK find_game_window(HWND window, LPARAM param)
+{
+    WindowSearch *search = (WindowSearch *)param;
+    DWORD pid = 0;
+    char name[32] = "";
+    RECT client;
+    GetWindowThreadProcessId(window, &pid);
+    if (pid != search->pid || !IsWindowVisible(window)) return TRUE;
+    GetClassNameA(window, name, sizeof(name));
+    if (!lstrcmpA(name, "#32770") || !GetClientRect(window, &client)) return TRUE;
+    long area = client.right * client.bottom;
+    if (area > search->area) {
+        search->area = area;
+        search->found = window;
+    }
+    return TRUE;
+}
+
+// cnc-ddraw makes the game believe its window is the logical size (854x480): the
+// usual GetClientRect/GetWindowRect answer for that window with it. Ask for the real
+// client area another way: GetWindowInfo first, then the true frame from the window
+// manager together with the width chosen in the launcher (ddraw.ini).
+typedef HRESULT (WINAPI *FrameBounds)(HWND, DWORD, void *, DWORD);
+
+static BOOL game_client_rect(RECT *out, char *how, size_t how_size)
+{
+    WindowSearch search = {GetCurrentProcessId(), NULL, 0};
+    EnumWindows(find_game_window, (LPARAM)&search);
+    if (!search.found) return FALSE;
+    RECT told = {0};
+    GetClientRect(search.found, &told);
+    WINDOWINFO info = {sizeof(info)};
+    if (GetWindowInfo(search.found, &info)) {
+        int width = info.rcClient.right - info.rcClient.left, height = info.rcClient.bottom - info.rcClient.top;
+        if (width > 0 && height > 0 && (width != told.right || height != told.bottom)) {
+            *out = info.rcClient;
+            wsprintfA(how, "info");
+            return TRUE;
+        }
+    }
+    RECT frame = {0};
+    HMODULE dwm = LoadLibraryA("dwmapi.dll");
+    FrameBounds bounds = dwm ? (FrameBounds)(void *)GetProcAddress(dwm, "DwmGetWindowAttribute") : NULL;
+    if (!bounds || FAILED(bounds(search.found, 9, &frame, sizeof(frame)))) return FALSE;
+    char ini[MAX_PATH] = "";
+    if (!GetEnvironmentVariableA("CNC_DDRAW_CONFIG_FILE", ini, sizeof(ini))) lstrcpyA(ini, ".\\ddraw.ini");
+    int configured_width = (int)GetPrivateProfileIntA("ddraw", "width", 0, ini);
+    int configured_height = (int)GetPrivateProfileIntA("ddraw", "height", 0, ini);
+    int frame_width = frame.right - frame.left, frame_height = frame.bottom - frame.top;
+    int width = configured_width > 0 && configured_width <= frame_width ? configured_width : frame_width;
+    int height = configured_height > 0 && configured_height <= frame_height ? configured_height : frame_height;
+    int side = (frame_width - width) / 2;
+    out->left = frame.left + side;
+    out->right = out->left + width;
+    out->bottom = frame.bottom - side;
+    out->top = out->bottom - height;
+    wsprintfA(how, "dwm ini=%dx%d frame=%ld,%ld,%ld,%ld", configured_width, configured_height,
+        frame.left, frame.top, frame.right, frame.bottom);
+    return TRUE;
+}
+
+static void adapt_dialog(HWND dialog)
+{
+    char name[32] = "";
+    GetClassNameA(dialog, name, sizeof(name));
+    RECT box;
+    if (lstrcmpA(name, "#32770") || !GetWindowRect(dialog, &box)) return;
+    // The game sizes these dialogs to a stored rectangle (the whole screen when it is
+    // maximised), which also covers the title bar. Fit the dialog to the game window's
+    // client area, and lay its controls out in a 640x480 box inside it.
+    RECT view = box;
+    char how[160] = "none";
+    game_client_rect(&view, how, sizeof(how));
+    int width = view.right - view.left, height = view.bottom - view.top;
+    if (width <= 0 || height <= 0) return;
+    SetWindowPos(dialog, NULL, view.left, view.top, width, height, SWP_NOZORDER | SWP_NOACTIVATE);
+    double scale = dialog_scaling() ? min(width / 640.0, height / 480.0) : 1.0;
+    if (scale < 1.05) scale = 1.0;
+    int offset_x = (int)((width - 640 * scale) / 2), offset_y = (int)((height - 480 * scale) / 2);
+    DialogJob job = {dialog, scale, offset_x, offset_y, 0, ""};
+    EnumChildWindows(dialog, scale_dialog_child, (LPARAM)&job);
+    dialog_layout.dialog = dialog;
+    dialog_layout.scale = scale;
+    dialog_layout.offset_x = offset_x;
+    dialog_layout.offset_y = offset_y;
+    if (net_log_enabled()) {
+        char text[1000];
+        wsprintfA(text, "dialog=%lx was=%ld,%ld,%ld,%ld view=%ld,%ld,%ld,%ld via=%s scale=%d%% children=%d%s",
+            (unsigned long)(uintptr_t)dialog, box.left, box.top, box.right, box.bottom,
+            view.left, view.top, view.right, view.bottom, how, (int)(scale * 100), job.count, job.text);
+        net_log_text(text);
+    }
+}
+
+static LRESULT CALLBACK dialog_hook(int code, WPARAM wparam, LPARAM lparam)
+{
+    if (code == HC_ACTION && ((const CWPRETSTRUCT *)lparam)->message == WM_INITDIALOG)
+        adapt_dialog(((const CWPRETSTRUCT *)lparam)->hwnd);
+    return CallNextHookEx(NULL, code, wparam, lparam);
+}
+
+static void install_dialog_hook(void)
+{
+    static HHOOK hook;
+    if (!hook) hook = SetWindowsHookExA(WH_CALLWNDPROCRET, dialog_hook, NULL, GetCurrentThreadId());
+}
+
+// Optional ready-made backgrounds: dialogbg\<width>x<height>.bmp, one per window size
+// (for instance 1600x900.bmp). The game's own 640x480 art is written once to
+// dialogbg\original-640x480.bmp as a starting point for better versions.
+static HBITMAP dialog_art(int width, int height)
+{
+    static HBITMAP cached;
+    static int cached_width, cached_height;
+    if (cached_width != width || cached_height != height) {
+        char path[64];
+        if (cached) DeleteObject(cached);
+        wsprintfA(path, "dialogbg\\%dx%d.bmp", width, height);
+        cached = (HBITMAP)LoadImageA(NULL, path, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+        cached_width = width;
+        cached_height = height;
+    }
+    return cached;
+}
+
+static void dump_dialog_art(const void *bits, const BITMAPINFO *info)
+{
+    static BOOL done;
+    if (done || !bits || !info || info->bmiHeader.biWidth != 640 || labs(info->bmiHeader.biHeight) != 480) return;
+    done = TRUE;
+    CreateDirectoryA("dialogbg", NULL);
+    HANDLE file = CreateFileA("dialogbg\\original-640x480.bmp", GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (file == INVALID_HANDLE_VALUE) return;
+    const BITMAPINFOHEADER *header = &info->bmiHeader;
+    DWORD palette = header->biCompression == BI_BITFIELDS ? 12
+        : header->biClrUsed ? header->biClrUsed * 4 : header->biBitCount <= 8 ? (1u << header->biBitCount) * 4 : 0;
+    DWORD stride = ((DWORD)header->biWidth * header->biBitCount + 31) / 32 * 4;
+    DWORD pixels = stride * (DWORD)labs(header->biHeight);
+    BITMAPFILEHEADER head = {0x4D42, 14 + header->biSize + palette + pixels, 0, 0, 14 + header->biSize + palette};
+    DWORD written;
+    WriteFile(file, &head, sizeof(head), &written, NULL);
+    WriteFile(file, info, header->biSize + palette, &written, NULL);
+    WriteFile(file, bits, pixels, &written, NULL);
+    CloseHandle(file);
+}
+
+// The dialogs paint their 640x480 background art with one StretchDIBits call
+// (0x46B3EB). In a scaled dialog, use a ready-made image for this window size when
+// there is one, otherwise stretch the art to the same box as the controls and blank
+// the rest, so the art, the portraits and the controls stay aligned.
+__declspec(dllexport) int WINAPI HudDialogBlt(HDC dc, int x, int y, int width, int height, int source_x,
+    int source_y, int source_width, int source_height, const void *bits, const BITMAPINFO *info,
+    UINT usage, DWORD operation)
+{
+    dump_dialog_art(bits, info);
+    HWND window = WindowFromDC(dc);
+    if (window && window == dialog_layout.dialog && dialog_layout.scale > 1.0) {
+        RECT client;
+        if (GetClientRect(window, &client)) {
+            FillRect(dc, &client, (HBRUSH)GetStockObject(BLACK_BRUSH));
+            HBITMAP art = dialog_art(client.right, client.bottom);
+            if (art) {
+                HDC memory = CreateCompatibleDC(dc);
+                HGDIOBJ previous = SelectObject(memory, art);
+                BitBlt(dc, 0, 0, client.right, client.bottom, memory, 0, 0, SRCCOPY);
+                SelectObject(memory, previous);
+                DeleteDC(memory);
+                return source_height;
+            }
+        }
+        SetStretchBltMode(dc, HALFTONE);
+        SetBrushOrgEx(dc, 0, 0, NULL);
+        return StretchDIBits(dc, dialog_layout.offset_x + (int)(x * dialog_layout.scale),
+            dialog_layout.offset_y + (int)(y * dialog_layout.scale), (int)(width * dialog_layout.scale),
+            (int)(height * dialog_layout.scale), source_x, source_y, source_width, source_height, bits, info,
+            usage, operation);
+    }
+    return StretchDIBits(dc, x, y, width, height, source_x, source_y, source_width, source_height, bits, info,
+        usage, operation);
+}

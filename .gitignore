@@ -36,3 +36,4 @@ AGENTS.md
 .env
 *.pem
 *.key
+/relay/bin/
