@@ -83,7 +83,8 @@ def build(original):
                           "HudBeginHeader@0", "HudEndHeader@0", "HudQuickItem@0",
                           "HudDialogue@4", "HudBeginCampaignPaint@0",
                           "HudWorldMap@0", "HudPauseBackdrop@4",
-                          "HudWorldMapLabel", "HudWorldMapShadeLabel")),
+                          "HudWorldMapLabel", "HudWorldMapShadeLabel",
+                          "HudNetSend@20", "HudNetRecv@16", "HudChatLines@4", "HudDialogBlt@52")),
     )
     descriptors_offset = 20
     size = len(imports) + len(libraries) * 20
@@ -129,6 +130,8 @@ def build(original):
             offset = pe.get_offset_from_rva(site - IMAGE_BASE)
             data[offset:offset + 4] = u32(address)
     charset = IMAGE_BASE + DATA_RVA + len(content)
+    content.append(0)
+    empty_string = IMAGE_BASE + DATA_RVA + len(content)
     content.append(0)
     font_slot_offset = align(len(content), 4)
     content.extend(bytes(font_slot_offset + 4 - len(content)))
@@ -200,6 +203,65 @@ def build(original):
     # Track 7 is the first one the game's random music selection can use.
     code.extend(bytes.fromhex("83 79 08 07 73 05 31 c0 c2 08 00 83 ec 18 53 56"))
     code.extend(branch(b"\xe9", IMAGE_BASE + CODE_RVA + len(code), play_cd + 5))
+
+    # Multi Play: the connection dialog (resource 111) seeds its sorted list
+    # box with LB_ADDSTRING and a NULL string, which is the blank first row
+    # that means "no connection selected". Current user32 measures that string
+    # and crashes. Send an empty string instead; the row sorts first as before.
+    site = 0x40D5AC
+    old = bytes.fromhex("6a00 6a00 6880010000 68f3030000 56 ffd7")
+    offset = pe.get_offset_from_rva(site - IMAGE_BASE)
+    if data[offset:offset + len(old)] != old:
+        raise ValueError("Lista de conexoes do Multi Play inesperada.")
+    setup = IMAGE_BASE + CODE_RVA + len(code)
+    data[offset:offset + len(old)] = branch(b"\xe9", site, setup).ljust(len(old), b"\x90")
+    code.extend(b"\x68" + u32(empty_string) + bytes.fromhex("6a00 6880010000 68f3030000 56 ffd7"))
+    code.extend(branch(b"\xe9", IMAGE_BASE + CODE_RVA + len(code), site + len(old)))
+
+    # Network trace hooks (they only log when the HUD enables netlog). The
+    # IDirectPlay3A Send wrapper reports its arguments before it runs.
+    site = 0x401FE0
+    old = bytes.fromhex("8b4908 b805400080")
+    offset = pe.get_offset_from_rva(site - IMAGE_BASE)
+    if data[offset:offset + len(old)] != old:
+        raise ValueError("Funcao Send do DirectPlay inesperada.")
+    setup = IMAGE_BASE + CODE_RVA + len(code)
+    data[offset:offset + len(old)] = branch(b"\xe9", site, setup).ljust(len(old), b"\x90")
+    code.extend(b"\x60" + bytes.fromhex("ff742434") * 5 + b"\xff\x15" + u32(functions["HudNetSend"]) + b"\x61")
+    code.extend(old)
+    code.extend(branch(b"\xe9", IMAGE_BASE + CODE_RVA + len(code), site + len(old)))
+
+    # The only Receive caller reports each message after the call fills it.
+    site = 0x4244FC
+    offset = pe.get_offset_from_rva(site - IMAGE_BASE)
+    if data[offset:offset + 5] != branch(b"\xe8", site, 0x402010):
+        raise ValueError("Chamada de Receive do DirectPlay inesperada.")
+    setup = IMAGE_BASE + CODE_RVA + len(code)
+    data[offset:offset + 5] = branch(b"\xe8", site, setup)
+    code.extend(bytes.fromhex("56 57 53 8b742410 8b7c2414 8b5c2420") + bytes.fromhex("ff742420") * 5)
+    code.extend(branch(b"\xe8", IMAGE_BASE + CODE_RVA + len(code), 0x402010))
+    code.extend(bytes.fromhex("85c0 78 00"))
+    skip_report = len(code) - 1
+    code.extend(bytes.fromhex("50 ff33 ff742424 ff37 ff36 ff15") + u32(functions["HudNetRecv"]) + b"\x58")
+    code[skip_report] = len(code) - skip_report - 1
+    code.extend(bytes.fromhex("5b 5f 5e c2 1400"))
+
+    # The chat object's draw method writes the message lines in a fixed corner with a
+    # small font, which shrinks with the zoom. Let the HUD draw them in multiplayer.
+    site = 0x489794
+    offset = pe.get_offset_from_rva(site - IMAGE_BASE)
+    if data[offset:offset + 4] != u32(0x423940):
+        raise ValueError("Desenho das linhas do chat inesperado.")
+    setup = IMAGE_BASE + CODE_RVA + len(code)
+    code.extend(bytes.fromhex("58 51 50 ff 25") + u32(functions["HudChatLines"]))
+    data[offset:offset + 4] = u32(setup)
+
+    # The multiplayer dialogs draw their background with this StretchDIBits call.
+    site = 0x46B3EB
+    offset = pe.get_offset_from_rva(site - IMAGE_BASE)
+    if data[offset:offset + 6] != bytes.fromhex("ff15") + u32(0x489048):
+        raise ValueError("Fundo dos dialogos do multiplayer inesperado.")
+    data[offset + 2:offset + 6] = u32(functions["HudDialogBlt"])
 
     # Keep the AVI assets and normal ending. Skip the three startup clips
     # only when the launcher supplies the skip option.
