@@ -1,3 +1,5 @@
+https://discord.gg/2vXyN2HXcQ
+
 # Akuma — Demon Spawn for Windows
 
 🇬🇧 English · 🇧🇷 [Português](README.pt-BR.md)
