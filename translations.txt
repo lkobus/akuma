@@ -1,0 +1,378 @@
+# Índice | Português | 한국어 | English (opcional)
+1|Área para soltar itens|아이템 버리는 곳|Drop items here
+2|ARMAS (A)|무기 (A)|WEAPONS (A)
+3|ITENS (S)|아이템 (S)
+4|PESO|무게|WT
+5|ATQ    DEF    HAB    VEL|공격    방어    기술    속도
+6| ATQ    VEL    PESO| 공격    속도    무게
+7|ALC|사거리
+8| DEF    PESO| 방어    무게
+9|NÍVEL|레벨
+10|Caminho para|가는 길
+11|Portal para|이동 관문|Teleport gate to
+12|Olho Sagrado|성스러운 눈
+13|PERSONAGEM (C)|캐릭터 정보 (C)|CHARACTER (C)
+14|ITENS (I)|아이템 (I)
+15|MISSÕES (M)|임무 (M)|QUESTS (M)
+16|MAPA (W)|세계 지도 (W)
+17|MENU (ESC)|메뉴 (ESC)
+18|Mundo|지상
+19|Submundo|지하 세계
+20|Estou sem forças...|몸도 마음도 지쳤어...|I'm worn out...
+21|Vou voltar para casa e descansar.|집으로 돌아가 쉬어야겠어.|I'll go home and rest.
+25|NOVO PERSONAGEM|새 캐릭터
+26|ESCOLHER PERSONAGEM|캐릭터 선택
+27|Escolher|선택
+28|Excluir|삭제
+29|Sair|나가기
+30|Nível|레벨
+31|Vigor|체력
+32|Força|힘
+33|Magia|마력
+34|Destreza|민첩
+35|Inteligência|지능
+36|Excluir este personagem?|이 캐릭터를 삭제할까요?
+37|Sim|예
+38|Não|아니요
+39|SALVAR JOGO|게임 저장
+40|Salvar|저장
+41|Escolha onde salvar|저장할 슬롯을 선택하세요|Choose a save slot
+42|CARREGAR JOGO|게임 불러오기
+43|Carregar|불러오기
+44|Escolha um jogo salvo|불러올 슬롯을 선택하세요|Choose a game to load
+45|Música|음악
+46|Efeitos sonoros|효과음|Sound effects
+47|Sair da partida e voltar ao menu?|게임을 끝내고 메뉴로 돌아갈까요?|Quit to the main menu?
+48|SIM|예
+49|NÃO|아니요
+50|Vazio|비어 있음
+51|Ano|년
+52|Buscando...|검색 중...|Searching...
+53|Conectando...|연결 중...
+54|Falha na conexão.|연결 실패.|Connection failed.
+55|Clique em Cancelar|취소를 누른 뒤|Select Cancel
+56|e tente novamente.|다시 시도하세요.|and try again.
+57|Conexão indisponível.|연결할 수 없습니다.|Unable to connect.
+58|Verifique as configurações.|설정을 확인하세요.|Check your settings.
+59|V|체
+60|M|마
+61|F|힘
+62|D|민
+63|H|기
+75|entrou na partida.|님이 게임에 참가했습니다.
+76|saiu da partida.|님이 게임에서 나갔습니다.
+77|Você agora é o anfitrião.|이제 방장이 되었습니다.|You are now the host.
+81|Bandido|도적
+87|Tigre|호랑이
+88|Demônio Pirata|해적 악마
+89|Bruxa Sombria|어둠의 마녀
+91|Cavaleiro de Ferro|철갑 기사
+93|Satã|사탄
+94|Demônio do Gancho|갈고리 악마
+95|Demônio do Leste|동쪽 악마
+96|Demônio Touro|황소 악마
+99|Esqueleto|해골
+100|Esqueleto|해골
+101|Tigre Branco|백호
+102|Tigre Dourado|황금 호랑이
+103|Morcego Vampiro|흡혈 박쥐
+104|Cavaleiro de Ferro|철갑 기사
+105|Cavaleiro de Ferro|철갑 기사
+106|Cavaleiro de Ferro|철갑 기사
+107|Bruxa Infernal|지옥의 마녀
+108|Demônio do Oeste|서쪽 악마
+110|Guerreiro Dragão|용 전사
+112|Rei Esqueleto|해골 왕
+113|Bandido|도적
+114|Guardião do Portal|관문 수호자|Gatekeeper
+115|Guardião do Portal|관문 수호자|Gatekeeper
+121|Satã|사탄
+122|Esqueleto|해골
+123|Esqueleto|해골
+124|Esqueleto|해골
+126|Ciclope|외눈 거인
+136|Cavaleiro Dragão|용 기사
+138|Toque Angelical|천사의 손길
+139|Dano recebido -50%|받는 피해 -50%|Enemy damage -50%
+140|Escudo Angelical|천사의 방패
+141|Dano recebido -80%|받는 피해 -80%|Enemy damage -80%
+142|Garra da Fera|야수의 발톱
+143|Causa dano duplo|두 배의 피해를 줌|Deals double damage
+144|Garra de Dragão|용의 발톱|Dragon's Claw
+145|Causa dano triplo|세 배의 피해를 줌|Deals triple damage
+146|Asas de Falcão|매의 날개
+148|Asas de Águia|독수리의 날개
+150|Eco das Trevas|어둠의 메아리
+151|Dissipa a escuridão|어둠을 걷어냄|Dispels darkness
+152|Olhar Distante|먼눈
+154|Gema de Habilidade|기술의 보석
+156|Coração de Dragão|용의 심장
+158|Água da Vida|생명의 물
+160|Água da Vida|생명의 물
+161|Restaura toda a Vida|생명력 전부 회복|Fully restores Life
+162|Água de Mana|마나의 물
+164|Água de Mana|마나의 물
+165|Restaura toda a Mana|마나 전부 회복|Fully restores Mana
+166|Água Benta|성수
+168|Água Benta|성수
+170|Ginseng|인삼
+171|Restaura Vida e Mana|생명력과 마나 전부 회복|Fully restores Life and Mana
+172|Ginseng Silvestre|산삼|Wild Ginseng
+173|Restaura Vida e Mana, Vigor+1|생명력과 마나 회복, 체력+1|Restores Life and Mana, Health+1
+174|Elixir|영약
+176|Elixir|영약
+178|Elixir|영약
+180|Elixir|영약
+182|Elixir|영약
+184|Bola de Gelo|얼음 구체
+185|Arremessa uma bola de gelo|얼음 구체로 공격|Throws an ice ball
+186|Bola de Fogo|불덩이
+187|Arremessa uma bola de fogo|불덩이로 공격|Throws a fireball
+188|Joia do Portal|관문의 보석
+189|Ativa o portal|이동 관문을 작동시킴|Activates the teleport gate
+190|Olho Sagrado|성스러운 눈
+191|Cria um Olho Sagrado|성스러운 눈을 만듦|Creates a Holy Eye
+192|Pergaminho da Alma|영혼의 두루마리
+193|Golpe fatal contra demônios|악마에게 치명타|Deals a fatal blow to demons
+194|Pergaminho de Proteção|방패의 두루마리
+195|Concede invulnerabilidade|무적 상태가 됨|Grants invulnerability
+196|Pergaminho da Sabedoria|지혜의 두루마리
+198|Pergaminho do Avatar|화신의 두루마리
+199|Todos os atributos +1|모든 능력치 +1|All attributes +1
+200|Pergaminho da Fortuna|재물의 두루마리|Fortune Scroll
+201|Faz surgir dinheiro|돈을 만들어 냄|Summons money
+202|Pergaminho Sagrado|신성한 두루마리
+203|Restaura Vida e Mana, Vigor+5|생명력과 마나 회복, 체력+5|Restores Life and Mana, Health+5
+204|Magia de Selamento|봉인 마법
+205|Sela a entrada dos demônios|악마의 입구를 봉인|Seals the demons' entrance
+206|Muralha de Fogo|불의 장벽
+207|Ergue uma muralha de fogo|불의 장벽을 만듦|Raises a wall of fire
+208|Bola de Fogo|불덩이
+209|Dispara bolas de fogo|불덩이를 발사|Casts fireballs
+210|Raio Fantasma|유령의 화살
+211|Dispara um raio fantasma|유령의 화살을 발사|Fires a ghost bolt
+212|Faísca Mortal|죽음의 불꽃
+213|Descarrega uma faísca potente|강력한 전기로 공격|Discharges a powerful spark
+214|Relâmpago|번개
+215|Ataca com um relâmpago|번개로 공격|Strikes with lightning
+216|Fogo de Sangue|피의 불꽃
+217|Ataca com chamas|불꽃으로 공격|Attacks with flame
+218|Maldição de Pedra|석화 저주
+219|Petrifica os inimigos|적을 돌로 만듦|Petrifies enemies
+220|Escudo de Buda|부처의 방패
+221|Bloqueia dano físico|물리 피해를 막음|Blocks physical damage
+222|Cura|치유
+223|Restaura Vida|생명력을 회복|Restores Life
+224|Chuva de Gelo|얼음비
+225|Invoca uma chuva de gelo|얼음비를 내림|Summons a rain of ice
+226|Chuva de Fogo|불비
+227|Invoca uma chuva de fogo|불비를 내림|Summons a rain of fire
+228|Ressurreição|부활
+229|Revive um personagem|캐릭터를 되살림|Revives a character
+230|Dinheiro|돈
+231|Chifre de Cervo|사슴뿔
+232|Pena de Fênix|불사조 깃털
+233|Lágrima de Dragão|용의 눈물
+234|Cristal|수정
+235|Mapa do Submundo|지하 세계 지도
+236|Coração de Lagarto|도마뱀 심장
+237|Orelhas do Demônio do Leste|동쪽 악마의 귀
+238|Olhos do Demônio do Oeste|서쪽 악마의 눈
+239|Balança|저울
+240|Ferro Flamejante|불의 철
+241|Cássia|계수나무
+242|Cogumelo Pequeno|작은 버섯
+243|Folhas de Chá|찻잎
+244|Escamas de Dragão|용의 비늘
+245|Erva Medicinal|약초|Medicinal Herb
+246|Garra do Demônio Touro|황소 악마의 발톱
+247|Bile de Urso|곰의 쓸개
+248|Tatuagem de Dragão|용 문신
+249|Tatuagem de Aranha|거미 문신
+250|Espada das Sombras|그림자의 검
+251|Amuleto de Raening|레이닝의 부적|Raening's Amulet
+252|Marca do Guerreiro|전사의 증표
+253|Artemísia|쑥
+254|Esmalte|유약
+255|Explosivo|폭약
+256|Marca Maligna|흉악한 문양
+257|Chave|열쇠
+258|Bainha de Adaga|단검집|Dagger Scabbard
+259|Escamas de Demônio|악마의 비늘
+260|Plantas da Barraca|노점의 식물
+261|Garra de Vamp|뱀프의 발톱
+262|Veneno de Ganza|간자의 독
+263|Cabaça|호리병박
+264|Água do Poço Sagrado|성스러운 우물물
+265|Espada das Trevas|어둠의 검
+266|Dentes de Manutis|마누티스의 이빨
+267|Marca do Fantasma Negro|검은 유령의 증표
+268|Chave de Madeira|나무 열쇠
+269|Chave Dourada|금 열쇠
+270|Chave de Prata|은 열쇠
+271|Chave de Cristal|수정 열쇠
+272|Chave de Gancho|갈고리 열쇠
+273|Diário do Guerreiro|전사의 일기
+274|Diário do Mago|마법사의 일기
+275|Carta do Imperador|황제의 편지
+276|Livro da Lâmina Mágica|마법 칼날의 책
+277|Livro da Lâmina da Salvação|구원의 칼날 책
+278|Livro do Arco Sombrio|어둠의 활 책
+279|Livro do Arco Mágico|마법 활의 책
+280|Alça de Escudo|방패 손잡이
+281|Chave da Armadura Sombria|어둠 갑옷의 열쇠
+282|História do Oriente|동쪽의 역사서
+283|Pingente|펜던트
+284|Boneco Encantado|주술 인형
+285|Espada de Cobre|구리 검
+286|Espada de Ferro|철검
+287|Lâmina Fina|가는 칼날
+288|Adaga|단검
+290|Espada Longa|장검
+291|Espada Larga|넓은 검
+293|Lâmina de Ferro|철제 칼날
+295|Lâmina Dupla|쌍날검
+296|Lâmina Lunar|달의 칼날
+298|Espada do Ar|바람의 검
+300|Espada de Batalha|전투검
+301|Espada Azul|푸른 검
+302|Espada Antiga|고대의 검
+304|Lâmina da Morte|죽음의 칼날
+306|Espada Demoníaca|악마의 검
+308|Lâmina Sombria|어둠의 칼날
+310|Espada de Dragão|용의 검
+312|Espada do Guerreiro|전사의 검
+313|Lâmina do Caos|혼돈의 칼날
+315|Lâmina da Alma|영혼의 칼날
+317|Espada Coreana|한국 검
+319|Adaga Voadora|비행 단검
+321|Espada Chinesa|중국 검
+323|Faca do Sopro|숨결의 칼
+325|Espada Voadora|비행검
+327|Esp. da Lamentação|비탄의 검|Lamentation Sword
+329|Lâmina Verde|녹색 칼날
+331|Lâmina do Sopro|숨결의 칼날
+333|Espada do Imperador|황제의 검
+335|Lâmina Mágica|마법 칼날
+337|Espada do Luar|달빛의 검
+339|Lâmina da Salvação|구원의 칼날
+341|Espada de Sangue|피의 검
+343|Arco de Madeira|나무 활
+344|Arco Curto|단궁
+345|Arco de Caçador|사냥꾼의 활
+346|Arco Longo|장궁
+347|Arco Voador|비행 활
+349|Besta|석궁|Crossbow
+351|Arco de Prata|은 활
+352|Arco Dourado|금 활
+354|Arco do Guerreiro|전사의 활
+356|Arco Demoníaco|악마의 활
+358|Arco do Imperador|황제의 활
+360|Arco do Sopro|숨결의 활
+362|Arco Azul|푸른 활
+364|Arco Celestial|하늘의 활
+366|Arco Sombrio|어둠의 활
+368|Arco Mágico|마법 활
+370|Escudo de Madeira|나무 방패
+372|Escudo de Latão|황동 방패
+374|Escudo de Ferro|철 방패
+376|Escudo Dourado|금 방패
+378|Escudo de Faíscas|전광 방패
+380|Escudo de Dragão|용의 방패
+382|Escudo Angelical|천사의 방패
+384|Escudo Sombrio|어둠의 방패
+386|Escudo do Guerreiro|전사의 방패
+388|Gorro de Couro|가죽 모자
+389|Elmo de Latão|황동 투구
+390|Elmo de Ferro|철 투구
+391|Elmo Dourado|금 투구
+393|Elmo Voador|비행 투구
+395|Elmo da Alma|영혼의 투구
+397|Elmo Mágico|마법 투구
+399|Armadura de Couro|가죽 갑옷
+400|Armadura de Caçador|사냥꾼의 갑옷
+401|Armadura de Latão|황동 갑옷
+403|Armadura Mineral|광석 갑옷
+404|Armadura Dourada|금 갑옷
+406|Armadura de Sangue|피의 갑옷
+407|Armad. do Guerreiro|전사의 갑옷
+408|Armadura Imperial|황제의 갑옷
+410|Armadura da Alma|영혼의 갑옷
+412|Armadura de Dragão|용의 갑옷
+414|Armadura Mágica|마법 갑옷
+416|Sapatos de Couro|가죽 신발
+418|Sapatos Dourados|금 신발
+420|Botas Brilhantes|빛나는 장화
+422|Botas Minerais|광석 장화
+424|Sapatos das Ondas|파도의 신발
+426|Botas Azuis|푸른 장화
+428|Botas de Relâmpago|번개의 장화
+430|Sapatos Voadores|비행 신발
+432|Botas do Sopro|숨결의 장화
+434|Sapatos Mágicos|마법 신발
+436|Anel de Diamante|다이아몬드 반지
+438|Anel do Céu|하늘의 반지
+440|Anel do Guerreiro|전사의 반지
+442|Anel Mágico|마법 반지
+444|Anel da Sabedoria|지혜의 반지
+446|Anel do Vento|바람의 반지
+448|Anel do Poder|힘의 반지
+450|Anel do Mago|마법사의 반지
+452|Anel Azul|푸른 반지
+454|Anel Vermelho|붉은 반지
+456|Anel Fantasma|유령의 반지
+457|Mana+30, recuperação rápida|마나+30, 마나 회복 가속|Mana+30, faster recovery
+458|Anel Angelical|천사의 반지
+459|Vida+40, recuperação contínua|생명력+40, 지속 회복|Life+40, continuous recovery
+460|Anel de Rotal|로탈의 반지
+462|Anel do Imperador|황제의 반지
+464|Colar de Diamante|다이아몬드 목걸이
+466|Colar de Cruz|십자가 목걸이
+468|Colar da Alma|영혼의 목걸이
+470|Colar da Sorte|행운의 목걸이
+472|Colar do Guerreiro|전사의 목걸이
+474|Colar Mágico|마법 목걸이
+476|Colar da Sabedoria|지혜의 목걸이
+478|Colar do Vento|바람의 목걸이
+480|Colar do Mago|마법사의 목걸이
+482|Colar Azul|푸른 목걸이
+484|Colar Vermelho|붉은 목걸이
+486|Colar do Imperador|황제의 목걸이
+488|Vale em Ruínas|폐허의 계곡
+495|Vale do Dragão|용의 계곡
+498|Costa Carnívora|육식의 해안
+499|Vale do Eco|메아리 계곡
+500|Montanha Sombria|그림자 산
+502|Vila do Oeste|서쪽 마을
+503|Vila de Mantis|만티스 마을
+504|Vila de Pedra|돌 마을
+505|Vila do Leste|동쪽 마을
+506|Caverna do Dragão|용의 동굴|Dragon Cave
+508|Caverna da Desolação|황폐의 동굴|Desolation Cave
+509|Caverna do Estertor|죽음의 숨결 동굴|Death Rattle Cave
+510|Rocha da Morte|죽음의 바위
+512|Montanha do Totem|토템 산
+513|Vale de Haiku|하이쿠 계곡
+514|Vale dos Quatro Ventos|네 바람의 계곡
+515|Cemitério de Deamyr|데이미르 묘지
+516|Vale dos Vampiros|흡혈귀 계곡
+517|Vila de Vulcan|불칸 마을
+518|Vila do Urso|곰 마을
+519|Castelo das Almas|영혼의 성
+523|Caverna das Aranhas|거미 동굴|Spider Cave
+524|Caverna da Ruína Profunda|깊은 파멸의 동굴|Deep Bane Cave
+526|Caverna dos Ossos|뼈의 동굴
+527|Caverna do Pandemônio|판데모니엄 동굴|Pandemonium Cave
+528|Caverna Infinita|끝없는 동굴|Endless Cave
+529|Caverna das Almas Perdidas|잃어버린 영혼의 동굴|Lost Souls Cave
+530|Seu Dinheiro|소지금|Your money
+531|Capacidade de Carga|운반 가능 무게|Carry capacity
+532|TEMPO|시간
+533|PREÇO|가격
+534|Missão|임무|Quest
+535|Descartar|버리기
+536|ATQ|공격
+537|DEF|방어
+538|HAB|기술
+539|PM|마나
+540|VEL|속도

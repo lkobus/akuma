@@ -1,0 +1,50 @@
+AKUMA — DEMON SPAWN | PORTÁTIL
+
+1. Extraia o ZIP inteiro em uma pasta onde você possa salvar arquivos.
+2. Abra Jogar.exe, escolha o idioma e as opções de vídeo e clique em Jogar.
+3. A abertura é pulada por padrão. Marque Reproduzir abertura para vê-la.
+4. Use Alt+Enter para alternar entre janela e tela cheia sem bordas.
+5. Use Ctrl+Tab para soltar o mouse. Clique no jogo para prendê-lo de novo.
+
+As dimensões de saída são 640×480, 1024×768, 1280×1024, 1600×900 e 1920×1080.
+Para a interface lateral 16:9, use 1600×900 ou 1920×1080. Na campanha,
+os três retratos e os atalhos aparecem à direita. Arraste o minimapa para
+movê-lo. Clique no mapa para posicionar a câmera e use o
+botão direito para alternar entre a vista geral e o detalhe. O botão no canto
+superior direito minimiza o mapa; F9 esconde ou mostra. A campanha começa na
+vista de 21 colunas em qualquer resolução. F8 percorre os zooms de 21, 27, 30,
+34 e 38 colunas.
+Todas as vistas usam o HUD lateral. As setas movem a câmera.
+O launcher tem a opção Mover câmera com WASD.
+F5, F6 e F7 alternam a seleção dos personagens. F4 alterna entre todos e nenhum.
+Ctrl+F5, Ctrl+F6 e Ctrl+F7 acionam o clique direito dos três retratos.
+Segure Alt para ver os nomes dos itens no chão. O item sob o mouse fica em azul.
+Clique no item ou no nome para mandar o grupo selecionado buscar o item no topo da pilha.
+Passe o mouse sobre um NPC para ver o nome acima dele. Cada atalho lateral
+mostra sua dica à esquerda do ícone. Os detalhes dos itens ficam no HUD.
+No minimapa, roxo indica loot. O ponto de exclamação dourado aponta para
+a oferta sugerida no diário quando ela está disponível. Sem missões ativas,
+o diário mostra o ano exigido pelas ofertas conhecidas do mapa.
+Na aba Controles, edite as teclas ou marque a seleção exclusiva.
+A aba Referência lista os atalhos nativos e os atalhos fixos do remaster.
+Encoste o mouse na borda externa da janela para rolar.
+F10 alterna com a interface clássica. Com o HUD lateral ativo, a moldura
+amarela marca os retratos selecionados e os painéis da campanha abrem sobre
+a área de jogo.
+O mapa-múndi mostra a imagem inteira na proporção original. O menu de
+pausa escurece o cenário widescreen e mantém a barra lateral visível.
+O contador mede os quadros renderizados pelo cnc-ddraw. Filtros avançados
+usam OpenGL. Para trocar o filtro, feche o jogo e abra de novo pelo launcher.
+
+O idioma vale para o launcher, os menus, a interface e os diálogos dos NPCs.
+Os diálogos em português e coreano têm tradução inicial. As telas de história
+e os créditos continuam no idioma da mídia.
+
+Multi Play é o modo original do Akuma. Para testar, use Direct Play TCP/IP
+em uma LAN ou em uma rede privada entre os jogadores. Crie uma sessão
+em uma máquina e use o endereço IPv4 dela na outra. O DirectPlay precisa
+estar disponível no Windows. A campanha e o modo Multi Play são entradas
+separadas do menu original.
+
+Os efeitos de áudio usam os arquivos do jogo. As faixas de música do CD
+continuam dependendo da mídia montada com as trilhas de áudio do CUE.

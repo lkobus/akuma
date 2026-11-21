@@ -1,0 +1,38 @@
+# Saídas de build e dados do jogo (nunca versionar: são material com copyright)
+/dist/
+/.work/
+/.build-*/
+/Akuma-Portatil*/
+__pycache__/
+*.py[cod]
+*.bin
+*.cue
+*.iso
+*.img
+*.exe
+*.dll
+*.zip
+*.7z
+*.pcx
+*.cos
+*.pdb
+*.lib
+
+# Ferramentas de IA / editores: configuração e memória ficam só na máquina local
+.claude/
+CLAUDE.md
+CLAUDE.local.md
+.codex/
+AGENTS.md
+.cursor/
+.cursorrules
+.aider*
+.windsurf/
+.github/copilot-instructions.md
+.vscode/
+.idea/
+
+# Segredos
+.env
+*.pem
+*.key
