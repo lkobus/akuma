@@ -15,6 +15,10 @@
   Não mexe em dados do jogo, saves, música nem no ddraw. Para o pacote completo
   e para a release continue usando build.ps1 e make_overlay.ps1.
 
+.PARAMETER Localize
+  Regenera os arquivos de idioma (lang-*.gos, menuicon*/icon* e *.evt por idioma, incluindo zh)
+  na pasta do jogo a partir de translations*.txt e dialogues*.json.
+
 .PARAMETER NetLog
   Liga o log de rede (cria netlog.enable na pasta do jogo). Saída: netlog.txt.
 
@@ -63,6 +67,7 @@ param(
     [string]$RelayAddress = '127.0.0.1:47700',
     [switch]$DialogScale,
     [switch]$NoDialogScale,
+    [switch]$Localize,
     [switch]$NoInstall,
     [switch]$Second,
     [string]$SecondGame = (Join-Path $PSScriptRoot 'dist\jogo-2\Akuma-Portatil')
@@ -96,6 +101,15 @@ $launcherExe = Join-Path $stage 'Jogar.exe'
 $csc = Join-Path $env:WINDIR 'Microsoft.NET\Framework\v4.0.30319\csc.exe'
 & $csc /nologo /target:winexe /platform:x86 /optimize+ "/out:$launcherExe" (Join-Path $PSScriptRoot 'Launcher.cs')
 if ($LASTEXITCODE) { throw 'Falha ao compilar o launcher.' }
+
+if ($Localize -and -not $NoInstall) {
+    & python (Join-Path $PSScriptRoot 'localize.py') (Join-Path $gamePath 'img')
+    if ($LASTEXITCODE) { throw 'Falha ao preparar os idiomas.' }
+    & python (Join-Path $PSScriptRoot 'menu_labels.py') (Join-Path $gamePath 'img')
+    if ($LASTEXITCODE) { throw 'Falha ao preparar os rotulos do menu.' }
+    & python (Join-Path $PSScriptRoot 'localize_dialogues.py') $gamePath (Join-Path $PSScriptRoot 'dialogues.json')
+    if ($LASTEXITCODE) { throw 'Falha ao preparar os dialogos.' }
+}
 
 $flag = Join-Path $gamePath 'netlog.enable'
 if (-not $NoInstall) {

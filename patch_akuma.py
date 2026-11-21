@@ -133,6 +133,15 @@ def build(original):
     content.append(0)
     empty_string = IMAGE_BASE + DATA_RVA + len(content)
     content.append(0)
+    # Font face per language. GDI picks the code page from the font charset, so each
+    # CJK language needs its own charset (0x81 Hangul, 0x88 Big5) and a face that has it.
+    malgun_face = IMAGE_BASE + DATA_RVA + len(content)
+    content.extend(b"Malgun Gothic\0")
+    jhenghei_face = IMAGE_BASE + DATA_RVA + len(content)
+    content.extend(b"Microsoft JhengHei\0")
+    face_slot = align(len(content), 4)
+    content.extend(bytes(face_slot + 4 - len(content)))
+    face_pointer = IMAGE_BASE + DATA_RVA + face_slot
     font_slot_offset = align(len(content), 4)
     content.extend(bytes(font_slot_offset + 4 - len(content)))
 
@@ -146,9 +155,23 @@ def build(original):
     prepare.extend(u32(0x489118))  # lstrlenA
     prepare.extend(bytes.fromhex("5a 83 f8 0e 75 00"))
     skip_length = len(prepare) - 1
-    prepare.extend(bytes.fromhex("0f b7 42 0c 66 3d 6b 6f 75 09 c6 05"))
-    prepare.extend(u32(charset) + bytes.fromhex("81 eb 06 66 3d 70 74 75 00"))
+    # The language is the two letters at "-xxxx-intro XX": ko / zh pick a CJK font, pt
+    # only renames the files, anything else (en) keeps the original English names.
+    prepare.extend(bytes.fromhex("0f b7 42 0c"))
+    to_store = []
+    for tag, charset_id, face in ((b"ko", 0x81, malgun_face), (b"zh", 0x88, jhenghei_face)):
+        prepare.extend(bytes.fromhex("66 3d") + tag + bytes.fromhex("75 00"))
+        next_test = len(prepare) - 1
+        prepare.extend(bytes.fromhex("c6 05") + u32(charset) + bytes([charset_id]))
+        prepare.extend(bytes.fromhex("c7 05") + u32(face_pointer) + u32(face))
+        prepare.extend(bytes.fromhex("eb 00"))
+        to_store.append(len(prepare) - 1)
+        prepare[next_test] = len(prepare) - next_test - 1
+    prepare.extend(bytes.fromhex("66 3d 70 74 75 00"))
     skip_language = len(prepare) - 1
+    store = len(prepare)
+    for jump in to_store:
+        prepare[jump] = store - jump - 1
     for language in languages:
         prepare.extend(bytes.fromhex("66 a3") + u32(language))
     for jump in (skip_length, skip_language):
@@ -158,11 +181,14 @@ def build(original):
     code.extend(prepare)
 
     # GDI uses the selected font's charset when interpreting ANSI text.
-    face = IMAGE_BASE + CODE_RVA + len(code)
-    code.extend(b"Malgun Gothic\0")
     font_hook = IMAGE_BASE + CODE_RVA + len(code)
-    code.extend(bytes.fromhex("80 3d") + u32(charset) + bytes.fromhex("00 74 10"))
-    code.extend(bytes.fromhex("c7 44 24 24 81 00 00 00 c7 44 24 38") + u32(face))
+    code.extend(bytes.fromhex("a0") + u32(charset))                 # mov al, [charset]
+    code.extend(bytes.fromhex("84 c0 74 00"))                       # test al, al / jz original
+    skip_font = len(code) - 1
+    code.extend(bytes.fromhex("0f b6 c0 89 44 24 24"))              # lfCharSet = charset
+    code.extend(bytes.fromhex("a1") + u32(face_pointer))            # mov eax, [face]
+    code.extend(bytes.fromhex("89 44 24 38"))                       # lpszFace = face
+    code[skip_font] = len(code) - skip_font - 1
     code.extend(bytes.fromhex("ff 25") + u32(0x489018))
     content[font_slot_offset:font_slot_offset + 4] = u32(font_hook)
     text = pe.sections[0]
