@@ -1,0 +1,7741 @@
+
+/* 對話 顏色 指定 */    
+/* 鐵匠        200 250 0 */
+/* 商店老闆    250 220 0 */
+/* 道具商人    250 200 0 */
+/* 珠寶商      160 160 200 */
+/* 魔女        240  20 190 */
+/* 村民        210 210 210 */
+/* 主角        250 250 0 */
+
+
+========================================================
+      /**** 建築物指令 *********
+========================================================
+
+# 1
+# 1
+# 1
+# "鐵匠"
+# BASIC
+# 100
+/只受理裝備的鐵匠鋪.飛仙村,東方村
+@ CLEAR_BUFFER
+@ BOX BLUE 6
+@ FACE 8 "鐵匠" 200 250 0
+@ COLOR 200 250 0
+@ TALK "賣裝備兼修理，需要幫忙嗎？"
+@ TALK "  "
+* 鐵匠指令
+@ CLEAR_BUFFER
+@ COLOR 250 250 0
+@ PLAY 1.WAV
+@ SELECT 255 255 255
+CASE "買入裝備" GO_DOWN 挑選裝備2
+CASE "賣出裝備" GO_DOWN 賣出裝備
+CASE "維修裝備" GO_DOWN 維修裝備
+CASE "與店主對話" GO_DOWN T1-1
+CASE "離開" GO_DOWN 結束
+SELECT_END
+
+* T1-1
+/* 與鐵匠之對話
+@ CLEAR_BUFFER
+@ BOX BLUE 6
+@ SELECT 255 255 255
+CASE "<關於近來周遭的情況>" GO_DOWN T1-1-1
+CASE "<關於痛哭之劍>" GO_DOWN T1-1-3
+CASE ""
+CASE "<結束談話>" GO_DOWN END
+SELECT_END
+@ END
+* T1-1-1
+@ CLEAR_BUFFER
+@ COLOR 200 200 0
+@ TALK "最近常有魔怪出沒在村莊周圍，"
+@ TALK "真讓人擔心。"
+@ TALK "真希望有人能夠處理掉那些魔怪該有多好。"
+@ WAIT
+@ CLEAR_BUFFER
+@ BOX BLUE 6
+@ TALK "當然……。也有狩獵魔怪的人……"
+@ TALK "但要付給他們的酬勞很可觀。"
+@ TALK ""
+@ TALK "要是年輕個十年我就可以除掉它們了。"
+@ WAIT
+@ IF ITEM NOTHAVE 220 THEN GO_DOWN TA
+@ CLEAR_BUFFER
+@ BOX BLUE 6
+* STEP1
+@ SELECT 255 255 255
+CASE "<關於退魔師>" GO_DOWN TA
+CASE "<關於我的舊刀>" GO_DOWN T1-1E-B
+SELECT_END
+@ END
+* TA
+@ CLEAR_BUFFER
+@ BOX BLUE 6
+@ TALK "自從魔怪常出現在村莊周遭……"
+@ TALK "村莊裡多了很多退魔師。"
+@ TALK " "
+@ TALK "你也是為了懸賞金才來的嗎？"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "到村莊附近的森林，應該可以看得到魔怪。"
+@ TALK "也許還會有別的"
+@ TALK "退魔師……。"
+@ TALK "還有，記得不要去在龍等山谷的北貴城門，"
+@ TALK "那裡有股詭異的氣。"
+@ WAIT
+@ GO_UP T1-1
+@ END
+* T1-1-3
+@ CLEAR_BUFFER
+@ TALK "痛哭之劍……。" 
+@ TALK "這種事當然要問我這打鐵的。"
+@ TALK "若你想過要問村莊裡的其它人，"
+@ TALK "那就大錯特錯了。"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "尤其……，像我這種曾經與魔怪"
+@ TALK "決鬥過的……。"
+@ TALK "曾經我也是享譽一時的風雲人物呢……。"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "啊！你剛問關於痛哭之劍的事吧？痛哭之劍……"
+@ TALK "它絕對不是一把普通的劍，"
+@ TALK "這你應該也知道吧？"
+@ WAIT
+@ TALK ""
+@ TALK ""
+@ SELECT 255 255 255
+CASE "<關於痛哭之劍>" GO_DOWN TA2
+CASE "<關於進入地下世界的方法>" GO_DOWN SS11
+SELECT_END
+* SS11
+@ TALK "進入地下世界的方法？"
+@ TALK "你連這都不知道還能說是退魔師嗎？"
+@ TALK "雖然不是很清楚。但據說殺了魔怪的領袖"
+@ TALK "“龍之戰士”就可以到地下世界。"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "首先我的目的是要找到可以除掉龍之戰士的"
+@ TALK "“魔道青劍”。"
+@ TALK "如果你也是個退魔師，是否該挑戰一下？"
+@ TALK "真正的退魔師不就是要以劍取勝嗎？"
+@ WAIT
+@ GO_UP T1-1
+* TA2
+@ CLEAR_BUFFER
+@ TALK "關於痛哭之劍的事，你應該也很清楚……"
+@ TALK "至於你不知道的事情……。"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "你臉皮也真厚哪！！"
+@ TALK "我講的口都乾了……"
+@ TALK "你至少也該假裝一下，你要買東西呀？" 
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "不過……"
+@ TALK "我就當作你要買我的東西，"
+@ TALK "告訴你好了。"
+@ TALK "剛才講到哪裡了呢？"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "啊！想起來了，雖然大家都在找痛哭之劍……。"
+@ TALK "不過他們在找的痛哭之劍只是死劍罷了，"
+@ TALK "與千鬼死神之戰時刀子已斷掉的事，"
+@ TALK "你應該也知道吧？"
+@ TALK "結果痛哭之劍就被原主藏在不為人知的地方，"
+@ TALK "剩下的只有它的碎片。"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "但是痛哭之劍……"
+@ TALK "就算是只有它的碎片就可以發揮很大的力量……，"
+@ TALK "而這些碎片被稱之為“痛哭之死劍”，"
+@ TALK "也是眾多武士希望獲得的至寶。"
+@ TALK ""
+@ TALK "如何？"
+@ TALK "好歹你也算是個武士，也拼一下吧？"
+@ WAIT
+@ GO_UP T1-1
+@ END
+* T1-1E-B
+@ CLEAR_BUFFER
+@ TALK "你持有一個很不錯的古董呢？"
+@ TALK "希望我幫你，看看你們傳家之寶的劍嗎？"
+@ TALK "傳家之寶"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "嗯……。非常有古典風味。"
+@ TALK "這種貨不多。"
+@ TALK "看起來很舊……。而且刀刃也沒了……，"
+@ TALK "看樣子發揮不了太大的作用。"
+@ TALK "當然代代相傳下來的東西是很重要……，"
+@ TALK "這與其說是劍不如說是古董還差不多……？"
+@ TALK "想以這種劍來保護你的性命很難喔！"
+@ TALK "看起來連魔怪的汗毛都傷不了呢……。"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "趁機乾脆換個新劍如何？"
+@ TALK "我會特別優待的。"
+@ WAIT
+@ GO_UP 鐵匠指令
+@ END
+
+
+# 2
+# 1
+# 1
+# "商店老闆"
+# BASIC
+# 100
+/買賣所有東西的商店
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 7 "商店老闆" 250 220 0
+@ COLOR 250 220 0
+@ TALK "你好，這世界上所有的東西，我這都應有盡有。"
+@ TALK "需要什麼嗎？"
+@ CLEAR_BUFFER
+@ COLOR 250 250 0
+@ PLAY 3.WAV
+@ SELECT 250 250 255
+CASE "買入裝備" GO_DOWN 挑選裝備1
+CASE "賣出裝備" GO_DOWN 賣出裝備
+CASE "買入道具" GO_DOWN 買入道具3
+CASE "賣出道具" GO_DOWN 賣出道具
+CASE "離開" GO_DOWN 結束
+SELECT_END
+
+# 3
+# 1
+# 1
+# "道具商人"
+# BASIC
+# 100
+/只賣道具的店
+@ IF NUM NOTHAVE 31 THEN GO_DOWN STEP1
+* 道具商人指令1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 5 "道具商人" 250 200 0
+@ COLOR 250 200 0
+@ TALK "你好，需要什麼嗎？"
+@ TALK "  "
+@ COLOR 250 250 0
+@ PLAY 5.WAV
+@ SELECT 255 255 255
+CASE "買入道具" GO_DOWN 買入道具1
+CASE "賣出道具" GO_DOWN 賣出道具
+CASE "離開" GO_DOWN 結束
+SELECT_END
+
+* STEP1
+@ BOX BLUE 5
+@ FACE 5 "道具商人" 250 200 0
+@ COLOR 250 200 0
+@ TALK "你好，需要什麼嗎？"
+@ TALK "  "
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "買入道具" GO_DOWN 買入道具1
+CASE "關於村莊周遭的對話" GO_DOWN T1-2-1
+CASE "離開" GO_DOWN 結束
+SELECT_END
+* T1-2-1
+/ 與道具商人的對話
+@ CLEAR_BUFFER
+@ GIVE NUM 31
+@ TALK "你想要到河對岸去？"
+@ TALK "嘖嘖……"
+@ TALK "如果是這樣的話，你還是放棄這念頭較好。"
+@ TALK "因為……，"
+@ TALK "黃天江周圍已集滿了魔怪……。"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "以前兩地還往返的很活躍呢！"
+@ TALK "不過不知從何時起……，"
+@ TALK "魔怪開始聚集在黃天江附近，"
+@ TALK "從那時起人們就無法自由往來了。"
+@ TALK "雖然你要過江是你的自由，"
+@ TALK "但千萬要小心。"
+@ TALK "在這村莊也已經有很多人犧牲了呢……。"
+@ WAIT
+@ GO_UP 道具商人指令1
+@ END
+
+
+# 4
+# 1
+# 1
+# "道具商人"
+# BASIC
+# 100
+* 道具商人指令1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 5 "道具商人" 250 200 0
+@ COLOR 250 200 0
+@ TALK "你好，需要什麼嗎？"
+@ TALK "  "
+@ COLOR 250 250 0
+@ PLAY 5.WAV
+@ SELECT 255 255 255
+CASE "買入道具" GO_DOWN 買入道具2
+CASE "賣出道具" GO_DOWN 賣出道具
+CASE "離開" GO_DOWN 結束
+SELECT_END
+
+# 5
+# 1
+# 1
+# "魔女"
+# BASIC
+# 100
+@ CLEAR_BUFFER
+@ COLOR 240 20 190
+@ IF LEARN_MAGIC THEN GO_DOWN MAGIC_STOP
+@ BOX BLUE 5
+@ FACE 6 "魔法所魔女" 240 20 190
+@ TALK "你找我有事嗎?"
+@ TALK "  "
+@ COLOR 250 250 0
+@ PLAY 7.WAV
+@ SELECT 250 250 250
+CASE "魔法訓練" GO_DOWN 魔法訓練1
+CASE "算命" GO_DOWN 算命
+CASE "離開" GO_DOWN 結束
+SELECT_END
+
+# 6
+# 1
+# 1
+# "珠寶商"
+# BASIC
+# 100
+/只賣便宜裝飾品的店
+@ IF NUM HAVE 32 THEN GO_DOWN STEP1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 11 "珠寶商" 160 160 200
+@ COLOR 160 160 200
+@ TALK "你好，看樣子你是退魔師吧？"
+@ TALK "  "
+@ COLOR 250 250 0
+@ PLAY 9.WAV
+@ SELECT 255 255 255
+CASE "買入裝飾品" GO_DOWN 買入裝飾品1
+CASE "與老闆對話" GO_DOWN T3-2
+CASE "離開" GO_DOWN 結束
+SELECT_END
+* STEP1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 11 "珠寶商" 160 160 200
+@ COLOR 160 160 200
+@ TALK "你好，要看珠寶嗎？"
+@ TALK "  "
+* 珠寶商指令1
+@ CLEAR_BUFFER
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "買入裝飾品" GO_DOWN 買入裝飾品1
+CASE "離開" GO_DOWN 結束
+SELECT_END
+@ END
+
+* T3-2
+@ SELECT 255 255 255
+CASE "<關於村莊裡的傳說>" GO_DOWN T3-2-1
+SELECT_END
+@ END
+* T3-2-1
+@ CLEAR_BUFFER
+@ FACE 11 "珠寶商" 160 160 200
+@ COLOR 160 160 200
+@ TALK "傳說嗎……，"
+@ TALK "你說這種村莊該會有的傳說是嗎？"
+@ TALK "嗯……，也不能算是傳說啦！"
+@ TALK "只是有個過去的故事，你要聽嗎？"
+@ WAIT
+@ CLEAR_BUFFER
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "<好>" GO_DOWN T3-2-2
+CASE "<不要>" GO_UP 珠寶商指令1
+SELECT_END
+@END
+* T3-2-2
+@ CLEAR_BUFFER
+@ FACE 11 "珠寶商" 160 160 200
+@ COLOR 160 160 200
+@ TALK "好吧！既然你那麼想知道的話。"
+@ TALK "也不是什麼啦！據說在與魔怪之戰結束當時，"
+@ TALK "將戰爭反敗為勝的武士，"
+@ TALK "為了度過安享的晚年，"
+@ TALK "來過此地。"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "雖然只有在這停留一陣子……，"
+@ TALK "不過聽說他要去這世界最東的，"
+@ TALK "某個地方呢？"
+@ TALK "他叫菲太士，已經很久沒看到他了。"
+@ TALK "如果有他在，"
+@ TALK "就不會讓魔怪如此地囂張了。"
+@ GIVE NUM 32
+@ WAIT
+@ END
+
+
+# 7
+# 1
+# 1
+# "珠寶商"
+# BASIC
+# 100
+/購買普通裝飾品
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 11 "珠寶商" 160 160 200
+@ COLOR 160 160 200
+@ TALK "有好貨呢！要買珠寶嗎？"
+@ TALK "  "
+@ COLOR 250 250 0
+@ PLAY 9.WAV
+@ SELECT 255 255 255
+CASE "買入裝飾品" GO_DOWN 買入裝飾品2
+CASE "離開" GO_DOWN 結束
+SELECT_END
+
+# 8
+# 1
+# 1
+# "珠寶商"
+# BASIC
+# 100
+/購買貴重裝飾品
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 11 "珠寶商" 160 160 200
+@ COLOR 160 160 200
+@ TALK "有高級珠寶呢！要看看嗎？"
+@ TALK "  "
+@ COLOR 250 250 0
+@ PLAY 9.WAV
+@ SELECT 255 255 255
+CASE "買入裝飾品" GO_DOWN 買入裝飾品3
+CASE "離開" GO_DOWN 結束
+SELECT_END
+
+# 9
+# 1
+# 1
+# "鐵匠"
+# BASIC
+# 100
+/北貴城村之鐵匠 (製作 項目42武器的人)
+@ IF NUM HAVE 25 THEN GO_DOWN BBB1
+@ IF ITEM HAVE 223 && ITEM HAVE 224 THEN GO_DOWN BOMB2
+@ IF ORDER HAVE 43 THEN GO_DOWN STEP1
+@ IF NUM HAVE 42 THEN GO_DOWN BOMB1
+* BBB1
+@ CLEAR_BUFFER
+@ BOX BLUE 6
+@ FACE 8 "鐵匠" 200 250 0
+@ COLOR 200 250 0
+@ TALK "賣裝備兼修理，需要幫忙嗎？"
+@ TALK "  "
+* 鐵匠指令2
+@ CLEAR_BUFFER
+@ PLAY 1.WAV
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "買入裝備" GO_DOWN 挑選裝備2
+CASE "賣出裝備" GO_DOWN 賣出裝備
+CASE "維修裝備" GO_DOWN 維修裝備
+CASE "與老闆對話" GO_DOWN NEXT1
+CASE "離開" GO_DOWN 結束
+SELECT_END
+* STEP1
+@ CLEAR_BUFFER
+@ BOX BLUE 6
+@ FACE 8 "鐵匠" 200 250 0
+@ COLOR 200 250 0
+@ TALK "你要拿材料來我才有辦理幫你做炸彈啊。"
+@ WAIT
+@ CLEAR_BUFFER
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "知道了，我正在找。" GO_DOWN END
+CASE "我來這裡是有點其它的事情。" GO_UP 鐵匠指令2
+SELECT_END
+
+* NEXT1
+@ CLEAR_BUFFER
+@ BOX BLUE 6
+@ FACE 8 "鐵匠" 200 250 0
+@ COLOR 200 250 0
+@ TALK "我以前也是退魔師呢，"
+@ TALK "雖然現在看起來這麼無能。"
+@ TALK "在世界的各個角落，"
+@ TALK "還存在著很多尚未解開的傳說之謎。"
+@ TALK "身為一個退魔師該挑戰一下這種傳說，"
+@ TALK "這也是不錯的經驗呢？"
+@ WAIT
+@ END
+
+# 10
+# 1
+# 1
+# "道具商人"
+# BASIC
+# 100
+/ 東方村之道具商人 (販賣硫磺.)
+@ IF NUM HAVE 43 THEN GO_DOWN 購買硫磺
+@ IF ORDER HAVE 43 THEN GO_DOWN購買硫磺
+@ GO_UP 道具商人指令1
+@ END
+
+# 11
+# 1
+# 1
+# "鐵匠"
+# BASIC
+# 100
+/西域村之鐵匠 
+@ CLEAR_BUFFER
+@ BOX BLUE 6
+@ FACE 8 "鐵匠" 200 250 0
+@ COLOR 200 250 0
+@ TALK "賣裝備兼修理，需要幫忙嗎？"
+@ TALK "  "
+@ IF NUM HAVE 33 && NUM HAVE 34 THEN GO_DOWN 鐵匠指令3
+@ CLEAR_BUFFER
+@ PLAY 1.WAV
+@ SELECT 255 255 255
+CASE "買入裝備" GO_DOWN 挑選裝備2
+CASE "賣出裝備" GO_DOWN 賣出裝備
+CASE "維修裝備" GO_DOWN 維修裝備
+CASE "對話" GO_DOWN T4-2
+CASE "離開" GO_DOWN 結束
+SELECT_END
+* 鐵匠指令3
+@ PLAY 1.WAV
+@ CLEAR_BUFFER
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "買入裝備" GO_DOWN 挑選裝備2
+CASE "賣出裝備" GO_DOWN 賣出裝備
+CASE "維修裝備" GO_DOWN 維修裝備
+CASE "離開" GO_DOWN 結束
+SELECT_END
+
+* T4-2
+@ CLEAR_BUFFFER
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "<關於痛哭之劍>" GO_DOWN T3-2-1
+CASE "<關於村莊的傳說>" GO_DOWN T3-2-2
+CASE "<結束談話>" GO_DOWN END
+SELECT_END
+* T3-2-1
+@ COLOR 200 250 0
+@ CLEAR_BUFFER
+@ TALK "痛哭之劍……？"
+@ TALK "只要是做鐵匠的人沒有不知道的這件事的。"
+@ TALK "所以我也只能告訴你，"
+@ TALK "大家皆知的事情罷了。"
+@ GIVE NUM 33 
+@ WAIT
+@ GO_UP T4-2
+@ END
+* T3-2-2
+@ COLOR 200 250 0
+@ CLEAR_BUFFER
+@ TALK "有關這村莊的傳說老一輩的人知道的會比較多，"
+@ TALK "不過，你堅決要聽的話。"
+@ TALK "我可以講給你聽。"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "讓我想想看……，我所知道的實在很少……。"
+@ TALK "只是……，根據從我祖父那兒聽到的傳說。"
+@ TALK "據說傳說中的主角是一位很了不起的武士，"
+@ TALK "後來打完勝戰回來已經精疲力盡了。"
+@ TALK "所以就帶著女兒到對面的飛仙村"
+@ TALK "生活了."
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "那位女兒……。"
+@ TALK "聽說是從天降下來的叫妃…什麼的，那並不重要。"
+@ TALK "重要的是此後對於打鬥感到倦意的武士"
+@ TALK "將比生命還要重要的神劍封起來了。"
+@ TALK "應該可能在北貴城附近吧？"
+@ TALK "不用再問了，我也只知道這些。"
+@ TALK "我要工作了。"
+@ GIVE NUM 34 
+@ WAIT
+@ GO_UP T4-2
+@ END
+
+
+# 12
+# 1
+# 1
+# "魔女"
+# BASIC
+# 100
+/ 西域村之魔女
+@ CLEAR_BUFFER
+@ COLOR 240 20 190
+@ IF LEARN_MAGIC THEN GO_DOWN MAGIC_STOP
+@ BOX BLUE 5
+@ FACE 6 "魔法所魔女" 240 20 190
+@ TALK "你找我有事嗎？"
+@ TALK "  "
+@ IF NUM HAVE 35 && NUM HAVE 36 THEN GO_DOWN 魔女指令2
+@ COLOR 250 250 0
+@ PLAY 7.WAV
+@ SELECT 250 250 250
+CASE "魔法訓練" GO_DOWN 魔法訓練2
+CASE "對話." GO_DOWN T5-3
+CASE "離開" GO_DOWN 結束
+SELECT_END
+* 魔女指令2
+@ CLEAR_BUFFER
+@ COLOR 250 250 0
+@ SELECT 250 250 250
+CASE "魔法訓練" GO_DOWN 魔法訓練2
+CASE "算命" GO_DOWN 算命
+CASE "離開" GO_DOWN 結束
+SELECT_END
+
+
+* T5-3
+/ 與西域村之魔女的對話
+@ CLEAR_BUFFER
+@ SELECT 255 255 255
+CASE "<關於村莊的傳聞>" GO_DOWN T3-3-1
+CASE "<關於藥效>" GO_DOWN T3-3-2
+CASE ""
+CASE "<結束談話>" GO_DOWN 結束
+SELECT_END
+@END
+* T3-3-1
+@ CLEAR_BUFFER
+@ COLOR 240 20 190
+@ FACE 6 "魔法所魔女" 240 20 190
+@ TALK "村莊的傳聞？"
+@ TALK "這實在是太小的村莊了……"
+@ TALK "聽說最近有一些怪異的退魔師在走動，"
+@ TALK "我想應該就是指你們吧？"
+@ TALK ""
+@ WAIT
+@ CLEAR_BUFFER
+@ SELECT 255 255 255
+CASE "<關於這些以外的傳聞>" GO_DOWN T3-3-A
+SELECT_END
+@END
+* T3-3-A
+@ CLEAR_BUFFER
+@ TALK "我所知道的只有這些了。"
+@ TALK "因為與世隔絕著生活著……"
+@ GIVE NUM 35
+@ LOCATE_ITEM 9 58 81 167
+@ LOCATE_ITEM 2 10 76 167
+@ WAIT
+@ GO_UP T5-3
+* T3-3-2
+@ CLEAR_BUFFER
+@ COLOR 240 20 190
+@ FACE 6 "魔法所魔女" 240 20 190
+@ TALK "藥效？！"
+@ TALK ""
+@ TALK "你到底在說什麼呀？！"
+@ TALK "我的藥可是有品質保證的！"
+@ TALK "我已經做了十年的藥了！十年！！"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "要說品質的話，絕不會輸給任何人！"
+@ TALK "因此價格就會貴了一點。"
+@ TALK ""
+@ WAIT
+@ SELECT 255 255 255
+CASE "<關於對於品質的自信>" GO_DOWN T3-3-B
+SELECT_END
+@END
+* T3-3-B
+@ CLEAR_BUFFER
+@ TALK "那是因為我都是親自採那些藥材"
+@ TALK "而且雖然我走遍世界採集了藥材"
+@ TALK "但在這附近……"
+@ TALK "奇怪地長滿了有靈氣的藥材。"
+@ TALK "好像是受到不明的神奇力量影響。"
+@ TALK ""
+@ WAIT
+@ SELECT 225 255 255
+CASE ""
+CASE "<採藥材的地方在何處？>" GO_DOWN T3-3-C
+SELECT_END
+@ END
+* T3-3-C
+@ CLEAR_BUFFER
+@ TALK "這是……秘密。"
+@ TALK "本來是不能隨便告訴別人的。"
+@ TALK "不過你好像被一種不平凡的星座眷顧著。"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "我就破例告訴你吧！"
+@ TALK "那是介於西域村及飛仙村的中間地帶。"
+@ TALK "很奇怪地，那個地方長了許多奇妙的藥材。"
+@ TALK "也許那附近有神仙在。"
+@ WAIT
+@ GIVE NUM 36
+@ LOCATE_ITEM 9 66 25 167
+@ LOCATE_ITEM 9 98 22 167
+@ LOCATE_ITEM 2 35 58 167
+@ LOCATE_ITEM 2 89 14 163
+@ GO_UP T5-3
+@ END
+
+
+
+# 13
+# 1
+# 1
+# "道具商人"
+# BASIC
+# 100
+/ 北貴城之道具商人
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 5 "道具商人" 250 200 0
+@ COLOR 250 200 0
+@ TALK "你好.需要什麼嗎?"
+@ TALK "  "
+@ IF NUM HAVE 37 THEN GO_DOWN 道具商指令2
+@ CLEAR_BUFFER
+@ COLOR 250 250 0
+@ PLAY 5.WAV
+@ SELECT 255 255 255
+CASE "買入道具" GO_DOWN 買入道具2
+CASE "賣出道具" GO_DOWN 賣出道具
+CASE "與老闆談話" GO_DOWN T6-1
+CASE "離開" GO_DOWN 結束
+SELECT_END
+* 道具商人指令2
+@ CLEAR_BUFFER
+@ COLOR 250 250 0
+@ BOX BLUE 5
+@ FACE 5 "道具商人" 250 200 0
+@ PLAY 5.WAV
+@ SELECT 255 255 255
+CASE "買入道具" GO_DOWN 買入道具2
+CASE "賣出道具" GO_DOWN 賣出道具
+CASE "離開" GO_DOWN 結束
+SELECT_END
+@ END
+
+* T6-1
+@ CLEAR_BUFFER
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "關於魔怪的出現" GO_DOWN T4-1-A
+CASE "關於東方的城" GO_DOWN T4-1-B
+CASE "結束" GO_DOWN END
+SELECT_END
+* T4-1-A
+@ CLEAR_BUFFER
+@ FACE 5 "道具商人" 250 200 0
+@ COLOR 250 200 0
+@ TALK "啊……魔怪嗎？雖然我們村莊很少看到。"
+@ TALK "可是……偶爾也會出現。"
+@ TALK "當然不曉得那些魔怪是從哪裡出現的。"
+@ TALK "我也很想知道。"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "對了……千萬不要去西方的太龍江附近。"
+@ TALK "特別是那地方的魔怪很多……。"
+@ WAIT
+@ GO_UP T6-1
+@ END
+* T4-1-B
+@ CLEAR_BUFFER
+@ FACE 5 "道具商人" 250 200 0
+@ COLOR 250 200 0
+@ TALK "你要去東方的城嗎？！"
+@ TALK "那你……還是省省吧！！"
+@ TALK "東方城附近佈有結界，"
+@ TALK "你無法進入的。"
+@ WAIT
+@ CLEAR_BUFFER
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "<關於結界的產生>" GO_DOWN T4-1-B1
+SELECT_END
+@ END
+* T4-1-B1
+@ CLEAR_BUFFER
+@ COLOR 250 200 0
+@ BOX BLUE 5
+@ TALK "本來北貴城是在前一次魔道之戰時，"
+@ TALK "集中人力的地方。"
+@ TALK "在人與魔怪的最後一場決戰前，"
+@ TALK "魔怪對此地展開大攻擊，就在那時北貴城城主，"
+@ TALK "利用城堡本身做成陷阱……。"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "把所有敵人引進之後，將城給封住。"
+@ TALK "之後北貴城就變成人人都不敢接近"
+@ TALK "的地區。"
+@ WAIT
+@ CLEAR_BUFFER
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "<關於北貴城>" GO_DOWN T4-1-B2
+SELECT_END
+* T4-1-B2
+@ CLEAR_BUFFER
+@ COLOR 250 200 0
+@ TALK "現在此城已用很堅固的門擋著，至從封城之後，"
+@ TALK "就沒有人去過那附近。"
+@ TALK "我也只有在採藥材時，"
+@ TALK "去過而已……"
+@ TALK "真的是很可怕的地方呢？"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "尤其在夜晚為了月明草去的話……"
+@ TALK "會聽到哭泣的聲音，"
+@ TALK "不知是人……還是怪物……"
+@ TALK "反正那聲音會讓人毛骨悚然。"
+@ GIVE NUM 37
+@ WAIT
+@ GO_UP T6-1
+@ END
+
+
+
+
+
+
+
+
+============================================================
+  建築物指令
+============================================================
+
+* MAGIC_STOP
+@ CLEAR_BUFFER
+@ BOX BLUE 4
+@ FACE 6 "魔法所魔女" 240 20 190
+@ COLOR 240 20 190
+@ FACE 6 "魔法所魔女" 240 20 190
+@ TALK "怎麼？要放棄魔法訓練？"
+@ TALK "  "
+@ COLOR 250 250 0
+@ SELECT 250 250 250
+CASE "放棄。" CANCEL_MAGIC
+CASE "繼續。" GO_DOWN 結束
+SELECT_END
+@ END
+
+* 魔法訓練1
+@ BOX BLUE 7
+@ FACE 6 "魔法所魔女" 240 20 190
+@ COLOR 240 20 190
+@ CLEAR_BUFFER
+@ LEARN_MAGIC "你要學哪一種魔法？"
+200 0 150 255 0 0 255 200 0 255 255 220
+LIST 1
+LIST 2
+LIST 3
+LIST 4
+LIST 5
+LIST 6
+LIST 7
+LIST 8
+LIST 10
+LIST 11
+LIST 12
+LEARN_MAGIC_END
+@ END
+
+* 魔法訓練2
+@ BOX BLUE 7
+@ FACE 6 "魔法所魔女" 240 20 190
+@ COLOR 240 20 190
+@ CLEAR_BUFFER
+@ LEARN_MAGIC "你要學哪一種魔法？"
+200 0 150 255 0 0 255 200 0 255 255 220
+LIST 2
+LIST 3
+LIST 4
+LIST 5
+LIST 7
+LIST 9
+LIST 10
+LIST 11
+LIST 12
+LEARN_MAGIC_END
+@ END
+
+* 挑選裝備1
+@ IF LEVEL GE 36 && STRENGTH GE 65 THEN GO_DOWN 購買裝備10
+@ IF LEVEL GE 32 && STRENGTH GE 59 THEN GO_DOWN 購買裝備9
+@ IF LEVEL GE 28 && STRENGTH GE 53 THEN GO_DOWN 購買裝備8
+@ IF LEVEL GE 24 && STRENGTH GE 48 THEN GO_DOWN 購買裝備7
+@ IF LEVEL GE 19 && STRENGTH GE 44 THEN GO_DOWN 購買裝備6
+@ IF LEVEL GE 15 && STRENGTH GE 40 THEN GO_DOWN 購買裝備5
+@ IF LEVEL GE 11 && STRENGTH GE 36 THEN GO_DOWN 購買裝備4
+@ IF LEVEL GE 7 && STRENGTH GE 28 THEN GO_DOWN 購買裝備3
+@ IF LEVEL GE 3 && STRENGTH GE 22 THEN GO_DOWN 購買裝備2
+@ GO_DOWN 購買裝備1
+
+* 挑選裝備2
+@ IF LEVEL GE 34 && SKILL GE 52 THEN GO_DOWN 購買裝備16
+@ IF LEVEL GE 25 && STRENGTH GE 50 THEN GO_DOWN 購買裝備15
+@ IF LEVEL GE 16 && HEALTH GE 40 THEN GO_DOWN 購買裝備14
+@ IF LEVEL GE 11 && DEXTERITY GE 32 THEN GO_DOWN 購買裝備13
+@ IF LEVEL GE 5 && STRENGTH GE 27 THEN GO_DOWN 購買裝備12
+@ GO_DOWN 購買裝備11
+
+* 購買裝備1
+@ BOX BLUE 7
+@ FACE HERO 250 220 0
+@ CLEAR_BUFFER
+@ BUY_WEAPON "要買哪一個裝備好呢？"
+200 0 150 255 0 0 255 200 0 255 255 220
+LIST 1
+LIST 2
+LIST 3
+LIST 4
+LIST 41
+LIST 42
+LIST 43
+LIST 61
+LIST 62
+LIST 71
+LIST 72
+LIST 81
+LIST 82
+LIST 101
+LIST 111
+LIST 112
+LIST 131
+BUY_WEAPON_END
+@ GO_DOWN 結束
+
+* 購買裝備2
+@ BOX BLUE 7
+@ FACE HERO 250 220 0
+@ CLEAR_BUFFER
+@ BUY_WEAPON "要買哪一個裝備好呢？"
+200 0 150 255 0 0 255 200 0 255 255 220
+LIST 2
+LIST 3
+LIST 4
+LIST 5
+LIST 6
+LIST 42
+LIST 43
+LIST 44
+LIST 61
+LIST 62
+LIST 71
+LIST 72
+LIST 81
+LIST 82
+LIST 83
+LIST 101
+LIST 111
+LIST 131
+LIST 138
+BUY_WEAPON_END
+@ GO_DOWN 結束
+
+* 購買裝備3
+@ BOX BLUE 7
+@ FACE HERO 250 220 0
+@ CLEAR_BUFFER
+@ BUY_WEAPON "要買哪一個裝備好呢？"
+200 0 150 255 0 0 255 200 0 255 255 220
+LIST 3
+LIST 5
+LIST 6
+LIST 7
+LIST 8
+LIST 42
+LIST 43
+LIST 44
+LIST 45
+LIST 62
+LIST 63
+LIST 71
+LIST 72
+LIST 73
+LIST 82
+LIST 83
+LIST 84
+LIST 101
+LIST 102
+LIST 113
+LIST 117
+LIST 136
+LIST 137
+BUY_WEAPON_END
+@ GO_DOWN 結束
+
+* 購買裝備4
+@ BOX BLUE 7
+@ FACE HERO 250 220 0
+@ CLEAR_BUFFER
+@ BUY_WEAPON "要買哪一個裝備好呢？"
+200 0 150 255 0 0 255 200 0 255 255 220
+LIST 3
+LIST 5
+LIST 6
+LIST 7
+LIST 8
+LIST 9
+LIST 42
+LIST 44
+LIST 45
+LIST 46
+LIST 62
+LIST 63
+LIST 71
+LIST 72
+LIST 73
+LIST 82
+LIST 83
+LIST 84
+LIST 85
+LIST 101
+LIST 102
+LIST 103
+LIST 111
+LIST 118
+LIST 138
+BUY_WEAPON_END
+@ GO_DOWN 結束
+
+* 購買裝備5
+@ BOX BLUE 7
+@ FACE HERO 250 220 0
+@ CLEAR_BUFFER
+@ BUY_WEAPON "要買哪一個裝備好呢？"
+200 0 150 255 0 0 255 200 0 255 255 220
+LIST 4
+LIST 7
+LIST 8
+LIST 9
+LIST 10
+LIST 11
+LIST 42
+LIST 44
+LIST 45
+LIST 46
+LIST 47
+LIST 62
+LIST 63
+LIST 64
+LIST 72
+LIST 73
+LIST 74
+LIST 82
+LIST 83
+LIST 84
+LIST 85
+LIST 102
+LIST 103
+LIST 104
+LIST 112
+LIST 114
+LIST 123
+LIST 137
+BUY_WEAPON_END
+@ GO_DOWN 結束
+
+* 購買裝備6
+@ BOX BLUE 7
+@ FACE HERO 250 220 0
+@ CLEAR_BUFFER
+@ BUY_WEAPON "要買哪一個裝備好呢？"
+200 0 150 255 0 0 255 200 0 255 255 220
+LIST 3
+LIST 5
+LIST 7
+LIST 8
+LIST 9
+LIST 11
+LIST 12
+LIST 13
+LIST 43
+LIST 44
+LIST 46
+LIST 47
+LIST 48
+LIST 62
+LIST 63
+LIST 64
+LIST 72
+LIST 73
+LIST 74
+LIST 83
+LIST 84
+LIST 85
+LIST 86
+LIST 102
+LIST 103
+LIST 104
+LIST 111
+LIST 114
+LIST 116
+BUY_WEAPON_END
+@ GO_DOWN 結束
+
+* 購買裝備7
+@ BOX BLUE 7
+@ FACE HERO 250 220 0
+@ CLEAR_BUFFER
+@ BUY_WEAPON "要買哪一個裝備好呢？"
+200 0 150 255 0 0 255 200 0 255 255 220
+LIST 5
+LIST 7
+LIST 8
+LIST 10
+LIST 11
+LIST 13
+LIST 14
+LIST 15
+LIST 43
+LIST 45
+LIST 46
+LIST 48
+LIST 49
+LIST 62
+LIST 64
+LIST 65
+LIST 72
+LIST 73
+LIST 74
+LIST 82
+LIST 84
+LIST 85
+LIST 86
+LIST 87
+LIST 102
+LIST 103
+LIST 104
+LIST 105
+LIST 114
+LIST 132
+BUY_WEAPON_END
+@ GO_DOWN 結束
+
+* 購買裝備8
+@ BOX BLUE 7
+@ FACE HERO 250 220 0
+@ CLEAR_BUFFER
+@ BUY_WEAPON "要買哪一個裝備好呢？"
+200 0 150 255 0 0 255 200 0 255 255 220
+LIST 3
+LIST 5
+LIST 9
+LIST 10
+LIST 11
+LIST 12
+LIST 14
+LIST 15
+LIST 16
+LIST 44
+LIST 45
+LIST 47
+LIST 48
+LIST 49
+LIST 50
+LIST 62
+LIST 63
+LIST 64
+LIST 65
+LIST 72
+LIST 74
+LIST 75
+LIST 82
+LIST 84
+LIST 86
+LIST 87
+LIST 102
+LIST 104
+LIST 105
+LIST 106
+LIST 112
+LIST 117
+LIST 131
+LIST 135
+BUY_WEAPON_END
+@ GO_DOWN 結束
+
+* 購買裝備9
+@ BOX BLUE 7
+@ FACE HERO 250 220 0
+@ CLEAR_BUFFER
+@ BUY_WEAPON "要買哪一個裝備好呢？"
+200 0 150 255 0 0 255 200 0 255 255 220
+LIST 5
+LIST 9
+LIST 10
+LIST 12
+LIST 13
+LIST 14
+LIST 16
+LIST 17
+LIST 18
+LIST 44
+LIST 45
+LIST 47
+LIST 48
+LIST 49
+LIST 50
+LIST 51
+LIST 63
+LIST 64
+LIST 65
+LIST 66
+LIST 72
+LIST 73
+LIST 74
+LIST 75
+LIST 84
+LIST 86
+LIST 87
+LIST 88
+LIST 103
+LIST 104
+LIST 105
+LIST 106
+LIST 115
+LIST 116
+LIST 117
+LIST 123
+LIST 139
+BUY_WEAPON_END
+@ GO_DOWN 結束
+
+* 購買裝備10
+@ BOX BLUE 7
+@ FACE HERO 250 220 0
+@ CLEAR_BUFFER
+@ BUY_WEAPON "要買哪一個裝備好呢？"
+200 0 150 255 0 0 255 200 0 255 255 220
+LIST 9
+LIST 11
+LIST 12
+LIST 15
+LIST 16
+LIST 18
+LIST 19
+LIST 20
+LIST 44
+LIST 46
+LIST 48
+LIST 50
+LIST 51
+LIST 63
+LIST 65
+LIST 66
+LIST 73
+LIST 74
+LIST 75
+LIST 84
+LIST 86
+LIST 87
+LIST 88
+LIST 104
+LIST 105
+LIST 106
+LIST 107
+LIST 113
+LIST 118
+LIST 133
+LIST 137
+BUY_WEAPON_END
+@ GO_DOWN 結束
+
+* 購買裝備11
+@ BOX BLUE 7
+@ FACE HERO 250 220 0
+@ CLEAR_BUFFER
+@ BUY_WEAPON "要買哪一個裝備好呢？"
+200 0 150 255 0 0 255 200 0 255 255 220
+LIST 5
+LIST 7
+LIST 43
+LIST 44
+LIST 62
+LIST 72
+LIST 83
+LIST 101
+BUY_WEAPON_END
+@ GO_DOWN 結束
+
+* 購買裝備12
+@ BOX BLUE 7
+@ FACE HERO 250 220 0
+@ CLEAR_BUFFER
+@ BUY_WEAPON "要買哪一個裝備好呢？"
+200 0 150 255 0 0 255 200 0 255 255 220
+LIST 6
+LIST 8
+LIST 9
+LIST 44
+LIST 46
+LIST 64
+LIST 71
+LIST 84
+LIST 104
+BUY_WEAPON_END
+@ GO_DOWN 結束
+
+* 購買裝備13
+@ BOX BLUE 7
+@ FACE HERO 250 220 0
+@ CLEAR_BUFFER
+@ BUY_WEAPON "要買哪一個裝備好呢？"
+200 0 150 255 0 0 255 200 0 255 255 220
+LIST 7
+LIST 10
+LIST 12
+LIST 45
+LIST 47
+LIST 63
+LIST 65
+LIST 74
+LIST 84
+LIST 86
+LIST 105
+BUY_WEAPON_END
+@ GO_DOWN 結束
+
+* 購買裝備14
+@ BOX BLUE 7
+@ FACE HERO 250 220 0
+@ CLEAR_BUFFER
+@ BUY_WEAPON "要買哪一個裝備好呢？"
+200 0 150 255 0 0 255 200 0 255 255 220
+LIST 10
+LIST 13
+LIST 15
+LIST 16
+LIST 46
+LIST 48
+LIST 49
+LIST 66
+LIST 75
+LIST 87
+LIST 106
+BUY_WEAPON_END
+@ GO_DOWN 結束
+
+* 購買裝備15
+@ BOX BLUE 7
+@ FACE HERO 250 220 0
+@ CLEAR_BUFFER
+@ BUY_WEAPON "要買哪一個裝備好呢？"
+200 0 150 255 0 0 255 200 0 255 255 220
+LIST 26
+LIST 18
+LIST 19
+LIST 52
+LIST 53
+LIST 51
+LIST 68
+LIST 66
+LIST 75
+LIST 88
+LIST 107
+BUY_WEAPON_END
+@ GO_DOWN 結束
+
+* 購買裝備16
+@ FACE HERO 250 220 0
+@ BOX BLUE 7
+@ CLEAR_BUFFER
+@ BUY_WEAPON "要買哪一個裝備好呢？"
+200 0 150 255 0 0 255 200 0 255 255 220
+LIST 25
+LIST 17
+LIST 20
+LIST 31
+LIST 44
+LIST 46
+LIST 48
+LIST 51
+LIST 54
+LIST 66
+LIST 68
+LIST 75
+LIST 76
+LIST 87
+LIST 89
+LIST 109
+LIST 107
+BUY_WEAPON_END
+@ GO_DOWN 結束
+
+* 賣出裝備
+@ BOX BLUE 7
+@ FACE HERO 250 220 0
+@ CLEAR_BUFFER
+@ SELL_WEAPON "要賣出哪一個裝備好呢？"
+255 200 0 255 255 220
+@ GO_DOWN 結束
+
+* 維修裝備
+@ BOX BLUE 7
+@ FACE HERO 250 220 0
+@ CLEAR_BUFFER
+@ REPAIR_WEAPON "要維修哪一個裝備好呢？"
+255 0 0 230 0 180 255 200 0 255 255 220
+@ GO_DOWN 結束
+
+* 買入裝飾品1
+/只有便宜貨 
+@ BOX BLUE 7
+@ FACE HERO 250 220 0
+@ CLEAR_BUFFER
+@ BUY_WEAPON "要買哪一種珠寶好呢？"
+200 0 150 255 0 0 255 200 0 255 255 220
+LIST 111
+LIST 112
+LIST 113
+LIST 114
+LIST 115
+LIST 116
+LIST 117
+LIST 118
+LIST 119
+LIST 123
+LIST 131
+LIST 135
+LIST 136
+LIST 137
+LIST 138
+LIST 139
+BUY_WEAPON_END
+@ GO_DOWN END
+
+* 買入裝飾品2
+/各類的多種 (但沒有貴的)
+@ BOX BLUE 7
+@ FACE HERO 250 220 0
+@ CLEAR_BUFFER
+@ BUY_WEAPON "要買哪一種珠寶好呢？"
+200 0 150 255 0 0 255 200 0 255 255 220
+LIST 111
+LIST 112
+LIST 114
+LIST 115
+LIST 116
+LIST 118
+LIST 119
+LIST 120
+LIST 123
+LIST 124
+LIST 131
+LIST 132
+LIST 134
+LIST 135
+LIST 136
+LIST 138
+LIST 139
+BUY_WEAPON_END
+@ GO_DOWN END
+
+* 買入裝飾品3
+/各類的少種
+@ BOX BLUE 7
+@ FACE HERO 250 220 0
+@ CLEAR_BUFFER
+@ BUY_WEAPON "要買哪一種珠寶好呢？"
+200 0 150 255 0 0 255 200 0 255 255 220
+LIST 113
+LIST 117
+LIST 120
+LIST 121
+LIST 122
+LIST 124
+LIST 132
+LIST 133
+LIST 134
+LIST 140
+LIST 141
+LIST 142
+BUY_WEAPON_END
+@ GO_DOWN END
+
+* 買入道具1
+/超級道具
+@ BOX BLUE 7
+@ FACE HERO 250 220 0
+@ CLEAR_BUFFER
+@ BUY_ITEM "要買哪一種道具好呢？"
+200 0 150 255 0 0 255 200 0 255 255 220
+LIST 161
+LIST 162
+LIST 163
+LIST 164
+LIST 165
+LIST 151
+LIST 152
+LIST 153
+LIST 155
+LIST 156
+LIST 157
+LIST 158
+LIST 159
+LIST 176
+LIST 191
+LIST 192
+BUY_ITEM_END
+@ GO_DOWN 結束
+
+* 買入道具2
+/優質道具種類
+@ BOX BLUE 7
+@ FACE HERO 250 220 0
+@ CLEAR_BUFFER
+@ BUY_ITEM "要買哪一種道具好呢？"
+200 0 150 255 0 0 255 200 0 255 255 220
+LIST 162
+LIST 164
+LIST 165
+LIST 166
+LIST 167
+LIST 176
+LIST 177
+LIST 151
+LIST 152
+LIST 153
+LIST 154
+LIST 155
+LIST 156
+LIST 157
+LIST 158
+LIST 159
+LIST 160
+LIST 191
+LIST 192
+BUY_ITEM_END
+@ GO_DOWN 結束
+
+* 買入道具3
+/到商店買幾種道具
+@ FACE HERO 250 220 0
+@ BOX BLUE 7
+@ CLEAR_BUFFER
+@ BUY_ITEM "要買哪一種道具好呢？"
+200 0 150 255 0 0 255 200 0 255 255 220
+LIST 161
+LIST 162
+LIST 163
+LIST 144
+LIST 165
+BUY_ITEM_END
+@ GO_DOWN 結束
+
+* 賣出道具
+/在商店賣出道具
+@ BOX BLUE 7
+@ FACE HERO 250 220 0
+@ CLEAR_BUFFER
+@ SELL_ITEM "賣哪一個好呢？"
+255 200 0 255 255 220
+BUY_ITEM_END
+@ GO_DOWN 結束
+
+
+
+
+* 算命
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 6 "魔法所魔女" 240 20 190
+@ COLOR 240 20 190
+@ TALK "好，幫你算個命。費用是一百枚銅幣。"
+@ TALK "怎樣？要算嗎？"
+@ WAIT
+@ CLEAR_BUFFER
+@ IF MONEY GE 100 THEN GO_DOWN OK1
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "現在沒有錢，下次吧！"
+@ WAIT
+@ END
+* OK1
+@ SELECT 255 255 255
+CASE "好，幫我算命。" GO_DOWN T1
+CASE "不用了，我捨不得那些錢。" GO_UP 魔法所指令
+SELECT_END
+* T1
+@ IF NUM HAVE 3 THEN GO_DOWN T3
+@ IF NUM HAVE 2 THEN GO_DOWN T2
+@ TALK "你叫宜林，"
+@ TALK "以前是屬於叫火狼的團體吧！"
+@ TALK "以後你會解救很多性命。"
+@ TALK "還有，要小心女色。尤其是以S字開頭的女人"
+@ TALK "對你的將來沒有幫助。"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "對你來說，比起魔法師更適合當戰士。"
+@ IF STRENGTH GE 20 THEN GO_DOWN S1
+@ IF STRENGTH GE 10 THEN GO_DOWN S2
+@ TALK "雖然你現在還很弱，"
+@ TALK "不過你有一種潛在力量不久後就會變強。"
+@ TALK "你會變成一個很優秀的戰士來拯救這世界。"
+@ TALK ""
+@ TALK "算命就到此結束。"
+@ WAIT
+@ REMOVE MONEY 100
+@ END
+* S1
+@ TALK "你或許覺得你很強，"
+@ TALK "但還是要以準備對抗更強的敵人而磨練。"
+@ TALK ""
+@ TALK "算命就到此結束。"
+@ WAIT
+@ REMOVE MONEY 100
+@ END
+* S2
+@ TALK "你要到更大的環境吸收更多的經驗，"
+@ TALK "你要為將來做準備。"
+@ TALK ""
+@ TALK "算命就到此結束。"
+@ WAIT
+@ REMOVE MONEY 100
+@ END
+* T2
+@ TALK "你叫庫薩，"
+@ TALK "對魔法很有天份，"
+@ TALK "不過最好不要對魔怪抱有怨恨，"
+@ TALK "那可能會使你更危險。"
+@ TALK "不過……，"
+@ TALK "背在你背後箱子……，很難看得到裡面。"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "雖然不知道箱子裡裝的是什麼，"
+@ TALK "但好像積聚了很多怨恨。"
+@ TALK "就幫你算到此為止吧。"
+@ WAIT
+@ REMOVE MONEY 100
+@ END
+* T3
+@ TALK "妳就是那位中國公主藍寧吧！"
+@ TALK "在往後的日子裏，妳會遇到一次大災難，"
+@ TALK "不過會有貴人相助讓妳能夠安全渡過，"
+@ TALK "但是妳還是要小心。"
+@ TALK "妳的周圍圍繞著很多危險不安的氣。"
+@ WAIT
+@ REMOVE MONEY 100
+@ END
+
+
+
+
+
+
+
+
+
+=========================================================
+/*****************  主項目  ***********************/
+=========================================================
+
+=========================================================
+/*****************  炸掉北貴城門  ***********************/
+=========================================================
+41. 炸掉北貴城門.
+   看完北貴城門 -> 旁邊出現珠寶商老人(項目 42)
+   如有炸彈就把門毀掉,點選爆炸音,產生可以去北貴城門的
+項目.
+# 41
+# 8
+# 10
+# "北貴城門"
+# FLOW
+# 100
+@ IF ITEM HAVE 225 THEN GO_DOWN SUC1
+@ IF NUM HAVE 42 THEN GO_DOWN TS1
+@ IF ORDER HAVE 43 THEN GO_DOWN TS1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "咦？這門是什麼？關的還真牢。"
+@ TALK "看起來以我的武器或魔法根本無法打得開。"
+@ TALK "  "
+@ TALK "嗯……。這裡面好像有什麼東西。"
+@ TALK "這裏會不會是大家在談論的北貴城……。"
+@ NEW_OBJECT 8 39 13 1 18 42
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "啊！下面那間破屋裡住著一位老人呢。"
+@ TALK "是什麼時候來的？剛才怎麼沒看到。"
+@ TALK "看來他住在這兒，"
+@ TALK "去問問看關於這門的事情好了。"
+@ WAIT
+@ END
+
+* TS1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "這門真堅固，"
+@ TALK "看來一定要有炸彈才能毀掉。"
+@ WAIT
+@ END
+
+* SUC1
+/利用炸彈把門毀掉
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "現在可以把門毀掉了，"
+@ TALK "把炸彈安置在門附近就可以了。"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "好，炸彈放這應該就好了吧？"
+@ TALK "來試試看吧！"
+@ WAIT
+@ PLAY 32.WAV
+@ REMOVE ITEM 225 
+@ CHANGE_GOS 62
+@ WAIT
+@ CLEAR_BUFFER
+@ COLOR 250 250 0
+@ TALK "哇！！好強的火力。"
+@ TALK "北貴城村之鐵匠的技術果然是一流的，"
+@ TALK "現在城門已毀掉了，"
+@ TALK "可以進入到北貴城了。"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "怎麼了？？感覺到很奇怪的氣呢！"
+@ TALK "似乎有股邪惡的魔氣，"
+@ TALK "必須要多注意一下了。"
+@ WAIT
+@ LOCATE_ENEMY 8 58 5 37 30 0
+@ LOCATE_ENEMY 8 59 7 37 31 0
+@ LOCATE_ENEMY 8 60 5 37 33 0
+@ LOCATE_ENEMY 8 61 7 37 32 0
+@ LOCATE_ENEMY 8 57 5 37 23 0
+@ LOCATE_ENEMY 8 58 7 37 27 0
+@ LOCATE_ENEMY 8 60 7 37 30 0
+@ CLEAR_BUFFER
+@ NEW_OBJECT 8 59 3 11 62 53
+@ REMOVE_OBJECT 8 1
+@ REMOVE_OBJECT THIS
+@ END
+
+
+# 42
+# 8
+# 1
+# "菲太士"
+# FLOW
+# 100
+@ IF ITEM HAVE 225 THEN GO_DOWN S2
+@ IF NUM HAVE 43 THEN GO_DOWN S1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "老先生，請問一下。"
+@ WAIT
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 11 "城門旁老人" 210 210 210
+@ COLOR 210 210 210
+@ TALK "什麼事，我從剛才就注意到你了，"
+@ TALK "看你好像對城門很有興趣。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "是的，那城門真的是很堅固呢！" GO_DOWN T1
+SELECT_END
+* T1
+@ CLEAR_BUFFER
+@ FACE 11 "城門旁老人" 210 210 210
+@ COLOR 210 210 210
+@ TALK "那個地方就叫做北貴城，"
+@ TALK "真的是很可怕的地方，我兒子也被關在裡面。"
+@ TALK "可是，我現在又無能為力。"
+@ TALK "只能在城外嘆氣……。唉……"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "希望我能幫上你的忙，"
+@ TALK "只是那城門太堅固了恐怕無法毀掉。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 11 "城門旁老人" 210 210 210
+@ COLOR 210 210 210
+@ TALK "不會，那門只要有炸彈就可以毀掉。"
+@ TALK "不過現在炸彈很難弄到手。"
+@ TALK "而且，當門毀掉之後，"
+@ TALK "可能會有許多邪惡的魔怪跑出來。"
+@ TALK "所以我也只能………。"
+@ WAIT
+* S1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "老先生，我幫你將門毀掉，"
+@ TALK "把你兒子救出來。"
+@ TALK "你告訴我怎樣才能拿到剛才你所說的炸彈。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 11 "城門旁老人" 210 210 210
+@ COLOR 210 210 210
+@ TALK "那……，好吧！那並不難，"
+@ TALK "我以前認識的個人，"
+@ TALK "是一個很有才能的人，"
+@ TALK "聽說現在在北貴城村當鐵匠。"
+@ TALK "你去找他，"
+@ TALK "他的話應該能幫你做炸彈。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "好，知道了。"
+@ TALK "我會盡快將炸彈拿來的。"
+@ GIVE NUM_TO_ALL 42
+@ WAIT
+@ END
+* S2
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 11 "菲太士" 210 210 210
+@ COLOR 250 250 0
+@ TALK "拿到炸彈了的話快試試看，"
+@ TALK "你真是一位有正義感的人……。"
+@ WAIT
+@ END
+
+
+* BOMB1
+/ 當北貴城之鐵匠檢查完 NUM42 後並吩咐將製作炸彈所需的材料找來
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 8 "鐵匠" 210 210 210
+@ COLOR 210 210 210
+@ TALK "你就是那一個想要進入北貴城的人嗎？"
+@ TALK "勇氣可佳，"
+@ TALK "那地方真的很危險。"
+@ TALK "到時候如果裡面的魔怪跑出來這地方會變的更危險。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "情況我已從住在城門旁老人那兒聽說過了，"
+@ TALK "所以很清楚，"
+@ TALK "但是他說他的兒子也被關在裡面，"
+@ TALK "我怎能見死不救呢？"
+@ TALK "真正的退魔師是不會怕任何魔怪的。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 8 "鐵匠" 210 210 210
+@ COLOR 210 210 210
+@ TALK "什麼，那老先生的話是以前和我共生死的菲太士，"
+@ TALK "曾經是一位聲名遠播的優秀武士呢。"
+@ TALK "你真的有看到他？"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "當然，是他告訴我你有這項才能，"
+@ TALK "叫我來取得炸彈以毀掉城門的。"
+@ TALK "幫我做炸彈吧！我會付錢的。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 8 "鐵匠" 210 210 210
+@ COLOR 210 210 210
+@ TALK "炸彈嗎…？現在不行，"
+@ TALK "炸彈需要用到硫磺和煙草，但我這沒有這些材料。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "好，那我負責找材料來，"
+@ TALK "你知道去哪裡才拿得到這兩樣材料嗎？"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 8 "鐵匠" 210 210 210
+@ COLOR 210 210 210
+@ TALK "硫磺在東方村之道具商人那兒有賣。"
+@ TALK "至於煙草嘛……，"
+@ TALK "聽說住在哥今司的魔怪白頭魔神身上有，"
+@ TALK "殺了白頭魔神就能拿到。"
+@ TALK "大概就是這樣。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "明白了，我現在就出發去拿材料。"
+@ TALK "請你等我。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 8 "鐵匠" 210 210 210
+@ COLOR 210 210 210
+@ TALK "等一下，我拿些東西給你。"
+@ TALK "這個盾是我花費三年的時間製造的，"
+@ TALK "叫做精靈盾，它會幫助你維持性命，拿去吧！"
+@ GIVE ITEM 67 1
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "謝謝，等我殺了北貴城的魔怪後，"
+@ TALK "再來還你這份情。"
+@ TALK "再見！"
+@ IF ORDER_SPACE NOTHAVE THEN GO_DOWN NO_SPACE
+@ ORDER 43 "尋找煙草和硫磺"
+MENT "找到炸彈的材料煙草和硫磺，"
+MENT "拿給北貴城村之鐵匠。"
+MENT "殺死哥今司的白頭魔神就可以拿到煙草。"
+MENT "硫磺，到東方村之道具商人那兒就可以買到。"
+MENT " "
+MENT "要製好炸彈毀掉北貴城城門，"
+MENT "才有辦法救出菲太士的兒子。"
+ORDER_END
+@ LOCATE_ENEMY 11 11 41 24 45 223
+@ GIVE NUM_TO_ALL 43
+@ REMOVE NUM_TO_ALL 42
+@ WAIT
+@ END
+
+
+* BOMB2
+/ 北貴城村之鐵匠檢查完硫磺和煙草後製作炸彈.
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 8 "鐵匠" 210 210 210
+@ COLOR 210 210 210
+@ TALK "果然你是有資格進入北貴城的退魔師，"
+@ TALK "殺死白頭魔神拿到炸彈的材料，真是了不起。"
+@ TALK "有這些材料就可以製作上品的炸彈了。"
+@ TALK "那我現在這就做。"
+@ REMOVE ITEM 223
+@ REMOVE ITEM 224
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "炸彈做好了，完美的傑作。"
+@ TALK "你就拿著這些炸彈去毀掉北貴城門吧！"
+@ TALK "應該是足足有餘了。"
+@ GIVE ITEM 225 1
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "謝謝，真是麻煩您了。"
+@ TALK "那我這就出發去毀掉北貴城門了。"
+@ REMOVE NUM_TO_ALL 43
+@ GIVE NUM_TO_ALL 25
+@ IF ORDER HAVE 43 THEN REMOVE_ORDER 43
+@ WAIT
+@ END
+
+* 購買硫磺
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "原來他就是賣硫磺的商人。"
+@ TALK "我要做什麼好呢？"
+@ SELECT 255 255 255
+CASE "要硫磺" GO_DOWN T1
+CASE "逛道具" GO_UP 道具商人指令1
+SELECT_END
+* T1
+@ CLEAR_BUFFER
+@ FACE 5 "道具商人" 210 210 210
+@ COLOR 210 210 210
+@ TALK "你來買硫磺啊！"
+@ TALK "你就是那位有名的正義之退魔師吧！"
+@ TALK "剛好我有一個硫磺，我也受過菲太士的幫助，"
+@ TALK "為了表示我的誠意不要跟你收費了。"
+@ TALK "你拿去吧！"
+@ GIVE ITEM 224 1
+@ CHANGE 4
+@ END
+
+
+# 53
+# 8
+# 11
+# "北貴城門"
+# BASIC
+# 100
+/已被毀的北貴城門.進入北貴城.
+@ IF NUM HAVE 53 THEN GO_DOWN SUC2
+@ CLEAR_BUFFER
+@ BOX BLUE 6
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "這就是到北貴城的通路，"
+@ TALK "裡面會有哪一種魔怪呢？"
+@ TALK "怎麼辦呢？現在進去嗎？"
+@ TALK " "
+@ COLOR 250 150 0
+@ SELECT 255 255 255
+CASE "現在進去" GO_DOWN SUC1
+CASE "不進去" GO_DOWN END
+SELECT_END
+* SUC1
+@ GIVE NUM_TO_ALL 53
+@ GO_DOWN SUC2
+* SUC2
+@ WARP 19 2 77
+@ END
+
+
+
+=========================================================
+/********擊破神石
+=========================================================
+# 43
+# 17
+# 10
+# "退役將軍"
+# BASIC
+# 123
+/ 北貴城村之退役將軍.
+* 退役將軍話
+@ IF NUM HAVE 29 THEN GO_DOWN T1
+@ IF NUM HAVE 52 THEN GO_DOWN NEXT1
+* T1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 10 "退役將軍" 210 210 210
+@ COLOR 210 210 210
+@ TALK "當年我是維護世界的將軍，"
+@ TALK "只要不要存有私慾，"
+@ TALK "你也可以變成像我一樣優秀的戰士。"
+@ TALK "盡力做吧！為了大家的和平……。"
+@ WAIT
+@ END
+* NEXT1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 10 "退役將軍" 210 210 210
+@ COLOR 210 210 210
+@ TALK "我正在等你呢，"
+@ TALK "我忘記告訴你一件事，"
+@ TALK "你會需要魔法師的日記本。"
+@ TALK "當你在被封鎖的刀面前唸日記本裡的咒語，"
+@ TALK "刀子的封印會被解開而跳出石頭。"
+@ GIVE ITEM 244 1
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "謝謝您，將軍。"
+@ TALK "若我得到神石的力量我會為正義而使用它。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 10 "退役將軍" 210 210 210
+@ COLOR 210 210 210
+@ TALK "還有重要的是那咒語很難唸，"
+@ TALK "那咒語是從古代中國皇室傳下來的，"
+@ TALK "通常連魔法師都很難施咒。"
+@ WAIT
+@ REMOVE NUM_TO_ALL 52
+@ GIVE NUM_TO_ALL 29
+@ WAIT
+@ END
+
+# 44
+# 17
+# 10
+# "退役將軍"
+# FLOW
+# 123
+/ 北貴城村之退役將軍.知道擊破神石的方法.
+@ IF NUM HAVE 47 THEN GO_DOWN STEP1
+@ IF NUM NOTHAVE 45 && NUM NOTHAVE 46 THEN GO_UP 退役將軍話
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 10 "退役將軍" 210 210 210
+@ COLOR 210 210 210
+@ TALK "你應該也知道關於神石的傳說吧。"
+@ TALK "那一個與神石講過話的人就是我，"
+@ TALK "只要擊破那神石就會擁有很大的力量。"
+@ TALK "不過，我因為自己的私慾，"
+@ TALK "而被神石所詛咒。"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "為了擊破神石應該要保持純潔的心，"
+@ TALK "但是我那時並沒能這樣。"
+@ TALK "因此，我時時刻刻都會提醒晚輩，"
+@ TALK "要將個人的私慾拋下。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "再多告訴我一點。" GO_DOWN T1
+CASE "好，剩下的下次再聽好了。" GO_DOWN END
+SELECT_END
+* T1
+@ CLEAR_BUFFER
+@ TALK "再多告訴我一點。"
+@ TALK "要怎樣才能擊破神石？"
+@ TALK "還有，若擊破神石會得到怎樣的力量？"
+@ WAIT
+@ CLEAR_BUFFER
+@ COLOR 210 210 210
+@ FACE 10 "退役將軍" 210 210 210
+@ TALK "為了擊破神石，"
+@ TALK "需要將精鍊的化石水灑在上面。"
+@ TALK "                                                 "
+@ TALK "不過像你這樣年輕的退魔師，"
+@ TALK "往往因為自己的貪念及慾望，"
+@ TALK "而沒有資格擊破神石。"
+@ TALK "最後只會像我一樣被神石詛咒。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "神石的詛咒？"
+@ TALK "那詛咒那麼殘酷嗎？"
+@ WAIT
+@ CLEAR_BUFFER
+@ COLOR 210 210 210
+@ FACE 10 "退役將軍" 210 210 210
+@ TALK "那是個很殘酷的詛咒。"
+@ TALK "會使你在人間的貪念及慾望全部消失。"
+@ TALK "如果不相信我的話，"
+@ TALK "你自己親自到神石那兒去。"
+@ TALK "等你親自看完神石再說好了。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "請你告訴我神石所在的地方。"
+@ TALK "不管是多麼殘酷詛咒，我還是需要神石的力量。"
+@ WAIT
+@ CLEAR_BUFFER
+@ COLOR 210 210 210
+@ FACE 10 "退役將軍" 210 210 210
+@ TALK "那個神石位於光明地理中東邊的島上。"
+@ TALK "小心！！"
+@ WAIT
+@ GIVE NUM 44
+@ REMOVE_OBJECT 6 10
+@ NEW_OBJECT 6 61 40 11 63 47
+@ END
+
+* STEP1
+/ 擊破神石方法的說明
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "將軍，我看到神石了。"
+@ TALK "它有股神秘的感覺。"
+@ TALK "求你告訴我擊破神石的方法。"
+@ TALK "在我的胸口及腦海裡還能感受得到"
+@ TALK "神石的迴音。"
+@ WAIT
+@ CLEAR_BUFFER
+@ COLOR 210 210 210
+@ FACE 10 "退役將軍" 210 210 210
+@ TALK "什麼？你說你有聽到神石的聲音？"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "嗯……"
+@ TALK "也許你有可以擊破神石的力量。"
+@ TALK "好，那我來告訴你方法。"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "為了擊破神石，"
+@ TALK "需要將精鍊的化石水灑在上面。"
+@ TALK "至於化石水的事，你可以去問住在這村莊的騎士"
+@ TALK "奧爾帕喬，他知道哪裡有化石水。"
+@ NEW_OBJECT 17 28 22 13 16 48
+@ GIVE NUM_TO_ALL 50
+@ CHANGE 0
+@ WAIT
+@ END
+
+
+# 48
+# 17
+# 13
+# "騎士奧爾帕喬"
+# FLOW
+# 100
+/ 北貴城騎士.將化石水拿來.
+@ IF ITEM HAVE 211 THEN GO_DOWN SUC1
+@ IF ORDER HAVE 48 THEN GO_DOWN NEXT1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 9 "奧爾帕喬" 210 210 210
+@ COLOR 210 210 210
+@ TALK "你是聽將軍的話來找我的嗎？"
+@ TALK "你應該是來拿化石水的吧。"
+@ TALK "不過那很困難。"
+@ WAIT
+@ CLEAR_BUFFER
+@ COLOR 250 250 0
+@ FACE HERO 250 250 0
+@ SELECT 255 255 255
+CASE "為什麼？有什麼困難？" GO_DOWN T2
+CASE "那沒辦法，告辭了……" GO_DOWN END
+SELECT_END
+* T2
+@ CLEAR_BUFFER
+@ FACE 9 "奧爾帕喬" 210 210 210
+@ COLOR 210 210 210
+@ TALK "雖然我知道化石水在的地方，"
+@ TALK "但並不清楚藏有那精練的化石水的正確位置。"
+@ TALK "為了找它需要有桂樹枝。"
+@ TALK "你願意把桂樹枝拿給我嗎？"
+@ TALK "只要把它找來，我就幫你取得精鍊的化石水。"
+@ WAIT
+@ CLEAR_BUFFER
+@ COLOR 250 250 0
+@ FACE HERO 250 250 0
+@ SELECT 255 255 255
+CASE "好，我去找。" GO_DOWN OK1
+CASE "不，我放棄。" GO_DOWN NO1
+SELECT_END
+* NO1
+@ CLEAR_BUFFER
+@ FACE 9 "奧爾帕喬" 210 210 210
+@ COLOR 210 210 210
+@ TALK "真是沒出息，竟然不曉得那神石的力量……。"
+@ TALK "慢走。"
+@ WAIT
+@ END
+* OK1
+@ CLEAR_BUFFER
+@ FACE 9 "奧爾帕喬" 210 210 210
+@ COLOR 210 210 210
+@ TALK "好，那我就告訴你取得桂樹樹枝的法方吧！"
+@ TALK "你要殺死迴音谷裡的伐基拉司。"
+@ TALK "在他死亡的地方會出現桂樹樹枝"
+@ TALK "那……就出發吧！"
+@ IF ORDER_SPACE NOTHAVE THEN GO_DOWN NO_SPACE
+@ ORDER 48 "殺掉伐基拉司找到桂樹枝"
+MENT "殺掉迴音谷裡的伐基拉斯後，"
+MENT "找到桂樹枝，"
+MENT "並拿給北貴城村之騎士奧爾帕喬。"
+MENT "那他會幫你拿化石水。"
+ORDER_END
+@ LOCATE_ENEMY 12 55 87 39 48 211
+@ GIVE NUM_TO_ALL 48
+@ WAIT
+@ END
+
+* NEXT1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 9 "奧爾帕喬" 210 210 210
+@ COLOR 210 210 210
+@ TALK "你要幫我拿桂樹樹枝來，"
+@ TALK "我才有辦法幫你取得的精鍊的化石水。"
+@ WAIT
+@ END
+
+* SUC1
+/ 拿桂樹樹枝給奧爾帕喬的話.
+@ REMOVE_ORDER 48
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 9 "奧爾帕喬" 210 210 210
+@ COLOR 210 210 210
+@ TALK "果真拿到我說的東西了，"
+@ TALK "迴音谷的伐基拉斯應該是很強悍的魔怪吧。"
+@ TALK "你真是位優秀的退魔師。"
+@ WAIT
+@ CLEAR_BUFFER
+@ COLOR 250 250 0
+@ FACE HERO 250 250 0
+@ TALK "那你快去幫我拿精鍊的化石水，"
+@ TALK "我要趕快去把神石擊破。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 9 "奧爾帕喬" 210 210 210
+@ COLOR 210 210 210
+@ TALK "要我去幫你拿化石水的話，"
+@ TALK "幫我做一件事好嗎？"
+@ TALK "因為我要是幫你去找化石水的話，"
+@ TALK "我就沒空去做這件事了。你會幫我吧？"
+@ WAIT
+@ CLEAR_BUFFER
+@ COLOR 250 250 0
+@ FACE HERO 250 250 0
+@ SELECT 255 255 255
+CASE "好，沒問題。" GO_DOWN OK2
+CASE "不行，我很忙。" GO_DOWN NO2
+SELECT_END
+* NO2
+@ CLEAR_BUFFER
+@ FACE 9 "奧爾帕喬" 210 210 210
+@ COLOR 210 210 210
+@ TALK "好，不過你要是沒有化石水的話，"
+@ TALK "你一輩子也無法得到神石的力量。"
+@ TALK "想好了再來找我。"
+@ WAIT
+@ END
+* OK2
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 9 "奧爾帕喬" 210 210 210
+@ COLOR 210 210 210
+@ TALK "好，那你聽清楚。"
+@ TALK "你把這本日記本拿給西域村的村長，"
+@ TALK "這對我很重要。"
+@ TALK "等你把這日記本傳達完畢回來，"
+@ TALK "我可能已經取好化石水在等你了。"
+@ IF ORDER_SPACE NOTHAVE THEN GO_DOWN NO_SPACE
+@ ORDER 49 "傳達騎士的日記本"
+MENT "將日記本傳達給西域村村長，"
+MENT "之後再去找北貴城村的奧爾帕喬，"
+MENT "就可以拿到化石水了。"
+ORDER_END
+@ GIVE ITEM 243 1
+@ REMOVE ITEM 211
+@ WAIT
+@ REMOVE_OBJECT THIS
+@ END
+
+* SUC243
+/ 將日記本傳達給村長
+@ CLEAR_BUFFER
+@ COLOR 250 250 0
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ TALK "你好？村長先生。"
+@ TALK "你認識北貴城村的叫奧爾帕喬的騎士嗎？"
+@ TALK "他要我把這本日記本拿給你。"
+@ REMOVE ITEM 243
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 3 "村長" 210 210 210
+@ COLOR 210 210 210
+@ TALK "喔！奧爾帕喬，終於拿到這本日記本了。"
+@ TALK "謝謝你，嗯……，應該給謝禮才對。"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "對了，有這個呢！請笑納。"
+@ GIVE ITEM 52 1
+@ GIVE ITEM 108 1
+@ TALK "反正對我來說也沒用了，"
+@ TALK "這是我年輕時用來來對抗魔怪的武器，"
+@ TALK "叫魔流弓，是我辛苦取得的寶物。"
+@ TALK "還有這是光之靴。"
+@ TALK "不是全部要送你的喔！"
+@ TALK "光之靴是要請你拿給奧爾帕喬的。"
+@ TALK "是我小小的誠意。那，請慢走。."
+@ REMOVE_ORDER 49
+@ NEW_OBJECT 17 28 22 14 16 50
+@ GIVE NUM 50
+@ WAIT
+@ END
+
+# 50
+# 17
+# 14
+# "奧爾帕喬"
+# FLOW
+# 100
+@ CLEAR_BUFFER
+@ IF ITEM NOTHAVE 108 THEN GO_DOWN T4
+@ BOX BLUE 5
+@ FACE 9 "奧爾帕喬" 210 210 210
+@ COLOR 210 210 210
+@ TALK "喔……，是你，日記本送達了吧！"
+@ TALK "我已經把精鍊的化石水拿來了，"
+@ TALK "用這個應該可以擊破神石。"
+@ TALK ""
+@ TALK "路上小心，千萬不要像將軍那樣受到詛咒……。"
+@ GIVE ITEM 234 1
+@ WAIT
+@ CLEAR_BUFFER
+@ COLOR 250 250 0
+@ FACE HERO 250 250 0
+@ TALK "這是西域村村長叫我拿給你的"
+@ TALK "光之靴。"
+@ WAIT
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 9 "奧爾帕喬" 210 210 210
+@ COLOR 210 210 210
+@ TALK "不用了，你拿去用吧。"
+@ TALK "你應該更需要它，"
+@ TALK "我先告辭了。"
+@ WAIT
+@ IF NUM HAVE 49 THEN REMOVE NUM_TO_ALL 49
+@ IF NUM HAVE 48 THEN REMOVE NUM_TO_ALL 48
+@ IF NUM HAVE 46 THEN REMOVE NUM_TO_ALL 46
+@ IF NUM HAVE 45 THEN REMOVE NUM_TO_ALL 45
+@ IF NUM HAVE 44 THEN REMOVE NUM_TO_ALL 44
+@ REMOVE_OBJECT THIS
+@ END
+
+* T4
+@ BOX BLUE 5
+@ FACE 9 "奧爾帕喬" 210 210 210
+@ COLOR 210 210 210
+@ TALK "回來了嗎？"
+@ TALK "不過，你要怎麼證明你已經把日記本拿給人家了？"
+@ TALK "說說看吧！"
+@ TALK "等你能夠證明的時候再來找我，"
+@ TALK "我再把精鍊的化石水拿給你。"
+@ WAIT
+@ END
+
+
+
+
+# 45
+# 17
+# 2
+# "商店老闆"
+# FLOW
+# 123
+/ 北貴城村之商店老闆.有關退役將軍的介紹
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 7 "商店老闆" 210 210 210
+@ COLOR 210 210 210
+@ TALK "你有聽過有關神石的傳說嗎？"
+@ TALK "不知是誰編出來的傳說，"
+@ TALK "據說在光明地理附近那圓圓的岩石就是神石……。"
+@ TALK "雖然詳細的內容我也不是很清楚，"
+@ TALK "聽說神石中藏有很大的力量。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "請告訴我關於神石的事情，"
+@ TALK "要怎麼樣才能得到它的力量？"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 7 "商店老闆" 210 210 210
+@ COLOR 210 210 210
+@ TALK "詳情我也不知道。"
+@ TALK "關於那神石的事情要問掌管這村莊的將軍，"
+@ TALK "我也是從他那兒聽來的。"
+@ WAIT
+@ GIVE NUM_TO_ALL 45
+@ CHANGE 0
+@ END
+
+# 46
+# 18
+# 8
+# "珠寶商人"
+# FLOW
+# 123
+/ 有關退役將軍的介紹
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 11 "珠寶商人" 210 210 210
+@ COLOR 210 210 210
+@ TALK "你有聽過有關神石的傳說嗎？"
+@ TALK "不知是誰編出來的傳說，"
+@ TALK "聽說是在這世界的某個地方，"
+@ TALK "不過詳情就不太曉得了，"
+@ TALK "你到北貴城村吧！"
+@ TALK "也許，"
+@ TALK "到那村子就可以聽到更詳細的故事。"
+@ WAIT
+@ GIVE NUM_TO_ALL 46
+@ CHANGE 0
+@ END
+
+
+# 51
+# 6
+# 10
+# "不知名的岩石"
+# BASIC
+# 100
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "這岩石是什麼？"
+@ TALK "有股神秘的力量。"
+@ WAIT
+@ END
+
+
+# 47
+# 6
+# 11
+# "神石"
+# FLOW
+# 100
+@ IF ITEM HAVE 234 THEN GO_DOWN SUC4
+@ IF NUM HAVE 50 THEN GO_DOWN NEXT2
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "原來這就是神石，"
+@ TALK "哇！！岩石怪怪的。"
+@ CLEAR_BUFFER
+@ FACE NO
+@ BOX RED 8
+@ PLAY 12.WAV
+@ TALK " 你，想擊破封印的人，不要輕舉妄動。"
+@ TALK "                                           "
+@ TALK "這是我設來維護神聖的。"
+@ TALK "                                           "
+@ TALK "任何人都不許動它，"
+@ TALK "                                           "
+@ TALK "唯有傳說中可以拯救世界的武士才有資格。"
+@ TALK "                                           "
+@ TALK "若你只是虛榮的想籍神石來試驗你的勇猛，"
+@ TALK "                                           "
+@ TALK "那會是很大的錯誤。"
+@ TALK "                                           "
+@ TALK "不要誇耀你的愚蠢。"
+@ TALK "                                           "
+@ TALK "唯有折回原路回去，才是最明智的選擇。"
+@ TALK "                                           "
+@ TALK "趕緊折回腳步。"
+@ TALK "                                           "
+@ TALK "回到你原本的地方。"
+@ WAIT
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "真是厲害，岩石既然會講話。"
+@ TALK "看來必須得再回到北貴城村請問將軍了。"
+@ WAIT
+@ GIVE NUM 47
+@ END
+
+* NEXT2
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "再來要把精鍊的化石水灑在上面，"
+@ TALK "首先應該去取得精鍊的化石水。"
+@ WAIT
+@ END
+
+* SUC4
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "現在就將精鍊的化石水灑在上面吧！"
+@ TALK "好了，全部灑在神石上面了。"
+@ TALK "  "
+@ TALK "  "
+@ REMOVE ITEM 234
+@ REMOVE NUM_TO_ALL 50
+@ PLAY 33.WAV
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK " "
+@ TALK " "
+@ TALK "哇！神石在動了。"
+@ TALK "  "
+@ TALK "  "
+@ PLAY 34.WAV
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "神石破了！！！"
+@ NEW_OBJECT 6 62 40 12 42 52
+@ TALK "                      "
+@ TALK "咦？？？那是什麼？"
+@ TALK "石頭裡有把奇異的刀！！！"
+@ WAIT
+@ TALK "它就是那股神秘的力量的來源嗎？"
+@ REMOVE_OBJECT THIS
+@ END
+
+
+=========================================================
+/********取出石頭裡的刀子
+=========================================================
+
+# 52
+# 6
+# 12
+# "被封住的刀"
+# FLOW
+# 100
+@ IF ITEM HAVE 244 THEN GO_DOWN SUC1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "刀子深陷在石頭裡呢！"
+@ TALK "用力拔拔看吧。"
+@ TALK "               "
+@ WAIT
+@ TALK "呀………！"
+@ TALK "               "
+@ PLAY 35.WAV
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "啊，怎麼連動都不動？"
+@ TALK "還有這奇怪的哭泣聲又是什麼？"
+@ TALK "怎麼辦呢？"
+@ WAIT
+* STEP1
+@ CLEAR_BUFFER
+@ SELECT 255 255 255
+CASE "再試一次。" GO_DOWN NEXT1
+CASE "放棄。" GO_DOWN NEXT2
+SELECT_END
+* NEXT1
+@ CLEAR_BUFFER
+@ TALK "再拔拔看好了。"
+@ TALK "               "
+@ TALK "呀………！"
+@ TALK "               "
+@ PLAY 35.WAV
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "果然不行，"
+@ TALK "怎麼辦呢？"
+@ GO_UP STEP1
+* NEXT2
+@ CLEAR_BUFFER
+@ TALK "看樣子只靠蠻力是不行的，"
+@ TALK "好像需要再去找一次北貴城村的退役將軍。"
+@ GIVE NUM_TO_ALL 52
+@ WAIT
+@ END
+
+* SUC1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ IF NUM HAVE 3 THEN GO_DOWN SUC2
+@ IF NUM HAVE 2 THEN GO_DOWN STEP2
+@ TALK "來唸唸看魔法之日記本裡的咒語吧！"
+@ TALK "                 "
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "阿拉…咖…穆內…撒…哆巴…喇…哆哆基…舍…"
+@ TALK "呀！！"                 "
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "這咒語對我來說發音太困難了，"
+@ TALK "請庫斯或藍寧來唸唸看好了。"
+@ WAIT
+@ END
+* STEP2
+@ TALK "按照日記本裡的咒語唸唸看好了。"
+@ TALK "                 "
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "阿…拉咖…穆…內…撒撒撒…哆巴巴巴…喇…"
+@ TALK "哆哆基…"                    "
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "這是什麼咒語？怎麼這麼難啊！"
+@ TALK "我自己的魔法咒語都很簡單呢，"
+@ TALK "身為退魔師庫斯,連這種魔咒都唸不出來……。"
+@ TALK "請宜林或藍寧來唸唸看好了，也許說不定他們會。"
+@ WAIT
+@ END
+* SUC2
+@ TALK "按照日記本裡的咒語唸唸看好了，"
+@ TALK "這魔咒的音和以前皇室經書裡寫的"
+@ TALK "序文很像……。"
+@ WAIT
+@ CLEAR_BUFFER.
+@ TALK "阿拉咖…穆內…撒哆巴…喇…哆基舍呀！"
+@ TALK "天上的亡靈及地下的靈魂阿將你們的怨恨拋掉吧！"
+@ TALK "阿拉咖…穆內…撒哆巴…喇…哆基舍呀！"
+@ TALK ""
+@ PLAY 36.WAV
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "哇！刀子出來了。"
+@ TALK "果然是把好刀，"
+@ TALK "咦！刀柄上有刻著字……"
+@ TALK "魔．道．清．劍"
+@ TALK "終於得到了神石的力量。"
+@ REMOVE ITEM 244
+@ WAIT
+@ GIVE ITEM 28 1
+@ NEW_OBJECT 6 62 40 13 43 0
+@ REMOVE_OBJECT THIS
+@ END
+
+
+
+
+========================================================
+          ** 暗戀宜林的村莊姑娘.
+========================================================
+54. 村莊大嬸兒(夏大嬸兒) 117年 - BASIC
+ * 說需要山蔘,將54號給他.
+ * 如有山蔘就收山蔘.將 NUM 55 給他.
+   夏菱產生 (項目 56). 刪掉 54號.
+ * 只要有55號就要說謝謝.
+ * 若出現別人就講宜林後,尋找宜林.
+ * 檢查完55號 : 喔..是女婿人選.那要有戰士的資格.證明給我看.
+  若沒資格再繼續走,若有就接受岳父的禮龍心之盔甲.答應婚禮.
+   NUM_TO_ALL 61
+ * 若有61號 就談有關婚禮的事.
+ * 檢查59號後:若有龍心之盔甲再要回來.怒罵. CHANGE 60
+# 60
+# 18
+# 15
+# "夏大嬸兒"
+# BASIC
+# 100
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 13 "夏大嬸兒" 210 210 210
+@ COLOR 210 210 210
+@ IF NUM HAVE 59 THEN GO_DOWN NEXT1
+@ TALK "你是退魔師吧。"
+@ TALK "你不是我們村子的人吧，有見過我女兒嗎?"
+@ WAIT
+@ END
+* NEXT1
+@ IF NUM HAVE 1 THEN STEP2
+ / 只有宜林的選項在動.
+@ TALK "我女兒再也嫁不出去了。"
+@ TALK "退魔師有什麼了不起，竟然甩掉我女兒？"
+@ WAIT
+@ END
+* STEP2
+@ TALK "你……你還來這裡幹什麼？"
+@ TALK "你打算怎麼辦？"
+@ TALK "我這麼一個乖巧的女兒，你要給我一個交代啊！"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "很抱歉，"
+@ TALK "當這世界恢復寧靜時，我一定會再回來的。"
+@ WAIT
+@ IF ITEM HAVE 90 THEN GO_DOWN N1
+@ END
+* N1
+@ CLEAR_BUFFER
+@ FACE 13 "夏大嬸兒" 210 210 210
+@ COLOR 210 210 210
+@ TALK "那龍神鎧甲是我給你的吧？"
+@ TALK "現在還給我，"
+@ TALK "拿來吧！"
+@ REMOVE ITEM 90
+@ WAIT
+@ END
+
+# 120
+# 18
+# 15
+# "夏大嬸兒"
+# BASIC
+# 101
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 13 "夏大嬸兒" 210 210 210
+@ COLOR 210 210 210
+@ TALK "唉……真不知道這世界要變成怎麼一個樣子，"
+@ TALK "像我這樣的女人，"
+@ TALK "最怕這樣混亂不安的世界了，越是亂就越擔心。"
+@ TALK "真不知千鬼神的封印是怎麼被解開的。"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "據傳聞是一群盜賊失手所引起的……。"
+@ TALK "唉！人類真的是一種自討滅亡的動物呢。"
+@ TALK "世界越來越亂……，"
+@ TALK "心也開始惶恐不安，"
+@ TALK "也不知道魔怪何時會攻進來。"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "生活已毫無樂趣可言了，"
+@ TALK "有的只是一天天不斷增加的憂愁，"
+@ TALK "真不知世界是就這樣滅亡了，"
+@ TALK "還是怎麼樣？"
+@ TALK "如果上天還眷顧我們人類，"
+@ TALK "就不該讓這世界這樣下去啊！"
+@ TALK "真懷疑到底世上還有可以對抗這些魔怪的人嗎？"
+@ CHANGE 0
+@ WAIT
+@ END
+
+
+# 54
+# 18
+# 15
+# "夏大嬸兒"
+# FLOW
+# 115
+@ IF NUM HAVE 59 THEN GO_DOWN STEP5
+@ IF NUM HAVE 61 THEN GO_DOWN STEP4
+@ IF NUM HAVE 55 THEN GO_DOWN STEP3
+@ IF NUM HAVE 39 THEN GO_DOWN STEP2
+@ IF NUM NOTHAVE 1 THEN GO_DOWN STEP1
+@ IF NUM HAVE 54 && ITEM HAVE 168 THEN GO_DOWN T2
+ / 只有宜林的選項在動.
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 13 "夏大嬸兒" 210 210 210
+@ COLOR 210 210 210
+@ TALK "喔！您就是鼎鼎大名的退魔師宜林吧？"
+@ TALK "請您聽聽我這可憐女人的祈求，"
+@ TALK "我女兒染上了重病，現在只有您可以救我女兒。"
+@ TALK "請不要丟下我們母女。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "聽起來很緊急，怎麼辦才好呢？"
+@ TALK ""
+@ SELECT 255 255 255
+CASE "詢問細節" GO_DOWN T1
+CASE "忽略不管" GO_DOWN NO1
+SELECT_END
+@ END
+
+* STEP1
+/ 處理宜林以外的所有選項
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 13 "夏大嬸兒" 210 210 210
+@ COLOR 210 210 210
+@ TALK "喔！眼前這位退魔師您是宜林嗎？"
+@ TALK "你不是嗎……。"
+@ TALK "只有那位名叫宜林的退魔師才有辦法救我們母女，"
+@ TALK "若你認識叫宜林的人請幫我告訴他。"
+@ WAIT
+@ END
+
+* NO1
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "對不起，現在有著更重要的事等我去做。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 13 "夏大嬸兒" 210 210 210
+@ COLOR 210 210 210
+@ TALK "真是無情的人，"
+@ TALK "我那漂亮的女兒正昏迷不醒呢……。"
+@ WAIT
+@ END
+
+* T1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 13 "夏大嬸兒" 210 210 210
+@ COLOR 210 210 210
+@ TALK "聽醫生說要有山蔘才有辦法治她的病，"
+@ TALK "請您救救我們母女。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ IF ITEM HAVE 168 THEN GO_DOWN T2
+@ TALK "山蔘？那麼貴重的藥品很難拿到吧。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 13 "夏大嬸兒" 210 210 210
+@ COLOR 210 210 210
+@ TALK "這村裡的商店老闆那兒應該會有，"
+@ TALK "他那有很多貴重的藥材。"
+@ TALK "拜託您，只要有山蔘就可以治好我女兒的病了。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "好，知道了。您等我，我會幫您拿到。"
+@ GIVE NUM 54
+@ WAIT
+@ END
+
+* T2
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "要怎麼對她說好呢？"
+@ TALK ""
+@ SELECT 255 255 255
+CASE "來，這裡是您需要的山蔘。" GO_DOWN T3
+CASE "對不起，這樣貴重的藥品我捨不得給你。" GO_DOWN NO2
+SELECT_END
+* NO2
+@ CLEAR_BUFFER
+@ FACE 13 "夏大嬸兒" 210 210 210
+@ COLOR 210 210 210
+@ TALK "真過份，看樣子你已經取得山蔘了。"
+@ TALK "請再考慮看看，我女兒真的很漂亮。"
+@ WAIT
+@ END
+
+* T3
+@ CLEAR_BUFFER
+@ FACE 13 "夏大嬸兒" 210 210 210
+@ COLOR 210 210 210
+@ TALK "謝謝您，宜林先生，真不知該怎麼謝您才好……。"
+@ TALK "如您的時間允許，請看我女兒一眼再回去。"
+@ TALK "我讓我女兒親自向您道謝，"
+@ TALK "她現在應該在鐵匠鋪旁的建築物裡。"
+@ NEW_OBJECT 18 16 8 16 59 56
+@ REMOVE ITEM 168
+@ GIVE NUM_TO_ALL 39
+@ REMOVE NUM_TO_ALL 54
+@ WAIT
+@ END
+
+* STEP2
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 13 "夏大嬸兒" 210 210 210
+@ COLOR 210 210 210
+@ IF NUM HAVE 1 THEN GO_DOWN N1
+@ TALK "是那位叫宜林的退魔師救了我們母女。"
+@ TALK "這世上應該要有很多像他那樣有愛心的人……。"
+@ TALK "您應該也是位善良的退魔師吧？"
+@ WAIT
+@ END
+* N1
+@ TALK "就是因為宜林，我女兒活過來了。"
+@ TALK "真是感謝宜林。"
+@ WAIT
+@ END
+
+* STEP3
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 13 "夏大嬸兒" 210 210 210
+@ COLOR 210 210 210
+@ IF NUM NOTHAVE 1 THEN GO_DOWN N1
+@ TALK "我女兒講了很多有關你的話，"
+@ TALK "她說她想要嫁給你，"
+@ TALK "真是一個天大的喜訊。"
+@ TALK "不過要娶我女兒一定要有戰士的的資格，"
+@ TALK "你有嗎？"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ IF NUM HAVE 58 THEN GO_DOWN N2
+@ TALK "戰士的資格？要怎樣才能取得？"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 13 "夏大嬸兒" 210 210 210
+@ COLOR 210 210 210
+@ TALK "飛仙村有位教練，你去找他好了。"
+@ TALK "他會告訴你如何取得資格，照他的指示去做就好了。"
+@ TALK "許配給有戰士資格的人，是我們家族的傳統，"
+@ TALK "希望你也能遵照它。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "好，我知道了。那我就去見飛仙村的教練了。"
+@ IF ORDER_SPACE NOTHAVE THEN GO_DOWN NO_SPACE
+@ ORDER 54 "獲得戰士資格"
+MENT "從飛仙村的教練那兒得到戰士資格。"
+MENT "這樣夏菱的母親才會答應我們的婚禮。"
+ORDER_END
+@ WAIT
+@ END
+* N1
+@ TALK "我女兒要和宜林結婚了。"
+@ TALK "你會祝福他們吧！"
+@ WAIT
+@ END
+* N2
+@ TALK "我已經通過飛仙村的教練的試鍊取得戰士的資格了。"
+@ TALK "現在可以答應我和你女兒的婚事了吧？"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 13 "夏大嬸兒" 210 210 210
+@ COLOR 210 210 210
+@ TALK "那當然，等我一下。"
+@ TALK "                 "
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "來，收下這個。"
+@ TALK "這是夏菱的父親使用過的盔甲應該會合你的身。"
+@ TALK "為了我們的夏菱，與魔怪打鬥時一定要把它穿上。"
+@ GIVE ITEM 90 1
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "啊！！！岳母，這麼好的盔甲……。"
+@ TALK "真是很感謝您。"
+@ TALK "再會。"
+@ GIVE NUM_TO_ALL 61
+@ IF ORDER HAVE 54 THEN REMOVE_ORDER 54
+@ WAIT
+@ END
+
+* STEP4
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 13 "夏大嬸兒" 210 210 210
+@ COLOR 210 210 210
+@ IF NUM NOTHAVE 1 THEN GO_DOWN N2
+@ TALK "你來了嗎，跟我女兒相處的還好吧？"
+@ TALK "她像我個性比較害羞，"
+@ TALK "所以你要好好的引導他。"
+@ IF ITEM HAVE 90 THEN GO_DOWN N3
+@ TALK "ㄟ！？我送你的盔甲呢？"
+@ TALK "你不會已經拿去賣了吧？"
+@ WAIT
+@ END
+* N3
+@ WAIT
+@ END
+* N2
+@ TALK "我女兒要和宜林結婚了。"
+@ TALK "你會祝福他們吧？"
+@ WAIT
+@ END
+
+* STEP5
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 13 "夏大嬸兒" 210 210 210
+@ COLOR 210 210 210
+@ IF NUM NOTHAVE 1 THEN GO_DOWN N4
+@ TALK "你……你來這裡幹什麼？"
+@ TALK "你要打算怎麼辦？"
+@ TALK "我這麼一個乖巧的女兒，你要給我一個交代啊？"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "很抱歉，"
+@ TALK "當這世界恢復和平時我一定會再回來。"
+@ WAIT
+@ IF ITEM HAVE 90 THEN GO_DOWN N1
+@ CHANGE 0
+@ END
+* N1
+@ CLEAR_BUFFER
+@ FACE 13 "夏大嬸兒" 210 210 210
+@ COLOR 210 210 210
+@ TALK "那龍神鎧甲，是我給你的吧？"
+@ TALK "現在還給我，"
+@ TALK "拿來吧！"
+@ REMOVE ITEM 90
+@ CHANGE 0
+@ WAIT
+@ END
+* N4
+@ TALK "宜林這傢伙竟然甩掉我女兒，"
+@ TALK "只要被我看到我一定要好好痛罵他。"
+@ TALK "竟然勾引我這乖女兒後，又將她甩掉。"
+@ CHANGE 0
+@ WAIT
+@ END
+
+
+
+
+# 55
+# 18
+# 2
+# "商店老闆"
+# FLOW
+# 115
+@ IF NUM NOTHAVE 1 THEN GO_BASIC_EVENT
+@ IF NUM HAVE 64 THEN GO_BASIC_EVENT
+@ IF NUM HAVE 59 THEN GO_DOWN STEP2
+@ IF NUM HAVE 55 THEN GO_DOWN STEP1
+@ IF NUM HAVE 38 THEN GO_BASIC_EVENT
+ / 只有宜林的選項在動.
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "我要怎麼辦呢？"
+@ SELECT 255 255 255
+CASE "打聽夏大嬸兒的事" GO_DOWN T2
+CASE "尋問是否有山蔘" GO_DOWN T1
+CASE "關於物品" GO_BASIC_EVENT
+SELECT_END
+* T1
+@ CLEAR_BUFFER
+@ FACE 7 "商店老闆" 210 210 210
+@ COLOR 210 210 210
+@ TALK "山蔘？雖然有，可是這東西是相當貴重的藥品，"
+@ TALK "如果你要用於好的地方，我才賣你。"
+@ TALK "我可以賣你兩個，你要買幾個？"
+@ TALK "一個的價格是一千三百銅幣。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "給我一個就好了。" GO_DOWN S1
+CASE "買兩個好了。" GO_DOWN S2
+CASE "下次再買好了。" GO_DOWN END
+SELECT_END
+* S1
+@ IF MONEY GE 1300 THEN GO_DOWN S3
+@ CLEAR_BUFFER
+@ FACE 7 "商店老闆" 210 210 210
+@ COLOR 210 210 210
+@ TALK "一共一千三百銅幣。"
+@ TALK "    "
+@ TALK "什麼？你沒錢？那下次再賣給你好了。"
+@ WAIT
+@ END
+* S3
+@ CLEAR_BUFFER
+@ FACE 7 "商店老闆" 210 210 210
+@ COLOR 210 210 210
+@ TALK "山蔘給您，一共一千三百銅幣。"
+@ TALK "謝謝您，請慢走。"
+@ REMOVE MONEY 1300
+@ GIVE ITEM 168 1
+@ GIVE NUM 38
+@ WAIT
+@ END
+* S2
+@ IF MONEY GE 2600 THEN GO_DOWN S4
+@ CLEAR_BUFFER
+@ FACE 7 "商店老闆" 210 210 210
+@ COLOR 210 210 210
+@ TALK "一共兩千六百銅幣。"
+@ TALK "    "
+@ TALK "什麼？你沒錢？那下次再賣給你好了。"
+@ WAIT
+@ END
+* S4
+@ CLEAR_BUFFER
+@ FACE 7 "商店老闆" 210 210 210
+@ COLOR 210 210 210
+@ TALK "這裡兩個山蔘，一共兩千六百銅幣。"
+@ TALK "謝謝您，請慢走。"
+@ REMOVE MONEY 2600
+@ GIVE NUM 38
+@ GIVE ITEM 168 2
+@ WAIT
+@ END
+
+* T2
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 7 "商店老闆" 210 210 210
+@ COLOR 210 210 210
+@ TALK "夏大嬸兒是嗎？她是位好人。"
+@ TALK "不過現在為了女兒的事情很傷腦筋呢。"
+@ TALK "雖然很想幫忙，"
+@ TALK "只是我自己的生活也很困難。"
+@ WAIT
+@ END
+
+* STEP1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 7 "商店老闆" 210 210 210
+@ COLOR 210 210 210
+@ TALK "你就是那幸運的人，宜林嗎？"
+@ TALK "恭喜您，夏菱的確是個好女人。"
+@ TALK "如果我年輕幾年就會向他求婚，"
+@ TALK "不管怎樣希望"
+@ TALK "你們趕快生兒育女過幸福的日子。"
+@ WAIT
+@ GO_BASIC_EVENT
+@ END
+
+* STEP2
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 7 "商店老闆" 210 210 210
+@ COLOR 210 210 210
+@ TALK "本來對你印象還很好，"
+@ TALK "原來不是什麼退魔師，只不過是個花心大少，"
+@ TALK "為什麼要拋棄夏菱？"
+@ TALK "你知道那母女倆現在有多傷心嗎？"
+@ TALK "雖然我很愛錢，"
+@ TALK "但我也不要賣物品給你。"
+@ WAIT
+@ END
+
+
+
+# 56
+# 18
+# 16
+# "夏菱"
+# FLOW
+# 100
+@ IF NUM HAVE 55 THEN GO_DOWN T2
+@ IF NUM HAVE 1 THEN GO_DOWN T1
+ / 只有宜林的選項在動.
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 12 "夏菱" 210 210 210
+@ COLOR 210 210 210
+@ TALK "你們是退魔師吧，怎麼會從事那麼危險的工作呢？"
+@ TALK "我也從母親那兒聽說過有關退魔師的事，"
+@ TALK "聽說其中宜林是最優秀的。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "什麼？宜林有什麼了不起？"
+@ TALK "我才是最厲害退魔師。"
+@ WAIT
+@ END
+
+* T1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 12 "夏菱" 210 210 210
+@ COLOR 210 210 210
+@ IF NUM HAVE 40 THEN GO_DOWN SUC1
+@ IF ORDER HAVE 56 THEN GO_DOWN N1
+@ TALK "您就是宜林，我聽我母親說過了。"
+@ TALK "母親說您就是我的救命恩人，真的很感謝您。"
+@ TALK "怎麼會長得這麼帥又有氣質呢？"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "喔……，你好初次見面。"
+@ TALK "我叫宜林，"
+@ TALK "我本來是“統一新羅”的畫匠，"
+@ TALK "不過因為天命的安排，現在成了一位退魔師。"
+@ TALK "妳是夏菱姑娘是嗎？"
+@ TALK "真的是美如天仙！讓我無法移開視線……。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 12 "夏菱" 210 210 210
+@ COLOR 210 210 210
+@ TALK "嘻嘻……。您誇獎了，是有很多人也這麼說啦！"
+@ TALK "尤其是一位住在飛仙村叫施則庫司的人，"
+@ TALK "他實在太煩人了，硬是要我嫁給他。"
+@ TALK "我都被他逼出病來了。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "有那種人在欺負夏菱姑娘？"
+@ TALK "包在我身上，我會去警告他。"
+@ IF ORDER_SPACE NOTHAVE THEN GO_DOWN NO_SPACE
+@ ORDER 56 "修理施則庫司."
+MENT "去見施則庫司，"
+MENT "叫他對夏菱姑娘死心。"
+MENT "這樣一來夏菱就會喜歡宜林了。"
+ORDER_END
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 12 "夏菱" 210 210 210
+@ COLOR 210 210 210
+@ TALK "真的嗎？"
+@ TALK "您一定要幫我，施則庫司他人現在住在飛仙村，"
+@ TALK "不過他還擁有一些手下，要小心。"
+@ TALK "請您一定要安全的回來。"
+@ TALK "我會只想著您。"
+@ NEW_OBJECT 16 49 25 11 17 57
+@ WAIT
+@ END
+* N1
+@ TALK "飛仙村的施則庫司他怎麼樣了？"
+@ TALK "請將我的意思轉達給他，"
+@ TALK "我並不想嫁給年紀大的人。"
+@ WAIT
+@ END
+
+* SUC1
+@ TALK "啊！宜林，您回來了。"
+@ TALK "去找施則庫司的事情怎麼樣了？"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "我回來了。"
+@ TALK "他說要放棄了，"
+@ TALK "現在妳可以嫁給我嗎？"
+@ TALK "這是我一生的請求。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 12 "夏菱" 210 210 210
+@ COLOR 210 210 210
+@ TALK "宜林……其實……。"
+@ TALK "          "
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "其實什麼？"
+@ TALK "請不要拒絕我！"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 12 "夏菱" 210 210 210
+@ COLOR 210 210 210
+@ TALK "其實……。"
+@ TALK "          "
+@ TALK "我一直在等您說這句話，"
+@ TALK "我從以前就暗戀您了。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "真的？"
+@ TALK "啊……像是在做夢。"
+@ IF ITEM HAVE 115 THEN GO_DOWN S1
+@ TALK "本來求婚應該要有戒指的……。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 12 "夏菱" 210 210 210
+@ COLOR 210 210 210
+@ TALK "那些都不重要，我只要有您就好了。"
+@ GO_DOWN S2
+* S1
+@ TALK "請收下這個，這是我的定情信物。"
+@ TALK "“智慧之戒”"
+@ REMOVE ITEM 115
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 12 "夏菱" 210 210 210
+@ COLOR 210 210 210
+@ TALK "謝謝，我會珍惜的。"
+@ TALK ""
+* S2
+@ TALK "那先去得到母親的允許吧，"
+@ TALK "快結婚吧，那……蜜月旅行……。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "妳等我，我得到允許後馬上就回來。"
+@ GIVE NUM_TO_ALL 55
+@ REMOVE_ORDER 56
+@ WAIT
+@ END
+
+* T2
+/ 解除婚約.
+@ IF NUM HAVE 1 THEN GO_DOWN N1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 12 "夏菱" 210 210 210
+@ COLOR 210 210 210
+@ TALK "你好，最近覺得這世界好美。"
+@ TALK "您是宜林的同伴吧！以後請多多指教。"
+@ TALK "請您一定要來參加我們的婚禮。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ IF NUM HAVE 3 THEN GO_DOWN N2
+@ TALK "是，我聽說過了……。"
+@ TALK "我是無所謂，只是藍寧好像不太高興。"
+@ TALK "你有和藍寧聊過嗎？"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 12 "夏菱" 210 210 210
+@ COLOR 210 210 210
+@ TALK "不知道，藍寧最近都沒有來找過我……。"
+@ TALK "不過我現在更想見到的是宜林。"
+@ TALK "唉！不知道他現在在做什麼？"
+@ WAIT
+@ END
+
+* N1
+/ 與宜林談話
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 12 "夏菱" 210 210 210
+@ COLOR 210 210 210
+@ IF NUM HAVE 41 THEN GO_DOWN N3
+@ TALK "宜林，我好想你呢！婚禮準備的如何？"
+@ TALK "好想快點結婚。"
+@ TALK "也很想見一見你的同伴們。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "夏菱，幸福嗎？"
+@ TALK "那我下次再來看妳。"
+@ WAIT
+@ END
+
+* N2
+/ 與藍寧談話.解除婚約.
+@ TALK "是嗎？真是……。"
+@ TALK "妳不知道宜林現在很忙嗎？"
+@ TALK "妳叫夏菱是嗎？宜林和我在一起已經很多年了，"
+@ TALK "妳知道現在宜林有多麼煩惱嗎？"
+@ TALK "比自己本身的愛情，"
+@ TALK "他更注重世界和平。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 12 "夏菱" 210 210 210
+@ COLOR 210 210 210
+@ TALK "怎麼會，這種話……。"
+@ TALK "不對，他說過他的心中只有我……。"
+@ TALK "而且這戒指也是他給我的定情物。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "不管怎樣,"
+@ TALK "宜林最近為了妳，都不太管消滅魔怪的事了。"
+@ TALK "放開宜林吧，"
+@ TALK "比起妳，現在有更多的人需要宜林的力量。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 12 "夏菱" 210 210 210
+@ COLOR 210 210 210
+@ TALK "我想和宜林講講話。"
+@ TALK "他………"
+@ TALK "…………………………"
+@ GIVE NUM_TO_ALL 41
+@ WAIT
+@ END
+* N3
+/ 與宜林談話.決定解除婚約.
+@ TALK "宜林，我正在等您。"
+@ TALK "我聽藍寧說過了，"
+@ TALK "我們之間的婚約怎樣了？請你老實的告訴我。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "對不起，現在的我正在執行很重要的任務，"
+@ TALK "所以，對於個人的情感……。"
+@ TALK "對不起……。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 12 "夏菱" 210 210 210
+@ COLOR 210 210 210
+@ TALK "真的嗎！你讓我太失望了，"
+@ TALK "你果然和其他世俗的男人一樣。"
+@ TALK "不過我依然會愛著您，"
+@ TALK "不管多久我都會等你，"
+@ TALK "永遠保存著這顆愛你的心。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "夏菱，留下妳一人……，"
+@ TALK "我沒有話說了，"
+@ TALK "我偶爾會來找妳，告辭了……。"
+@ GIVE NUM_TO_ALL 59
+@ WAIT
+@ REMOVE_OBJECT THIS
+@ END
+
+
+
+# 57
+# 16
+# 15
+# "施則庫司"
+# FLOW
+# 100
+@ IF NUM NOTHAVE 57 THEN GO_DOWN NO1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "施則庫司，你還是放棄吧！"
+@ TALK "夏菱的心中愛的只有我一個人。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 10 "施則庫司" 210 210 210
+@ COLOR 210 210 210
+@ TALK "了解了，為了她的幸福我只好放棄她了，"
+@ TALK "不過我還是會默默的愛著她的，"
+@ TALK "這智慧之戒給你。"
+@ TALK "本來打算要當我們的結婚戒指的，現在……。"
+@ TALK "請幫我拿給她。"
+@ GIVE ITEM 115 1
+@ GIVE NUM 40
+@ WAIT
+@ REMOVE_OBJECT THIS
+@ END
+
+* NO1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 10 "施則庫司" 210 210 210
+@ COLOR 210 210 210
+@ TALK "你是什麼東西敢在這邊亂來，快滾。"
+@ TALK "否則我要叫我的手下好好的教訓你一頓。"
+@ WAIT
+@ IF NUM HAVE 1 THEN GO_DOWN T1
+@ END
+* T1
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "你是施則庫司嗎？"
+@ TALK "那應該認識夏菱吧，"
+@ TALK "我是她的未婚夫，請你不要再騷擾她了。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 10 "施則庫司" 210 210 210
+@ COLOR 210 210 210
+@ TALK "你是什麼東西，敢說是夏菱的未婚夫？"
+@ TALK "夏菱他母親已經答應我們的婚事了。"
+@ TALK "你還是回去做你的退魔師吧！"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "夏菱說她死都不要和"
+@ TALK "你這種老頭子結婚。"
+@ TALK "你配不上他的，"
+@ TALK "我答應過她一定會讓你放棄她，"
+@ TALK "放棄她吧！"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 10 "施則庫司" 210 210 210
+@ COLOR 210 210 210
+@ TALK "什麼？要我放棄，在我字典裡沒有放棄這兩個字。"
+@ TALK "我到現在都是抱持著“有志者事竟成的信念”。"
+@ TALK "我讓你跟我的手下好好的談談，看看是誰該放棄。"
+@ TALK "來人呀！"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "什麼？你要叫手下呀？"
+@ TALK "要怎麼辦呢？"
+@ TALK " "
+@ SELECT 255 255 255
+CASE "正面對戰" GO_DOWN N1
+CASE "說對不起" GO_DOWN N2
+SELECT_END
+* N1
+@ CLEAR_BUFFER
+@ TALK "好，我奉陪。"
+@ TALK "不過如果我贏了你就要放棄夏菱。"
+@ GIVE NUM 57
+@ LOCATE_ENEMY 16 46 25 4 26 1
+@ LOCATE_ENEMY 16 47 25 4 22 2
+@ LOCATE_ENEMY 16 47 26 4 18 4
+@ LOCATE_ENEMY 16 51 25 4 22 62
+@ LOCATE_ENEMY 16 51 26 4 21 63
+@ LOCATE_ENEMY 16 49 27 4 20 72
+@ LOCATE_ENEMY 16 52 28 4 22 6
+@ WAIT
+@ END
+* N2
+@ CLEAR_BUFFER
+@ TALK "等一下，"
+@ TALK "不必叫手下了。"
+@ TALK "我放棄，"
+@ TALK "不過等我變強了就會再來找你，你等著。"
+@ TALK "唉，沒臉見夏菱呢。"
+@ WAIT
+@ END
+
+
+# 19
+# 16
+# 12
+# "教練"
+# BASIC
+# 100
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 4 "教練" 210 210 210
+@ COLOR 210 210 210
+@ TALK "你是退魔師嗎？"
+@ TALK "我是教練，是你要取得戰士的資格嗎？"
+@ TALK "不過現在不行，我需要時間來準備試驗，"
+@ TALK "到一百一十二年時再來找我。"
+@ WAIT
+@ END
+
+
+# 58
+# 16
+# 12
+# "教練"
+# FLOW
+# 112
+@ IF NUM HAVE 58 THEN GO_DOWN NEXT1
+@ IF ITEM HAVE 218 && NUM HAVE 42 THEN GO_DOWN SUC1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 4 "教練" 210 210 210
+@ COLOR 210 210 210
+@ TALK "你是退魔師嗎？"
+@ TALK "我是教練，想証明你是名戰士嗎？"
+@ TALK "戰士資格，這對武士來說是最高的榮譽。"
+@ TALK "試鍊的方法是到老虎的巢穴裡將虎王殺死，"
+@ TALK "取得它擁有的青龍紋樣。"
+@ WAIT
+@ CLEAR_BUFFER
+@ IF LEVEL GE 16 && STRENGTH GE 60 THEN GO_DOWN S1
+@ TALK "不過你好像還沒接受試鍊的資格，"
+@ TALK "一名擁有戰士資格的武士，"
+@ TALK "至少要有十六級、筋力六十以上才可以接受試鍊。"
+@ TALK "這是為了你們的安全，加強你的力量再回來吧。"
+@ WAIT
+@ END
+* S1
+@ TALK "怎麼樣？要挑戰看看嗎？"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "好，我要挑戰。" GO_DOWN T1
+CASE "下次再試好了。" GO_DOWN END
+SELECT_END
+
+* NEXT1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 4 "教練" 210 210 210
+@ COLOR 210 210 210
+@ TALK "你不是已經拿到戰士資格了嗎？"
+@ TALK "還來做什麼？"
+@ TALK "為了別人發揮你戰士的力量吧！"
+@ WAIT
+@ END
+
+* T1
+@ CLEAR_BUFFER
+@ FACE 4 "教練" 210 210 210
+@ COLOR 210 210 210
+@ TALK "好，那就帶你去試鍊場吧。"
+@ TALK "請準備。"
+@ IF ORDER_SPACE NOTHAVE THEN GO_DOWN NO_SPACE
+@ ORDER 58 "戰士之資格考試"
+MENT "殺死虎王拿到青龍紋樣。"
+MENT "將青龍紋樣拿給飛仙村之教練"
+MENT "就可以得到戰士資格。"
+ORDER_END
+@ GIVE NUM 42
+@ LOCATE_ENEMY 4 28 62 10 24 0
+@ LOCATE_ENEMY 4 29 64 10 23 0
+@ LOCATE_ENEMY 4 27 61 10 22 0
+@ LOCATE_ENEMY 4 26 66 10 22 0
+@ LOCATE_ENEMY 4 21 61 10 43 218
+@ LOCATE_ENEMY 4 30 63 10 24 0
+@ LOCATE_ENEMY 4 31 62 10 28 0
+@ LOCATE_ENEMY 4 36 60 10 23 0
+@ LOCATE_ENEMY 4 36 68 10 32 0
+@ LOCATE_ENEMY 4 35 70 10 20 0
+@ WAIT
+@ WARP 4 39 75
+@ END
+
+* SUC1
+/ 頒發戰士資格.
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 4 "教練" 210 210 210
+@ COLOR 210 210 210
+@ TALK "很好，"
+@ TALK "現在我授與你成為一位真正戰士的証明，"
+@ TALK "請你以後為了正義而使用你的力量。"
+@ PLAY 42.WAV
+@ GIVE NUM 58
+@ REMOVE ITEM 218
+@ WAIT
+@ REMOVE_ORDER 58
+@ REMOVE NUM 42
+@ END
+
+
+# 59
+# 18
+# 8
+# "珠寶商"
+# FLOW
+# 115
+@ IF NUM NOTHAVE 1 THEN GO_BASIC_EVENT
+@ IF NUM HAVE 64 THEN GO_BASIC_EVENT
+@ IF NUM HAVE 59 THEN GO_DOWN STEP2
+@ IF NUM HAVE 55 THEN GO_DOWN STEP1
+@ GO_BASIC_EVENT
+* STEP1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 11 "珠寶商" 210 210 210
+@ COLOR 210 210 210
+@ TALK "你就是那幸運的人，宜林嗎？"
+@ TALK "恭喜您，夏菱的確是個好女人。"
+@ TALK "如果我年輕幾年就會向她求婚了，"
+@ TALK "不管怎樣希望你們趕快生兒育女過"
+@ TALK "幸福的日子。"
+@ WAIT
+@ GO_BASIC_EVENT
+@ END
+
+* STEP2
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 11 "珠寶商" 210 210 210
+@ COLOR 210 210 210
+@ TALK "本來對你印象還很好，"
+@ TALK "原來不是什麼正義的退魔師，只不過是個花心大少。"
+@ TALK "你還找夏菱有什麼事？"
+@ TALK "你知道那母女倆現在有多傷心嗎？"
+@ TALK "雖然我很愛錢"
+@ TALK "我也不要賣東西給你。"
+@ WAIT
+@ END
+
+
+
+
+
+=========================================================
+/********夏菱救出行動.
+=========================================================
+
+# 62
+# 18
+# 15
+# "夏大嬸兒"
+# FLOW
+# 120
+@ IF NUM HAVE 1 THEN GO_DOWN STEP1
+@ REMOVE_OBJECT 18 16
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 13 "夏大嬸兒" 210 210 210
+@ COLOR 210 210 210
+@ TALK "我想拜託您一件事，你認識我女兒夏菱吧？"
+@ TALK "聽說他被魔怪抓去了。"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "我女兒變成這樣也不完全跟你無關，"
+@ TALK "你會救我女兒出來吧？"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "我當然會幫您。" GO_DOWN T1
+CASE "您去問問宜林好了。" GO_DOWN NO1
+SELECT_END
+
+* STEP1
+@ REMOVE_OBJECT 18 16
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 13 "夏大嬸兒" 210 210 210
+@ COLOR 210 210 210
+@ TALK "喔，是宜林嗎？"
+@ TALK "請救救我女兒，只要救出來我會把你以前的過錯都忘掉。"
+@ TALK "可憐的夏菱……。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "夏菱現在怎麼樣了？"
+@ TALK "是看不到夏菱她人……，"
+@ TALK "到底發生什麼事了？請您老實的告訴我。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 13 "夏大嬸兒" 210 210 210
+@ COLOR 210 210 210
+@ TALK "夏菱她……現在在魔怪的手中，"
+@ TALK "在那野獸般的魔怪手中。"
+@ TALK "現在無法得知她的生死……。"
+@ TALK "不管怎樣，我相信你。務必要救出我女兒。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "我當然要幫您。" GO_DOWN T2
+CASE "對不起，我有很多事要做。" GO_DOWN NO2
+SELECT_END
+* T2
+@ CLEAR_BUFFER
+@ FACE 13 "夏大嬸兒" 210 210 210
+@ COLOR 210 210 210
+@ TALK "謝謝你，"
+@ TALK "聽說是住在迴音谷的雙頭魔神抓走了我女兒。"
+@ TALK "我相信你一定可以把它殺死救我女兒出來。"
+@ ORDER 62 "救出夏菱"
+MENT "殺死迴音谷的雙頭魔神救出夏菱。"
+ORDER_END
+@ GIVE NUM_TO_ALL 62
+@ UNSEAL 12 
+@ UNSEAL 8 
+@ LOCATE_ENEMY 12 56 21 31 56 227
+@ LOCATE_ENEMY 12 54 24 15 36 7
+@ LOCATE_ENEMY 12 48 26 15 36 44
+@ LOCATE_ENEMY 12 56 26 15 36 64
+@ LOCATE_ENEMY 12 56 24 15 26 7
+@ LOCATE_ENEMY 12 54 25 15 31 7
+@ NEW_OBJECT 12 50 16 1 59 64
+@ NEW_OBJECT 12 53 17 2 40 63
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "不要擔心，我敢以身為退魔師的名譽保證。"
+@ TALK "一定救出您女兒。"
+@ WAIT
+@ REMOVE_OBJECT THIS
+@ END
+* NO2
+@ CLEAR_BUFFER
+@ FACE 13 "夏大嬸兒" 210 210 210
+@ COLOR 210 210 210
+@ TALK "知道了，你到頭來還是丟下了我們母女。"
+@ TALK "我詛咒你，"
+@ TALK "在往後的日子裏，"
+@ TALK "你會變得虛弱無力，身體將如鉛塊般沉重。"
+@ TALK "呼……，那我現在要去找我女兒了。"
+@ DECREASE STRENGTH 12
+@ DECREASE DEXTERITY 10
+@ DECREASE MASIC 5
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "啊！啊！！！身體變的很奇怪。"
+@ TALK "全身一點力氣也沒有，"
+@ TALK "身體也變的很沉重。"
+@ WAIT
+@ REMOVE_OBJECT THIS
+@ END
+* T1
+@ CLEAR_BUFFER
+@ FACE 13 "夏大嬸兒" 210 210 210
+@ COLOR 210 210 210
+@ TALK "謝謝你，"
+@ TALK "聽說是住在迴音谷的雙頭魔神抓走了我女兒。"
+@ TALK "我相信你了你一定可以把它殺死救我女兒出來。"
+@ ORDER 62 "救出夏菱"
+MENT "將迴音谷的雙頭魔神殺死救出夏菱。"
+ORDER_END
+@ GIVE NUM_TO_ALL 62
+@ UNSEAL 12 
+@ UNSEAL 8 
+@ LOCATE_ENEMY 12 56 21 31 56 227
+@ LOCATE_ENEMY 12 54 24 15 36 7
+@ LOCATE_ENEMY 12 48 26 15 36 44
+@ LOCATE_ENEMY 12 56 26 15 36 64
+@ LOCATE_ENEMY 12 56 24 15 26 7
+@ LOCATE_ENEMY 12 54 25 15 31 7
+@ NEW_OBJECT 12 50 16 1 59 64
+@ NEW_OBJECT 12 52 16 2 40 63
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "不要擔心，我以身為退魔師的名譽保證。"
+@ TALK "一定救出您女兒。"
+@ WAIT
+@ REMOVE_OBJECT THIS
+@ END
+
+* NO1
+@ CLEAR_BUFFER
+@ FACE 13 "夏大嬸兒" 210 210 210
+@ COLOR 210 210 210
+@ TALK "那請幫我找宜林，"
+@ TALK "如果是宜林就不會靜觀其事。"
+@ WAIT
+@ END
+
+
+
+# 63
+# 15
+# 11
+# "守門官骷髏"
+# BASIC
+# 100
+@ CLEAR_BUFFER
+@ BOX RED 5
+@ FACE NO
+@ COLOR 250 50 50
+@ TALK "唯有持有雙頭魔神的鑰匙者才能消滅我。"
+@ WAIT
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ IF ITEM HAVE 227 THEN GO_DOWN T1
+@ TALK "骷髏會講話？它是說什麼鑰匙？"
+@ TALK "那雙頭魔神的手上好像有拿著一把鑰匙。"
+@ TALK "夏菱請等我一下，我來救妳了。"
+@ WAIT
+@ END
+* T1
+@ TALK "好像是指這把鑰匙。"
+@ TALK "把鑰匙放到骷髏的牙齒那兒看好了？"
+@ WAIT
+@ CHANGE_GOS 19
+@ CLEAR_BUFFER
+@ TALK "啊！剛好，沒想到這雙頭魔神利用這種方法"
+@ TALK "把夏菱關起來。"
+@ WAIT
+@ REMOVE ITEM 227
+@ REMOVE_OBJECT THIS
+@ END
+
+
+# 64
+# 11
+# 1
+# "夏菱"
+# FLOW
+# 100
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 12 "夏菱" 210 210 210
+@ COLOR 210 210 210
+@ IF NUM HAVE 1 THEN GO_DOWN T1
+@ TALK "是您救了我嗎？謝謝您。"
+@ TALK "那雙頭魔神真的很可怕，"
+@ TALK "我要告辭了。"
+@ WAIT
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ IF NUM HAVE 1 THEN GO_DOWN T1
+@ TALK "喔！嗚……，妳就這樣走了嗎？"
+@ TALK "一點成就感都沒有。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 12 "夏菱" 210 210 210
+@ COLOR 210 210 210
+@ TALK "啊！對不起，"
+@ TALK "我知道雙頭魔神有藏起了一些寶物，"
+@ TALK "在那岩石的後方。"
+@ TALK "那我要告辭了。"
+@ LOCATE_ITEM 12 42 33 9
+@ LOCATE_ITEM 12 39 34 74
+@ LOCATE_ITEM 12 42 32 114
+@ WAIT
+@ REMOVE_ORDER 62
+@ REMOVE NUM_TO_ALL 62
+@ REMOVE_OBJECT THIS
+@ END
+* T1
+@ TALK "您不是宜林嗎？"
+@ TALK "好久不見，我就想說一定會是你來救我的。"
+@ TALK "我好想念你。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "夏菱，讓妳辛苦了。"
+@ TALK "快回到村莊去吧！下次再會。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 12 "夏菱" 210 210 210
+@ COLOR 210 210 210
+@ TALK "等一下，"
+@ TALK "我知道雙頭魔神最珍貴的寶劍在哪裡，"
+@ TALK "寶物就在那地方，"
+@ TALK "你仔細看那右邊的樹叢，"
+@ TALK "那魔怪好像都把寶物藏在那兒。"
+@ TALK "那我要回去了，不知道下次還能否見面……。"
+@ TALK "那……再會。"
+@ LOCATE_ITEM 12 63 14 25
+@ WAIT
+@ REMOVE_ORDER 62
+@ REMOVE NUM_TO_ALL 62
+@ REMOVE_OBJECT THIS
+@ END
+
+
+
+
+=========================================================
+/********擊敗北貴城裡的恐懼魔鬼.
+=========================================================
+
+66. 魔道清劍碑
+  - 檢查是否有魔道清劍後消失.(個體12號也一起消失)
+
+# 66
+# 19
+# 11
+# "魔道清劍碑"
+# BASIC
+# 100
+@ IF ITEM HAVE 28 THEN GO_DOWN SUC1
+@ CLEAR_BUFFER
+@ BOX RED 5
+@ FACE NO 250 50 50
+@ COLOR 250 50 50
+@ TALK "這裡是神聖之地，　　　　　　　"
+@ TALK "你敢以人的身份想侵犯這地……，"
+@ TALK "唯有持有神石所賜予之証物的人才"
+@ TALK "可以進入此地。　　　　　　　　"
+@ TALK "　　　　　　－北貴城之恐懼魔王"
+@ WAIT
+@ END
+* SUC1
+@ CLEAR_BUFFER
+@ BOX RED 5
+@ FACE NO 250 50 50
+@ COLOR 250 50 50
+@ TALK "你是被神石所挑選的人嗎？"
+@ TALK ""
+@ TALK "魔．道．清．劍"
+@ TALK ""
+@ TALK "持有神石之証物的人被准許蹋入此地。"
+@ WAIT
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "果然這魔道清劍就是神石的証物。"
+@ TALK "好，小心戒備進入吧。"
+@ WAIT
+@ REMOVE_OBJECT 19 12
+@ REMOVE_OBJECT THIS
+@ END
+
+67. 龍石像
+  - 檢查是否是真正的戰士. 檢查是否有戰士號碼58 -> 提高所需的 
+   力量值10.之後消失. (個體14號一起消失)
+    - 在這裡若選力量,將項目16號到(71,34),若是智慧就給項目123, 魔法114, 敏捷109,
+      體力66. 
+    -> 產生五隻吸血鬼(Level 25)
+# 67
+# 19
+# 13
+# "龍石像"
+# BASIC
+# 100
+@ IF NUM HAVE 58 THEN GO_DOWN SUC1
+@ CLEAR_BUFFER
+@ BOX RED 5
+@ FACE NO 250 50 50
+@ COLOR 250 50 50
+@ TALK "這裡是神聖之地，"
+@ TALK "唯有真正的戰士才可以進入，"
+@ TALK "持有戰士資格的人才可踏上這聖地。"
+@ WAIT
+@ END
+* SUC1
+@ CLEAR_BUFFER
+@ BOX RED 5
+@ FACE NO 250 50 50
+@ COLOR 250 50 50
+@ TALK "你已持有戰士的資格了，"
+@ TALK "為了你，我將我的影子移去。"
+@ TALK "而送給真正的戰士一件禮物，"
+@ TALK "你……真正的戰士，"
+@ TALK "我將賜予你所需要的能力."
+@ WAIT
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "咦？什麼意思？它要幫我提升戰鬥能力嗎？"
+@ TALK "好，那我要提升哪一項呢？"
+@ WAIT
+@ CLEAR_BUFFER
+@ SELECT 255 255 255
+CASE "體力" GO_DOWN T1
+CASE "筋力" GO_DOWN T2
+CASE "魔法" GO_DOWN T3
+CASE "敏捷" GO_DOWN T4
+CASE "智能" GO_DOWN T5
+SELECT_END
+* T1
+@ CLEAR_BUFFER
+@ BOX RED 5
+@ FACE NO 250 50 50
+@ COLOR 250 50 50
+@ TALK "好，賜予你所需要的能力。"
+@ PLAY 42.WAV
+@ INCREASE HEALTH 10
+@ LOCATE_ITEM 19 71 34 66
+@ TALK "路在此為你開啟，你……真正的戰士，"
+@ TALK "體驗死亡帶來的恐懼吧！"
+@ WAIT
+@ GO_DOWN S1
+* T2
+@ CLEAR_BUFFER
+@ BOX RED 5
+@ FACE NO 250 50 50
+@ COLOR 250 50 50
+@ TALK "好，賜予你所需要的能力。"
+@ PLAY 42.WAV
+@ INCREASE STRENGTH 10
+@ LOCATE_ITEM 19 71 34 16
+@ TALK "路在此為你開啟，你……真正的戰士，"
+@ TALK "體驗死亡帶來的恐懼吧！"
+@ WAIT
+@ GO_DOWN S1
+* T3
+@ CLEAR_BUFFER
+@ BOX RED 5
+@ FACE NO 250 50 50
+@ COLOR 250 50 50
+@ TALK "好，賜予你所需要的能力。"
+@ PLAY 42.WAV
+@ INCREASE MAGIC 10
+@ LOCATE_ITEM 19 71 34 114
+@ TALK "路在此為你開啟，你……真正的戰士，"
+@ TALK "體驗死亡帶來的恐懼吧！"
+@ WAIT
+@ GO_DOWN S1
+* T4
+@ CLEAR_BUFFER
+@ BOX RED 5
+@ FACE NO 250 50 50
+@ COLOR 250 50 50
+@ TALK "好，賜予你所需要的能力。"
+@ PLAY 42.WAV
+@ INCREASE DEXTERITY 10
+@ LOCATE_ITEM 19 71 34 109
+@ TALK "路在此為你開啟，你……真正的戰士，"
+@ TALK "體驗死亡帶來的恐懼吧！"
+@ WAIT
+@ GO_DOWN S1
+* T5
+@ CLEAR_BUFFER
+@ BOX RED 5
+@ FACE NO 250 50 50
+@ COLOR 250 50 50
+@ TALK "好，賜予你所需要的能力。"
+@ PLAY 42.WAV
+@ INCREASE BRAIN 10
+@ LOCATE_ITEM 19 71 34 123
+@ TALK "路在此為你開啟，你……真正的戰士，"
+@ TALK "體驗死亡帶來的恐懼吧！"
+@ WAIT
+@ GO_DOWN S1
+* S1
+@ LOCATE_ENEMY 19 56 15 26 25 164
+@ LOCATE_ENEMY 19 56 17 26 25 162
+@ LOCATE_ENEMY 19 58 14 26 25 164
+@ LOCATE_ENEMY 19 57 11 26 25 162
+@ LOCATE_ENEMY 19 55 22 26 25 164
+@ REMOVE_OBJECT 19 14
+@ REMOVE_OBJECT THIS
+@ END
+
+
+68. 北貴城守護像
+  　-保衛北貴城之守護像.-產生三隻45號單位->交換成69號▓
+ 69.   -產生四隻46號單位->交換成70號▓
+ 70.  -產生七隻47號單位->交換成71號▓
+ 71.  -真正需要就經過.->產生五隻吸血鬼(Level 25)
+# 68
+# 19
+# 15
+# "北貴城守護像"
+# BASIC
+# 100
+@ CLEAR_BUFFER
+@ BOX RED 5
+@ FACE NO 250 50 50
+@ COLOR 250 50 50
+@ TALK "大膽，是誰敢侮辱恐懼魔王。"
+@ TALK "退魔師……，"
+@ TALK "還想保住性命就沿著原路回去吧！"
+@ WAIT
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "這是什麼？要怎麼對付石像呢？"
+@ TALK " "
+@ SELECT 255 255 255
+CASE "用刀攻擊石像" GO_DOWN T1
+CASE "折回" GO_DOWN END
+SELECT_END
+* T1
+@ CLEAR_BUFFER
+@ PLAY SWORD3.WAV
+@ BOX RED 5
+@ FACE NO 250 50 50
+@ COLOR 250 50 50
+@ TALK "吼！你將會為侮辱我而付出代價。"
+@ WAIT
+@ LOCATE_ENEMY 19 41 40 45 26 0
+@ LOCATE_ENEMY 19 42 41 45 26 0
+@ LOCATE_ENEMY 19 48 42 45 26 0
+@ CHANGE 69
+@ END
+
+# 69
+# 19
+# 15
+# " 北貴城守護像"
+# BASIC
+# 100
+@ CLEAR_BUFFER
+@ BOX RED 5
+@ FACE NO 250 50 50
+@ COLOR 250 50 50
+@ TALK "大膽，是誰敢侮辱恐懼魔王。"
+@ TALK "退魔師……，"
+@ TALK "還想保住性命就沿著原路回去吧！"
+@ WAIT
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "這次怎麼對付呢？"
+@ TALK " "
+@ SELECT 255 255 255
+CASE "用刀攻擊石像" GO_DOWN T1
+CASE "折回" GO_DOWN END
+SELECT_END
+* T1
+@ CLEAR_BUFFER
+@ PLAY SWORD3.WAV
+@ BOX RED 5
+@ FACE NO 250 50 50
+@ COLOR 250 50 50
+@ TALK "吼！你將會為侮辱我而付出代價。"
+@ WAIT
+@ LOCATE_ENEMY 19 41 40 46 32 0
+@ LOCATE_ENEMY 19 42 41 46 34 0
+@ LOCATE_ENEMY 19 48 42 46 34 0
+@ LOCATE_ENEMY 19 47 41 46 30 0
+@ CHANGE 70
+@ END
+
+# 70
+# 19
+# 15
+# "北貴城守護像"
+# BASIC
+# 100
+@ CLEAR_BUFFER
+@ BOX RED 5
+@ FACE NO 250 50 50
+@ COLOR 250 50 50
+@ TALK "大膽，是誰敢侮辱恐懼魔王。"
+@ TALK "退魔師……，"
+@ TALK "還想保住性命就沿著原路回去吧！"
+@ WAIT
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "這次怎麼對付好呢？"
+@ TALK " "
+@ SELECT 255 255 255
+CASE "用刀攻擊石像" GO_DOWN T1
+CASE "折回" GO_DOWN END
+SELECT_END
+* T1
+@ CLEAR_BUFFER
+@ PLAY SWORD3.WAV
+@ BOX RED 5
+@ FACE NO 250 50 50
+@ COLOR 250 50 50
+@ TALK "吼！你將會為侮辱我而付出代價。"
+@ WAIT
+@ LOCATE_ENEMY 19 41 40 46 36 0
+@ LOCATE_ENEMY 19 42 41 46 41 0
+@ LOCATE_ENEMY 19 43 38 46 36 0
+@ LOCATE_ENEMY 19 44 42 46 32 0
+@ LOCATE_ENEMY 19 48 42 46 37 0
+@ LOCATE_ENEMY 19 47 41 46 36 0
+@ LOCATE_ENEMY 19 46 40 46 42 0
+@ CHANGE 71
+@ END
+
+# 71
+# 19
+# 15
+# "北貴城守護像"
+# BASIC
+# 100
+@ CLEAR_BUFFER
+@ BOX RED 5
+@ FACE NO 250 50 50
+@ COLOR 250 50 50
+@ TALK "你是位真正的退魔師！"
+@ TALK "贊賞你的勇猛及意志，"
+@ TALK "因此幫你打開一條路，"
+@ TALK "但往後不要有所怨言。"
+@ WAIT
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "啊！石像終於消失了。"
+@ WAIT
+@ LOCATE_ENEMY 19 54 23 26 25 164
+@ LOCATE_ENEMY 19 56 23 26 25 162
+@ LOCATE_ENEMY 19 58 23 26 25 164
+@ LOCATE_ENEMY 19 55 25 26 25 162
+@ LOCATE_ENEMY 19 57 24 26 25 164
+@ LOCATE_ENEMY 19 57 21 46 35 162
+@ LOCATE_ENEMY 19 54 22 46 35 162
+@ LOCATE_ENEMY 19 53 23 46 35 162
+@ REMOVE_OBJECT 19 41
+@ REMOVE_OBJECT 19 42
+@ REMOVE_OBJECT THIS
+@ END
+
+
+72. 恐懼魔鬼像
+  　-上演箱子之封印的解說(E-13)...
+  　-需要有魔道清劍.使用魔道清劍解除封印. 
+      ->恐懼魔鬼產生(讓34號項目發生).產生七隻29號單位(57,13),(65,14),(58,20),(64,21)
+  　-當別的主角時試著使用魔道清劍...
+# 72
+# 19
+# 16
+# "北貴城守護像"
+# BASIC
+# 100
+@ CLEAR_BUFFER
+@ BOX RED 8
+@ FACE NO 250 50 50
+@ PLAY 13.WAV
+@ COLOR 250 50 50
+@ TALK "想要解除封印者為何方人物？"
+@ TALK "                                             "
+@ TALK "在這長長歲月以來一直沉睡的我，"
+@ TALK "                                             "
+@ TALK "不要打擾我的沉眠，"
+@ TALK "                                             "
+@ TALK "這是將我封印在此的主人的意思，也是我的意志。"
+@ TALK "                                             "
+@ TALK "唯有持有被選為我主人的證據的人，"
+@ TALK "                                             "
+@ TALK "才可以打開這封印。"
+@ TALK "                                             "
+@ TALK "惟有他才有資格以我的主人的身份命令我。"
+@ TALK "                                             "
+@ TALK "輕易想冒犯我的人將體驗到生命中最大的恐懼。"
+@ TALK "                                             "
+@ WAIT
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "啊！恐懼魔鬼被封住了，"
+@ TALK "要有恐懼魔鬼的能力才有辦法到地下世界。"
+@ TALK "主人之證好像是在說魔道清劍，"
+@ IF ITEM HAVE 28 THEN GO_DOWN SUC1
+@ TALK "應該可以用魔道清劍解開封印。"
+@ WAIT
+@ END
+* SUC1
+@ TALK "應該可以用這魔道清劍解開封印。"
+@ WAIT
+@ CLEAR_BUFFER
+@ SELECT 255 255 255
+CASE "解開封印" GO_DOWN T1
+CASE "回去" GO_DOWN END
+SELECT_END
+* T1
+@ NEW_OBJECT 19 62 12 20 70 0
+@ CLEAR_BUFFER
+@ BOX RED 5
+@ FACE 20 "恐懼魔鬼" 250 50 50
+@ COLOR 250 50 50
+@ TALK "吼……！"
+@ TALK "你真愚蠢，竟解開了我的封印。"
+@ TALK "四百年前被拿著痛哭之劍的戰士封印在此的我，"
+@ TALK "終於可以重見光明了，哈哈哈……，"
+@ TALK "你們就當做是慶祝我從封印中解脫的祭品吧！"
+@ WAIT
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "等一下！是我幫你解開了封印。"
+@ TALK "所以從現在開始我就是你的主人。"
+@ WAIT
+@ CLEAR_BUFFER
+@ BOX RED 5
+@ FACE 20 "恐懼魔鬼" 250 50 50
+@ COLOR 250 50 50
+@ TALK "吼……，別做夢了。"
+@ TALK "我只臣服於強者，"
+@ TALK "若你們擊敗我，我就引導你們去地下世界。"
+@ TALK "不過，如果你們連我也打不贏的話，"
+@ TALK "也沒有資格去地下世界。"
+@ TALK "那麼……你們就乖乖受死吧。"
+@ WAIT
+@ REMOVE_OBJECT 19 20 
+@ LOCATE_ENEMY 19 62 12 42 55 34
+@ PLAY E5.WAV
+@ LOCATE_ENEMY 19 57 13 29 35 0
+@ LOCATE_ENEMY 19 65 14 29 35 0
+@ PLAY E4.WAV
+@ LOCATE_ENEMY 19 58 20 29 35 0
+@ LOCATE_ENEMY 19 64 21 29 35 0
+@ PLAY D5.WAV
+@ LOCATE_ENEMY 19 60 20 29 35 0
+@ LOCATE_ENEMY 19 62 18 29 35 0
+@ CHANGE 0
+@ END
+
+
+
+34. 往地下世界.
+    /殺死恐懼魔鬼後,終於可以去地下世界.
+# 34
+# 19
+# 20
+# "  "
+# BASIC
+# 100
+@ CLEAR_BUFFER
+@ BOX RED 5
+@ FACE 20 "恐懼魔鬼" 250 50 50
+@ COLOR 250 50 50
+@ TALK "結果……，"
+@ TALK "就這樣結束了。"
+@ TALK "隨著這封印的解除，"
+@ TALK "這世上所有的力量都聚集在我身上……。"
+@ TALK "現在……已沒用了。"
+@ TALK "地上的所有魔怪都會因而消失。"
+@ WAIT
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 0 "宜林" 250 250 0
+@ COLOR 250 250 0
+@ TALK "那算是達成了我們的目的嗎？"
+@ TALK "現在已消除了這地上世界的所有的魔怪。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 20 "蟓斟魔怪" 250 50 50
+@ COLOR 250 50 50
+@ TALK "呵呵……但是……，"
+@ TALK "現在這世上所有魔怪的力量都會移到"
+@ TALK "地下世界。"
+@ TALK "地下世界，那地方現在由千鬼神當家，"
+@ TALK "那個千鬼神，雖然一樣都是魔怪。"
+@ TALK "不過它真的是一個很殘忍的傢伙。"
+@ WAIT
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 2 "庫斯" 250 250 0
+@ COLOR 250 250 0
+@ TALK "千鬼神？"
+@ TALK "那痛哭之劍是在千鬼神手中嗎？"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 20 "恐懼魔鬼" 250 50 50
+@ COLOR 250 50 50
+@ TALK "應該不是，"
+@ TALK "如果痛哭之劍在它手中，"
+@ TALK "這世界早已落入它的魔掌了。"
+@ WAIT
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 0 "宜林" 250 250 0
+@ COLOR 250 250 0
+@ TALK "好，那現在就去地下世界吧！"
+@ TALK "魔怪，按照約定現在引導我們到地下世界吧。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 20 "恐懼魔鬼" 250 50 50
+@ COLOR 250 50 50
+@ TALK "現在我的生命的能量已漸漸消失，"
+@ TALK "我的魂將尋找回到地下世界的門。"
+@ TALK "當門打開時，"
+@ TALK "跟著我的魂就可以了。"
+@ WAIT
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 1 "藍寧" 250 250 0
+@ COLOR 250 250 0
+@ TALK "來，我們也做準備吧。"
+@ TALK "現在開始要離開這世界，往新的世界走去。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 20 "恐懼魔鬼" 250 50 50
+@ COLOR 250 50 50
+@ TALK "呃……！已經……不行。"
+@ PLAY 35.WAV
+@ TALK "當我的魂……尋找地下世界……，"
+@ TALK "當門打開時……跟著我的……魂……就可……。"
+@ PLAY D2.WAV
+@ WAIT
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 0 "宜林" 250 250 0
+@ COLOR 250 250 0
+@ TALK "啊！通往地下世界的門打開了。"
+@ TALK "走，到地下世界去。"
+@ TALK ""
+@ GO_END1
+@ END
+
+
+
+
+
+
+
+
+
+=========================================================
+/*****************  協助項目  ***********************/
+=========================================================
+
+=========================================================
+/********拿鹿茸給村長
+=========================================================
+
+# 18
+# 15
+# 11
+# "村長"
+# BASIC
+# 100
+@ IF ITEM HAVE 243 THEN GO_UP SUC243
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 3 "村長" 210 210 210
+@ COLOR 210 210 210
+@ TALK "你是退魔師嗎？"
+@ WAIT
+@ TALK "現在村莊外到處有魔怪，"
+@ TALK "你要小心，"
+@ TALK "如果要買東西記得一定要在這兒買，"
+@ TALK "我正是為了地方經濟發展盡全力的村長。"
+@ WAIT
+@ END
+
+# 101
+# 15
+# 11
+# "村長"
+# FLOW
+# 105
+@ IF ITEM HAVE 243 THEN GO_UP SUC243
+@ IF ORDER HAVE 101 && ORDER HAVE 101 THEN GO_DOWN NEXT1
+@ IF NUM HAVE 101 && ORDER NOTHAVE 101 THEN GO_BASIC_EVENT
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "要不要和這人談話？"
+@ TALK "  "
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "談話" GO_DOWN EVT21
+CASE "略過" GO_DOWN 結束
+SELECT_END
+
+* NEXT1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 3 "村長" 210 210 210
+@ COLOR 210 210 210
+@ TALK "喂！我拜託你的事怎麼樣了？"
+@ IF ITEM HAVE 201 THEN GO_DOWN SUC1
+@ TALK "沒時間在那裡悠閒，快去把東西拿來。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "好，知道了。" GO_DOWN END
+CASE "啊？你上次是怎麼說的？ " GO_DOWN T1
+SELECT_END
+@ END
+
+* EVT21
+@ CLEAR_BUFFER
+@ TALK "先生，請問一下。"
+@ WAIT
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 3 "村長" 210 210 210
+@ COLOR 210 210 210
+@ TALK "嗯……，我已經注意你很久了。"
+@ TALK "看起來很可靠的樣子呢。"
+@ TALK "我正有一件很重要的事情，想麻煩你。"
+@ TALK "只要幫我完成我不會虧待你的。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "再講仔細一點。" GO_DOWN T1
+CASE "對不起，我現在很忙。" GO_DOWN EVT21_2
+SELECT_END
+* T1
+@ CLEAR_BUFFER
+@ FACE 3 "村長" 210 210 210
+@ COLOR 210 210 210
+@ TALK "越過南邊的山後，"
+@ TALK "就會看到一個叫飛仙村的村莊，"
+@ TALK "我弟弟就住在那。"
+@ TALK "聽說他在那裡賣東西，但這不是重點。"
+@ TALK "重點是我弟弟說，"
+@ TALK "他準備了一個很貴重的東西要當我的生日禮物。"
+@ TALK "我現在年紀太大走不動了，"
+@ TALK "希望你幫我拿來，我會給你7000銅幣做為酬勞。"
+@ IF ORDER HAVE 101 THEN GO_DOWN NEXT2
+@ TALK "怎麼樣？幫幫我這個老頭吧。"
+@ WAIT
+@ CLEAR_BUFFER
+@ COLOR 250 250 0
+@ FACE HERO 250 250 0
+@ SELECT 255 255 255
+CASE "好，我幫你。" GO_DOWN EVT21_1
+CASE "對不起，有點困難。" GO_DOWN EVT21_2
+SELECT_END
+
+* NEXT2
+@ TALK "現在明白了嗎？"
+@ TALK "那麼快去快回吧！"
+@ WAIT
+@ END
+
+* EVT21_1
+@ CLEAR_BUFFER
+@ FACE 3 "村長" 210 210 210
+@ COLOR 210 210 210
+@ TALK "謝謝，那快點出發吧！"
+@ TALK "飛仙村要先往右邊走。"
+@ IF ORDER_SPACE NOTHAVE THEN GO_DOWN NO_SPACE
+@ ORDER 101 "西域村村長之委託"
+MENT "從飛仙村商店老闆那兒收到要拿到要給村長的禮物。"
+MENT "把禮物帶回西域村交給村長。"
+MENT "完成委託就可以得到7000銅幣。"
+ORDER_END
+@ GIVE NUM_TO_ALL 101
+@ WAIT
+@ END
+
+* EVT21_2
+@ CLEAR_BUFFER
+@ FACE 3 "村長" 210 210 210
+@ TALK "真失望，我以為你一定會幫我這老人家忙的。"
+@ TALK "沒辦法……，只好找別人了。"
+@ WAIT
+@ END
+
+* SUC1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 3 "村長" 210 210 210
+@ COLOR 210 210 210
+@ TALK "啊！你手上的鹿茸是我弟弟拿給你的吧。"
+@ TALK "真的謝謝你，"
+@ TALK "我沒什麼好東西可以報答你，付現金好了。"
+@ TALK "這裡是7000銅幣，應該夠了吧。"
+@ TALK "當作是幫助我的代價收下吧！"
+@ GIVE MONEY 7000
+@ REMOVE ITEM 201
+@ REMOVE_ORDER 101
+@ REMOVE NUM_TO_ALL 101
+@ CHANGE 0
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "謝謝您，您太客氣了。"
+@ TALK "那我就收下了。"
+@ END
+
+
+/* 101號項目之結果 */
+# 102
+# 16
+# 2
+# "商店老闆"
+# FLOW
+# 105
+@ IF ORDER NOTHAVE 101 THEN GO_BASIC_EVENT
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "要怎麼辦呢？"
+@ TALK "  "
+@ SELECT 255 255 255
+CASE "尋問關於西域村村長的事" GO_DOWN EVT21_2
+CASE "關於物品" GO_BASIC_EVENT
+SELECT_END
+
+* EVT21_2
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ COLOR 210 210 210
+@ FACE 7 "商店老闆" 210 210 210
+@ TALK "什麼！是我哥哥派你來的？"
+@ TALK "太好了，幫我把這東西拿給我哥哥。"
+@ TALK "我應該親自拿給他的，"
+@ TALK "只是最近魔怪都太囂張。"
+@ TALK "拿去，"
+@ TALK "這是前一陣子為了送我哥當生日禮物買的鹿茸。"
+@ TALK "要當藥或擺著當裝飾品都可以，讓他自己看著辦。"
+@ TALK "那就拜託你了。"
+@ TALK "還有，你那麼辛苦的來往奔波，"
+@ TALK "這藥瓶送你，是我的一點小小心意，在路上可以使用。"
+@ GIVE ITEM 201 1
+@ GIVE ITEM 162 3
+@ CHANGE 0
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "您放心，我會安全的交給村長的。"
+@ TALK "謝謝您的藥水。"
+@ WAIT
+@ END
+
+
+=========================================================
+     / 尋找商店老闆的秤
+=========================================================
+# 103
+# 15
+# 2
+# "商店老闆"
+# FLOW
+# 102
+@ IF ITEM HAVE 209 && ORDER HAVE 103 THEN GO_DOWN SUC1
+@ IF NUM HAVE 103 && ORDER NOTHAVE 103 THEN GO_BASIC_EVENT
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "要怎麼辦呢？"
+@ TALK "  "
+@ SELECT 255 255 255
+CASE "談關於村外魔怪的事" GO_DOWN STEP1
+CASE "關於物品" GO_BASIC_EVENT
+SELECT_END
+
+* STEP1
+@ IF ORDER HAVE 103 THEN GO_DOWN NEXT1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 7 "商店老闆" 210 210 210
+@ COLOR 210 210 210
+@ TALK "你看起來像是個正義的勇敢退魔師，"
+@ TALK "對你我可以放心的講……。"
+@ TALK "其實我有個苦衷，"
+@ TALK "你可以幫我嗎？"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "再多講一點。" GO_DOWN T1
+CASE "對不起，現在很忙。" GO_DOWN NO1
+SELECT_END
+
+* NEXT1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 7 "商店老闆" 210 210 210
+@ COLOR 210 210 210
+@ TALK "我拜託你的事怎麼樣了？"
+@ WAIT
+@ IF ITEM HAVE 209 THEN GO_DOWN SUC1
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "不用擔心，我會幫您處理的。" GO_DOWN END
+CASE "啊？你上次是怎麼說的？" GO_DOWN T1
+CASE "我是為了別的事情而來的。" GO_BASIC_EVENT
+SELECT_END
+@ END
+
+* T1
+@ CLEAR_BUFFER
+@ FACE 7 "商店老闆" 210 210 210
+@ COLOR 210 210 210
+@ TALK "最近我們村莊為了魔怪而傷透了腦筋。"
+@ TALK "本以為不會怎樣，"
+@ TALK "誰知前幾天有個魔怪闖到我店裡，"
+@ TALK "把店內弄得亂七八糟。"
+@ TALK "而且它們把店裡的秤拿走了，"
+@ TALK "那個秤對我很重要，沒了它我就無法做生意了。"
+@ TALK "拜託你幫我把它找回來。"
+@ IF ORDER HAVE 103 THEN GO_DOWN NEXT2
+@ CLEAR_BUFFER
+@ TALK "你會幫我嗎？"
+@ TALK "我不會虧待你的。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "好，我幫您。" GO_DOWN OK1
+CASE "對不起，現在沒辦法。" GO_DOWN NO1
+CASE "我是為了別的事情來的。" GO_BASIC_EVENT
+SELECT_END
+
+* NEXT2
+@ TALK "現在清楚了吧，拜託你了。"
+@ WAIT
+@ END
+
+* OK1
+@ CLEAR_BUFFER
+@ FACE 7 "商店老闆" 210 210 210
+@ COLOR 210 210 210
+@ TALK "真是謝謝你，"
+@ TALK "那群魔怪它們往稻臨山谷方向去了。"
+@ TALK "它們長相的像是一般的骷髏，卻厲害很多。"
+@ TALK "你一定要小心。"
+@ IF ORDER_SPACE NOTHAVE THEN GO_DOWN NO_SPACE
+@ ORDER 103 "幫忙尋找商店老闆的秤"
+MENT "打敗稻臨山谷的魔怪找回秤。"
+MENT "將找回的秤還給商店老闆。"
+MENT "把秤拿給他就可以得到報酬。"
+ORDER_END
+@ GIVE NUM_TO_ALL 103
+@ LOCATE_ENEMY 13 65 106 47 20 209
+@ LOCATE_ENEMY 13 63 105 46 11 0
+@ LOCATE_ENEMY 13 67 107 46 12 0
+@ LOCATE_ENEMY 13 68 109 46 12 0
+@ LOCATE_ENEMY 13 63 104 46 14 0
+@ UNSEAL 13
+@ WAIT
+@ END
+
+* NO1
+@ CLEAR_BUFFER
+@ FACE 7 "商店老闆" 210 210 210
+@ COLOR 210 210 210
+@ TALK "好失望喔！"
+@ TALK "我以為像你這樣的人應該會幫我的忙。"
+@ TALK "像這種每個人自身難保的時期，"
+@ TALK "我還期待會有人幫我，我也實在太傻了。"
+@ WAIT
+@ END
+
+* SUC1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ COLOR 250 250 0
+@ TALK "這是您要我找回的秤，我把東西拿來了。"
+@ CLEAR_BUFFER
+@ FACE 7 "商店老闆" 210 210 210
+@ COLOR 210 210 210
+@ TALK "真的謝謝你。沒想到你真的找到了，本來已不抱有希望的。"
+@ TALK "就以我們家族代代流傳下來的寶劍做為謝禮吧！"
+@ TALK "這名為星月緬刀的寶劍，本來是不能交給外人， "
+@ TALK "可是這秤對我來說是用以謀生的重要道具，"
+@ TALK "幸好有你幫我找回了。"
+@ TALK "怎麼樣？滿意嗎？"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "是的，很滿意。" GO_DOWN T3
+CASE "什麼！那麼辛苦卻……。" GO_DOWN T4
+SELECT_END
+* T3
+@ CLEAR_BUFFER
+@ FACE 7 "商店老闆" 210 210 210
+@ COLOR 210 210 210
+@ TALK "你真是心胸寬大，果然真正的英雄還是不一樣。"
+@ TALK "如果是那些小氣的人，一定會要求更多的東西！"
+@ TALK "真是佩服你，"
+@ TALK "我一定不會忘記這份情！"
+@ TALK "這星月緬刀給你。"
+@ GIVE ITEM 21 1
+@ REMOVE ITEM 209
+@ REMOVE_ORDER 103
+@ REMOVE NUM_TO_ALL 103
+@ CHANGE 0
+@ WAIT
+@ END
+* T4
+@ CLEAR_BUFFER
+@ FACE 7 "商店老闆" 210 210 210
+@ COLOR 210 210 210
+@ TALK "什麼！不能滿足！"
+@ TALK "那寶劍可是很貴的呢……。"
+@ TALK "不過，也沒辦法。你是幫我找回了秤的恩人，"
+@ TALK "那給你兩顆水晶、五根人蔘還有時空之戒吧。"
+@ TALK "這樣應該滿意了吧？"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "知道了，這些就可以了。" GO_DOWN T5
+CASE "還不夠！" GO_DOWN T6
+SELECT_END
+* T5
+@ CLEAR_BUFFER
+@ FACE 7 "商店老闆" 210 210 210
+@ COLOR 210 210 210
+@ TALK "幸好，如果再多要求。我可能就不高興了。"
+@ TALK "不過你那麼辛苦的找回秤。"
+@ TALK "這些是應該的，這些是你的報酬。"
+@ GIVE ITEM 167 5
+@ GIVE ITEM 195 2
+@ GIVE ITEM 112 1
+@ REMOVE ITEM 209
+@ REMOVE_ORDER 103
+@ REMOVE NUM_TO_ALL 103
+@ CHANGE 0
+@ WAIT
+@ END
+* T6
+@ CLEAR_BUFFER
+@ FACE 7 "商店老闆" 210 210 210
+@ COLOR 210 210 210
+@ TALK "真是太過份了，那個秤你拿去好了。"
+@ TALK "我沒辦法付更多給你這貪心的人，慢走。"
+@ TALK "還有，這是給你辛苦的代價。"
+@ TALK "雖然說人的貪慾是無底洞，不過你也太過份了。"
+@ TALK "雖然相似英雄……，是我看走了眼。"
+@ REMOVE_ORDER 103
+@ REMOVE NUM_TO_ALL 103
+@ GIVE ITEM 161 1
+@ GIVE ITEM 162 1
+@ CHANGE 0
+@ WAIT
+@ END
+
+
+=========================================================
+     / 找到飛龍鱗後, 找到短劍的鞘得到飛龍短劍
+=========================================================
+# 104
+# 18
+# 1
+# "鐵匠"
+# FLOW
+# 110
+@ IF NUM HAVE 104 && ORDER NOTHAVE 104 THEN GO_BASIC_EVENT
+@ IF ORDER HAVE 104 THEN GO_DOWN NEXT1
+@ IF ORDER HAVE 105 && ITEM HAVE 228 THEN GO_DOWN SUC2
+@ IF NUM HAVE 105 && ORDER NOTHAVE 105 THEN GO_BASIC_EVENT
+@ IF ORDER HAVE 105 && ITEM NOTHAVE 229 THEN GO_DOWN NEXT3
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "要怎麼辦好呢？"
+@ TALK "  "
+@ SELECT 255 255 255
+CASE "談關於劍的事" GO_DOWN STEP1
+CASE "關於物品" GO_BASIC_EVENT
+SELECT_END
+
+* STEP1
+@ IF ORDER HAVE 104 THEN GO_DOWN NEXT1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 8 "鐵匠" 210 210 210
+@ COLOR 210 210 210
+@ TALK "你是退魔師吧？"
+@ TALK "你知道鑄造一把好劍的必備條件嗎？"
+@ TALK "好劍需要用好材料。"
+@ TALK "既然談到這，以前我還有一些好材料，"
+@ TALK "所以可以做一些名劍，"
+@ TALK "只是現在拿不到那些材料。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "為什麼拿不到了？" GO_DOWN T1
+CASE "知道了。再見！" GO_DOWN NO1
+SELECT_END
+
+* NEXT1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 8 "鐵匠" 210 210 210
+@ COLOR 210 210 210
+@ TALK "有找到我說的材料嗎？"
+@ IF ITEM HAVE 214 THEN GO_DOWN SUC1
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "不用擔心，我會幫您處理的。" GO_DOWN END
+CASE "啊？你上次是怎麼說的？ " GO_DOWN T1
+CASE "我是為了別的事情來的。" GO_BASIC_EVENT
+SELECT_END
+@ END
+
+* T1
+@ CLEAR_BUFFER
+@ FACE 8 "鐵匠" 210 210 210
+@ COLOR 210 210 210
+@ TALK "最近因為魔怪的關係無法找到好材料，"
+@ TALK "到處都是魔怪的關係，根本無法出門。"
+@ TALK "我現在想製作一把飛龍短劍，"
+@ TALK "可是缺少了最重要的材料-飛龍的鱗。"
+@ TALK "以前我把它藏在黃天江的路標附近，"
+@ TALK ""
+@ TALK "你可否幫我拿來?"
+@ TALK "那我就幫你做飛龍短劍！"
+@ TALK "我以做名劍的樂趣過活著呢。"
+@ WAIT
+@ IF ORDER HAVE 104 THEN GO_DOWN NEXT2
+@ CLEAR_BUFFER
+@ TALK "你會接受我的委託嗎？"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "好，我幫您。" GO_DOWN OK1
+CASE "對不起，現在沒辦法。" GO_DOWN NO1
+CASE "我是為了別的事情來的。" GO_BASIC_EVENT
+SELECT_END
+
+* NEXT2
+@ TALK " 現在明白了嗎？拜託你了。"
+@ WAIT
+@ END
+
+* OK1
+@ CLEAR_BUFFER
+@ FACE 8 "鐵匠" 210 210 210
+@ COLOR 210 210 210
+@ TALK "謝謝，那我來告訴你確實的地點吧。"
+@ TALK "你到達黃天江後，會看到兩個像圖騰柱的路標。"
+@ TALK "你仔細看其中一個，那應該就能找得到。"
+@ TALK "到黃天江找路標應該不會很難！"
+@ TALK "呼！也許我可以達成我的願望了。"
+@ TALK "那就拜託你了." 
+@ IF ORDER_SPACE NOTHAVE THEN GO_DOWN NO_SPACE
+@ ORDER 104 "幫忙找飛龍的鱗"
+MENT "找到藏在黃天江路標附近的飛龍的鱗。"
+MENT "拿給東方村的鐵匠。"
+MENT "拿飛龍的鱗給他的話"
+MENT "他說會幫忙做飛龍短劍為報酬。"
+ORDER_END
+@ GIVE NUM_TO_ALL 104
+@ REMOVE_OBJECT 9 10
+@ NEW_OBJECT 9 44 55 11 32 105
+@ UNSEAL 9
+@ UNSEAL 2
+@ WAIT
+@ END
+
+* NO1
+@ CLEAR_BUFFER
+@ FACE 8 "鐵匠" 210 210 210
+@ COLOR 210 210 210
+@ TALK "是嗎？我這可是一個好機會。"
+@ TALK "既然你不要也沒辦法！" 
+@ TALK "慢走！"
+@ WAIT
+@ END
+
+* SUC1
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "我找到飛龍的鱗了。"
+@ TALK "如你所說的藏在路標旁邊呢。"
+@ CLEAR_BUFFER
+@ FACE 8 "鐵匠" 210 210 210
+@ COLOR 210 210 210
+@ TALK "謝謝你！！這下我就可以完成飛龍短劍了。"
+@ TALK "拜託你果然是正確的。"
+@ TALK "我本來還有件事想拜託別人的，"
+@ TALK "不過真不好意思，再拜託你幫我做這件事好嗎？"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "我本來也不知道這件事，"
+@ TALK "聽說因為飛龍短劍它的氣非常強，"
+@ TALK "所以一定要有刀鞘！原本我拜託別人找那刀鞘。"
+@ TALK "但那個人在回來的路上遇到魔怪，"
+@ TALK "所以就把刀鞘丟在一邊就跑回來了！"
+@ TALK "真不好意思，麻煩你順便把刀鞘也找來好嗎？"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "好，也不差這件事，就交給我吧！" GO_DOWN NEW_EVENT1
+CASE "什麼！那是說沒有任何報酬嗎？" GO_DOWN NEW_EVENT2
+SELECT_END
+
+* NEW_EVENT1
+@ CLEAR_BUFFER
+@ FACE 8 "鐵匠" 210 210 210
+@ COLOR 210 210 210
+@ TALK "喔！不好意思。又麻煩你一次，謝謝你。"
+@ TALK "那我來告訴你刀鞘所在的地方，"
+@ TALK "到龍等山谷的下方會看到一個涼亭，"
+@ TALK "好像就掉在那附近。把它帶回給我。"
+@ TALK "還有這瓶藥，必要時在拿出來使用吧！"
+@ TALK "真不好意思一直麻煩你。"
+@ REMOVE_ORDER 104
+@ IF ORDER_SPACE NOTHAVE THEN GO_DOWN NO_SPACE
+@ ORDER 105 "幫忙找刀鞘"
+MENT "找到掉在龍等山谷涼亭下的刀鞘。"
+MENT "拿給東方村的鐵匠。"
+MENT "把東西拿給他就可以得到飛龍短劍。"
+ORDER_END
+@ LOCATE_ITEM 8 30 93 228
+@ UNSEAL 8
+@ GIVE NUM_TO_ALL 105
+@ GIVE ITEM 162 3
+@ GIVE ITEM 164 2
+@ REMOVE ITEM 214
+@ REMOVE NUM_TO_ALL 104
+@ WAIT
+@ END
+
+* NEW_EVENT2
+@ CLEAR_BUFFER
+@ FACE 8 "鐵匠" 210 210 210
+@ COLOR 210 210 210
+@ TALK "報酬？"
+@ TALK "嗯……這把劍給你好了！"
+@ TALK "你貪慾那麼深，看樣子也成不了真正的英雄。"
+@ TALK "這是我前幾天做的新鐵劍。"
+@ TALK "請好好使用它，那我來告訴你刀鞘所在的地方。"
+@ TALK "到龍等山谷會看到一個涼亭，"
+@ TALK "好像就掉在那附近。把它拿給我。"
+@ REMOVE_ORDER 104
+@ IF ORDER_SPACE NOTHAVE THEN GO_DOWN NO_SPACE
+@ ORDER 105 "幫忙找刀鞘"
+MENT "找到掉在龍脊谷涼亭的刀鞘。"
+MENT "拿給東方村的鐵匠。"
+ORDER_END
+@ LOCATE_ITEM 8 30 93 228
+@ UNSEAL 8
+@ GIVE NUM_TO_ALL 105
+@ GIVE ITEM 7 1
+@ REMOVE ITEM 214
+@ REMOVE NUM_TO_ALL 104
+@ WAIT
+@ END
+
+* NEXT3
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 8 "鐵匠" 210 210 210
+@ COLOR 210 210 210
+@ TALK "要快點將刀鞘拿來，"
+@ TALK "才有辦法完成飛龍短劍。"
+@ TALK "快去快回吧！"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "我知道，不用擔心。" GO_DOWN END
+CASE "我是為了別的事情來的。" GO_BASIC_EVENT
+SELECT_END
+@ END
+
+* SUC2
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "好久不見，"
+@ TALK "我已經找到刀鞘了。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 8 "鐵匠" 210 210 210
+@ COLOR 210 210 210
+@ TALK "噢！太厲害了。"
+@ TALK "你不在的時候，我已經將飛龍短劍製作完成了。"
+@ TALK "雖然是我做的，不過的確是好劍。"
+@ TALK "在這裡請好好用它吧！"
+@ WAIT
+@ REMOVE ITEM 228
+@ GIVE ITEM 22 1
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "啊！真的要把它送給我嗎？"
+@ TALK "謝謝，我會小心保管。"
+@ TALK "這對會對抗魔怪有很大的幫助！"
+@ WAIT
+@ REMOVE NUM_TO_ALL 105
+@ REMOVE_ORDER 105
+@ CHANGE 0
+@ WAIT
+@ END
+
+=========================================================
+# 105
+# 8
+# 11
+# "路標"
+# FLOW
+# 100
+@ IF ORDER NOTHAVE 104 THEN END
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "啊！這後面有東西。"
+@ TALK "這應該就是鐵匠所說的飛龍的鱗吧！"
+@ TALK "應該直接拿走就好了吧！"
+@ WAIT
+@ GIVE ITEM 214 1
+@ PLAY 38.WAV
+@ LOCATE_ENEMY 9 41 57 3 26 43
+@ PLAY 39.WAV
+@ LOCATE_ENEMY 9 42 58 2 27 42
+@ LOCATE_ENEMY 9 54 61 3 19 0
+@ PLAY 40.WAV
+@ LOCATE_ENEMY 9 52 58 2 26 63
+@ LOCATE_ENEMY 9 50 59 3 26 5
+@ PLAY 38.WAV
+@ LOCATE_ENEMY 9 48 61 3 27 0
+@ LOCATE_ENEMY 9 60 65 2 30 195
+@ LOCATE_ENEMY 9 58 62 2 18 82
+@ CHANGE 0
+@ END
+
+
+
+=========================================================
+     / 在峽谷裡的鍛鍊
+=========================================================
+106 : 在峽谷裡的鍛鍊
+   112年.東方村之魔女.談論有關訓練的事項,若要就將他移
+  動至峽谷村.在那裡放十五隻道行馬(8)(Level:與主角相似). 
+    在峽谷裡設置一可移動至東方村的裝置.放一石像在峽谷裡 
+    藉由讀完石像上的文字將提升能力.
+# 106
+# 17
+# 5
+# "魔女"
+# FLOW
+# 114
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 6 "魔女" 210 210 210
+@ COLOR 210 210 210
+@ IF LEARN_MAGIC THEN GO_UP MAGIC_STOP
+@ TALK "我正在找你。"
+@ TALK "你那優秀的退魔師的名已傳遍天下呢！"
+@ TALK "不過你要記住雖然你是很厲害的退魔師，"
+@ TALK "還是有比你更強的魔怪存在。"
+@ TALK "我正在找一些優秀的人，"
+@ TALK "將他們培訓成可以對抗千鬼神的人才。"
+@ TALK "給我機會讓我對你做特訓。"
+@ TALK "怎麼樣？有興趣嗎？"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ IF ORDER HAVE 117 THEN GO_DOWN SS1
+@ SELECT 255 255 255
+CASE "是的，有興趣。" GO_DOWN NEXT1
+CASE "不好意思，我是為了其它事來的。" GO_BASIC_EVENT
+SELECT_END
+* NEXT1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 6 "魔女" 210 210 210
+@ COLOR 210 210 210
+@ TALK "真正的訓練就是實際與敵人戰鬥！"
+@ TALK "是在峽谷的訓練。"
+@ TALK "你可以在那邊藉著對抗魔怪增強"
+@ TALK "你的能力。"
+@ WAIT
+@ IF MONEY LE 1999 THEN GO_DOWN T1
+@ CLEAR_BUFFER
+@ TALK "不過這訓練需要冒生命的危險。"
+@ TALK "你要想清楚，而且要繳2000銅幣，"
+@ TALK "算是幫忙聚集魔怪的費用。"
+@ TALK "怎麼樣？有興趣嗎？"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "好，現在就開始吧！" GO_DOWN OK1
+CASE "再考慮一下好了。" GO_DOWN NO1
+SELECT_END
+* SS1
+/ 當看完117號項目回來時.解開魔女的秘密
+@ TALK "聽到風聲說妳有點可疑，"
+@ TALK "我也覺得妳有點可疑。"
+@ TALK "妳是不是為了殺我們才要把我們"
+@ TALK "送到峽谷去？"
+@ WAIT
+@ CLEAR_BUFFER
+@ BOX RED 5
+@ FACE 6 "魔女" 210 210 210
+@ COLOR 250 50 0
+@ TALK "哈哈哈……。"
+@ TALK "終於看出來了。沒錯，我就是北貴城之魔女魄色女。"
+@ TALK "好，測試一下這其間你有多少成長？"
+@ TALK "魔怪們醒來吧！！！"
+@ REMOVE_ORDER 117
+@ REMOVE NUM_TO_ALL 117
+@ PLAY B3.WAV
+@ WAIT
+@ LOCATE_ENEMY 17 3 19 5 38 0
+@ PLAY E3.WAV
+@ LOCATE_ENEMY 17 7 16 5 34 0
+@ LOCATE_ENEMY 17 3 22 5 30 195
+@ PLAY C3.WAV
+@ LOCATE_ENEMY 17 7 21 5 27 156
+@ PLAY A3.WAV
+@ LOCATE_ENEMY 17 4 21 8 35 11
+@ PLAY D3.WAV
+@ LOCATE_ENEMY 17 6 25 8 26 73
+@ PLAY A3.WAV
+@ LOCATE_ENEMY 17 5 18 12 58 139
+@ GIVE NUM_TO_ALL 26
+@ REMOVE_OBJECT THIS
+@ END
+
+
+* T1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 6 "魔女" 210 210 210
+@ COLOR 210 210 210
+@ TALK "我需要2000銅幣來引誘魔怪，"
+@ TALK "可是你看起來沒有那些錢．"
+@ TALK "等下次有錢再來罷。"
+@ WAIT
+@ END
+* NO1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 6 "魔女" 210 210 210
+@ COLOR 210 210 210
+@ TALK "那等你想清楚後再來吧！"
+@ TALK "退魔師應該要有"
+@ TALK "那種想得到更多力量的強烈的慾望啊。"
+@ WAIT
+@ END
+* OK1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 6 "魔女" 210 210 210
+@ COLOR 210 210 210
+@ TALK "好，請準備。"
+@ TALK "要是你死了可不關我的事。"
+@ TALK "那我要用空間移動把你帶到訓練場了，"
+@ TALK "畢瞎喇……畢瞎喇……搭答拉嘎……。"
+@ WAIT
+@ REMOVE MONEY 2000
+@ PLAY 41.WAV
+@ IF LEVEL GE 40 THEN GO_DOWN STEP4
+@ IF LEVEL GE 32 THEN GO_DOWN STEP3
+@ IF LEVEL GE 23 THEN GO_DOWN STEP2
+@ IF LEVEL GE 15 THEN GO_DOWN STEP1
+@ IF LEVEL GE 8 THEN GO_DOWN STEP6
+@ LOCATE_ENEMY 21 43 13 8 10 171
+@ LOCATE_ENEMY 21 40 15 8 10 172
+@ LOCATE_ENEMY 21 45 18 8 8 173
+@ LOCATE_ENEMY 21 43 31 8 11 174
+@ LOCATE_ENEMY 21 39 28 8 10 175
+@ LOCATE_ENEMY 21 21 29 8 17 171
+@ LOCATE_ENEMY 21 17 31 8 13 172
+@ LOCATE_ENEMY 21 17 13 8 10 173
+@ LOCATE_ENEMY 21 19 14 8 14 174
+@ LOCATE_ENEMY 21 24 10 8 14 175
+@ LOCATE_ENEMY 21 69 14 8 12 171
+@ LOCATE_ENEMY 21 73 18 8 14 172
+@ LOCATE_ENEMY 21 76 26 8 15 173
+@ LOCATE_ENEMY 21 71 34 8 13 174
+@ LOCATE_ENEMY 21 62 37 8 10 175
+@ GO_DOWN STEP5
+* STEP6
+@ LOCATE_ENEMY 21 43 13 8 12 171
+@ LOCATE_ENEMY 21 40 15 8 12 172
+@ LOCATE_ENEMY 21 45 18 8 10 173
+@ LOCATE_ENEMY 21 43 31 8 13 174
+@ LOCATE_ENEMY 21 39 28 8 10 175
+@ LOCATE_ENEMY 21 21 29 8 20 171
+@ LOCATE_ENEMY 21 17 31 8 13 172
+@ LOCATE_ENEMY 21 17 13 8 10 173
+@ LOCATE_ENEMY 21 19 14 8 14 174
+@ LOCATE_ENEMY 21 24 10 8 18 175
+@ LOCATE_ENEMY 21 69 14 8 12 171
+@ LOCATE_ENEMY 21 73 18 8 17 172
+@ LOCATE_ENEMY 21 76 26 8 15 173
+@ LOCATE_ENEMY 21 71 34 8 15 174
+@ LOCATE_ENEMY 21 62 37 8 12 175
+@ GO_DOWN STEP5
+* STEP1
+@ LOCATE_ENEMY 21 43 13 8 23 171
+@ LOCATE_ENEMY 21 40 15 8 21 172
+@ LOCATE_ENEMY 21 45 18 8 20 173
+@ LOCATE_ENEMY 21 43 31 8 18 174
+@ LOCATE_ENEMY 21 39 28 8 20 175
+@ LOCATE_ENEMY 21 21 29 8 23 171
+@ LOCATE_ENEMY 21 17 31 8 13 172
+@ LOCATE_ENEMY 21 17 13 8 20 173
+@ LOCATE_ENEMY 21 19 14 8 24 174
+@ LOCATE_ENEMY 21 24 10 8 23 175
+@ LOCATE_ENEMY 21 69 14 8 22 171
+@ LOCATE_ENEMY 21 73 18 8 17 172
+@ LOCATE_ENEMY 21 76 26 8 20 173
+@ LOCATE_ENEMY 21 71 34 8 25 174
+@ LOCATE_ENEMY 21 62 37 8 22 175
+@ GO_DOWN STEP5
+* STEP2
+@ LOCATE_ENEMY 21 43 13 8 26 171
+@ LOCATE_ENEMY 21 40 15 8 26 172
+@ LOCATE_ENEMY 21 45 18 8 27 173
+@ LOCATE_ENEMY 21 43 31 8 28 174
+@ LOCATE_ENEMY 21 39 28 8 28 175
+@ LOCATE_ENEMY 21 21 29 8 26 171
+@ LOCATE_ENEMY 21 17 31 8 33 172
+@ LOCATE_ENEMY 21 17 13 8 30 173
+@ LOCATE_ENEMY 21 19 14 8 34 174
+@ LOCATE_ENEMY 21 24 10 8 33 175
+@ LOCATE_ENEMY 21 69 14 8 32 171
+@ LOCATE_ENEMY 21 73 18 8 27 172
+@ LOCATE_ENEMY 21 76 26 8 30 173
+@ LOCATE_ENEMY 21 71 34 8 25 174
+@ LOCATE_ENEMY 21 62 37 8 22 175
+@ GO_DOWN STEP5
+* STEP3
+@ LOCATE_ENEMY 21 43 13 8 33 171
+@ LOCATE_ENEMY 21 40 15 8 41 172
+@ LOCATE_ENEMY 21 45 18 8 30 173
+@ LOCATE_ENEMY 21 43 31 8 38 174
+@ LOCATE_ENEMY 21 39 28 8 30 175
+@ LOCATE_ENEMY 21 21 29 8 43 171
+@ LOCATE_ENEMY 21 17 31 8 33 172
+@ LOCATE_ENEMY 21 17 13 8 30 173
+@ LOCATE_ENEMY 21 19 14 8 34 174
+@ LOCATE_ENEMY 21 24 10 8 43 175
+@ LOCATE_ENEMY 21 69 14 8 42 171
+@ LOCATE_ENEMY 21 73 18 8 37 172
+@ LOCATE_ENEMY 21 76 26 8 40 173
+@ LOCATE_ENEMY 21 71 34 8 35 174
+@ LOCATE_ENEMY 21 62 37 8 32 175
+@ GO_DOWN STEP5
+* STEP4
+@ LOCATE_ENEMY 21 43 13 8 43 171
+@ LOCATE_ENEMY 21 40 15 8 51 172
+@ LOCATE_ENEMY 21 45 18 8 50 173
+@ LOCATE_ENEMY 21 43 31 8 48 174
+@ LOCATE_ENEMY 21 39 28 8 40 175
+@ LOCATE_ENEMY 21 21 29 8 43 171
+@ LOCATE_ENEMY 21 17 31 8 43 172
+@ LOCATE_ENEMY 21 17 13 8 40 173
+@ LOCATE_ENEMY 21 19 14 8 44 174
+@ LOCATE_ENEMY 21 24 10 8 43 175
+@ LOCATE_ENEMY 21 69 14 8 42 171
+@ LOCATE_ENEMY 21 73 18 8 37 172
+@ LOCATE_ENEMY 21 76 26 8 40 173
+@ LOCATE_ENEMY 21 71 34 8 35 174
+@ LOCATE_ENEMY 21 62 37 8 42 175
+@ GO_DOWN STEP5
+* STEP5
+@ WARP 21 12 18
+@ END
+
+
+
+=========================================================
+     / 幫忙尋找道具商人的小石子
+=========================================================
+
+107 : 水晶小石子探索.
+    103年 西域村.道具商人.找自己女兒玩耍過的小石子.
+    產生一隻水形鬼(5)在世莫.(Level16). 若殺死就可拿到小石子(204).
+    拿給他就可得到人蔘(167),聖者之彈珠(159),水晶(195),千里眼(196).
+# 107
+# 15
+# 3
+# "道具商人"
+# FLOW
+# 103
+@ IF ITEM HAVE 204 && ORDER HAVE 107 THEN GO_DOWN SUC1
+@ IF NUM HAVE 107 && ORDER NOTHAVE 107 THEN GO_DOWN S1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "要怎麼辦呢？"
+@ TALK "  "
+@ SELECT 255 255 255
+CASE "談話." GO_DOWN STEP1
+CASE "關於物品" GO_BASIC_EVENT
+SELECT_END
+
+* STEP1
+@ IF ORDER HAVE 107 THEN GO_DOWN NEXT1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 5 "道具商人" 210 210 210
+@ COLOR 210 210 210
+@ TALK "喔！勇士，我有事情想請求你。"
+@ TALK "我女兒有了很大的麻煩，"
+@ TALK "請你不要拒絕我的請求。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "我先聽聽看。" GO_DOWN T1
+CASE "對不起，我現在很忙。" GO_DOWN NO1
+SELECT_END
+
+* NEXT1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 5 "道具商人" 210 210 210
+@ COLOR 210 210 210
+@ TALK "我拜託你的事怎麼樣了？"
+@ WAIT
+@ IF ITEM HAVE 204 THEN GO_DOWN SUC1
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "好，我很快就會幫你找來。" GO_DOWN END
+CASE "不好意思，你說過什麼……。" GO_DOWN T1
+CASE "我是為別的事情來的。" GO_BASIC_EVENT
+SELECT_END
+@ END
+
+* S1
+/ 當將小石子交給別人時.
+@ IF ITEM HAVE 204 THEN GO_DOWN SUC1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 5 "道具商人" 210 210 210
+@ COLOR 210 210 210
+@ TALK "喂！我的水晶小石子怎麼樣了？"
+@ TALK "看你好像不太想幫我，那我自己想辦法好了。"
+@ TALK "就當我沒說過好了。"
+@ CHANGE 0
+@ REMOVE NUM_TO_ALL 107
+@ REMOVE NUM_TO_ALL 113
+@ WAIT
+@ END
+
+* T1
+@ CLEAR_BUFFER
+@ FACE 5 "道具商人" 210 210 210
+@ COLOR 210 210 210
+@ TALK "這村莊的右邊有個名為黃天江的地方，"
+@ TALK "昨天我女兒在那裡拿著水晶小石子玩時，"
+@ TALK "突然有魔怪出現，她嚇的趕緊跑回來。"
+@ TALK "只是，她不小心把水晶石子掉在那裡了。"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "雖然那水晶石看起來很平凡，"
+@ TALK "卻是我們家族裡很重要的東西。"
+@ TALK "只有你才有辦法找回它，"
+@ TALK "請你一定要幫我。"
+@ IF ORDER HAVE 107 THEN GO_DOWN NEXT2
+@ CLEAR_BUFFER
+@ TALK "拜託你了。"
+@ TALK "只要找回水晶石子，我一定會報答你的。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "好，我幫您。" GO_DOWN OK1
+CASE "對不起，現在沒辦法。" GO_DOWN NO1
+CASE "我是為了別的事情來的。" GO_BASIC_EVENT
+SELECT_END
+
+* NEXT2
+@ TALK "現在知道了吧，拜託你了。"
+@ WAIT
+@ END
+
+* OK1
+@ CLEAR_BUFFER
+@ FACE 5 "道具商人" 210 210 210
+@ COLOR 210 210 210
+@ TALK "謝謝你，朝村莊右邊走就會看到黃天江。"
+@ TALK "請小心。"
+@ IF ORDER_SPACE NOTHAVE THEN GO_DOWN NO_SPACE
+@ ORDER 107 "在黃天江邊尋找水晶小石子"
+MENT "在黃天江的橋附近找到水晶小石子。"
+MENT "把找到的水晶小石子拿給西域村的道具商人。"
+MENT "他就會給你一筆報酬。"
+ORDER_END
+@ GIVE NUM_TO_ALL 107
+@ LOCATE_ENEMY 9 91 44 2 13 0
+@ LOCATE_ENEMY 9 85 44 2 11 0
+@ LOCATE_ENEMY 9 87 42 2 10 196
+@ LOCATE_ENEMY 9 89 41 2 8 0
+@ LOCATE_ENEMY 9 93 41 2 9 0
+@ LOCATE_ITEM 9 92 45 204
+@ LOCATE_ITEM 9 58 44 6
+@ LOCATE_ITEM 9 3 64 43
+@ LOCATE_ITEM 9 33 32 196
+@ UNSEAL 9
+@ WAIT
+@ END
+
+* NO1
+@ CLEAR_BUFFER
+@ FACE 5 "道具商人" 210 210 210
+@ COLOR 210 210 210
+@ TALK "唉……真失望。"
+@ TALK "我以為像你這種人應該會幫我的忙，"
+@ TALK "那水晶小石子是很重要的東西。"
+@ TALK "不過你不願意也沒辦法。"
+@ WAIT
+@ END
+
+* SUC1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "找到水晶小石子了。"
+@ CLEAR_BUFFER
+@ FACE 5 "道具商人" 210 210 210
+@ COLOR 210 210 210
+@ TALK "什麼？！真是謝謝你。"
+@ TALK "我就知道你一定會幫我找到！！"
+@ TALK "要怎麼報答你才好呢？"
+@ TALK "這3500枚銅幣和人蔘五根就當作是我的一點心意吧！"
+@ TALK "我只有這些錢，雖然不多……。"
+@ TALK "請你收下。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "好，我就不客氣收下了。" GO_DOWN T3
+CASE "這些不夠。" GO_DOWN T4
+CASE "算了，我去找別人好了。" GO_DOWN END
+SELECT_END
+* T3
+@ CLEAR_BUFFER
+@ FACE 5 "道具商人" 210 210 210
+@ COLOR 210 210 210
+@ TALK "我再次的謝謝你。"
+@ TALK "還有這裡是報酬，"
+@ TALK "這世上應該要多點像你這樣的人。"
+@ GIVE MONEY 3500
+@ GIVE ITEM 167 5
+@ GIVE NUM_TO_ALL 44
+@ REMOVE ITEM 204
+@ REMOVE_ORDER 107
+@ REMOVE NUM_TO_ALL 107
+@ CHANGE 0
+@ WAIT
+@ END
+* T4
+@ CLEAR_BUFFER
+@ FACE 5 "道具商人" 210 210 210
+@ COLOR 210 210 210
+@ TALK "那麼……，給你4000枚銅幣加一個水晶好了。"
+@ TALK "這幾乎是我全部的財產了，"
+@ TALK "現在請把水晶小石子還給我。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "好吧！就收你這些吧。" GO_DOWN T5
+CASE "這些還是沒辦法。" GO_DOWN T6
+CASE "算了，我去找別人好了。" GO_DOWN END
+SELECT_END
+* T5
+@ CLEAR_BUFFER
+@ FACE 5 "道具商人" 210 210 210
+@ COLOR 210 210 210
+@ TALK "你這人還真貪心。給你，4000枚銅幣和水晶。"
+@ TALK "快把寶物還我。"
+@ GIVE MONEY 4000
+@ GIVE ITEM 195 1
+@ GIVE NUM_TO_ALL 44
+@ REMOVE ITEM 204
+@ REMOVE_ORDER 107
+@ REMOVE NUM_TO_ALL 107
+@ CHANGE 0
+@ WAIT
+@ END
+* T6
+@ CLEAR_BUFFER
+@ FACE 5 "道具商人" 210 210 210
+@ COLOR 210 210 210
+@ TALK "這是最後的條件了。"
+@ TALK "就用我們家族的寶劍雙面魔刀來和你交換，"
+@ TALK "我們交換吧！"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "好，就和寶劍交換吧！" GO_DOWN T7
+CASE "不，我去找別人好了。" GO_DOWN END
+SELECT_END
+* T7
+@ CLEAR_BUFFER
+@ FACE 5 "道具商人" 210 210 210
+@ COLOR 210 210 210
+@ TALK "真是個可恥的退魔師，"
+@ TALK "我看你這種退魔師"
+@ TALK "還能在世上活多久。"
+@ TALK "我當初還把你當勇士看待……，"
+@ TALK "是我看錯了。"
+@ TALK "給你，雙面魔刀的優點就是可以使用很久，"
+@ TALK "把小石子還我吧！"
+@ GIVE ITEM 24 1
+@ GIVE NUM_TO_ALL 44
+@ REMOVE ITEM 204
+@ REMOVE_ORDER 107
+@ REMOVE NUM_TO_ALL 107
+@ CHANGE 0
+@ WAIT
+@ END
+
+
+
+
+=========================================================
+     / 幫魔女找龍之眼淚
+=========================================================
+108　:龍之眼淚探索.
+    108年東方村.魔女.拿龍之眼淚給她.不知道是誰.
+    產生班點怪獸(2)在光明地.
+    拿給她就可以得到化壁術,化碳術,精靈術,恢復術中一項提升
+    兩個單位.
+
+# 108
+# 18
+# 5
+# "魔女"
+# FLOW
+# 107
+@ IF LEARN_MAGIC THEN GO_UP MAGIC_STOP
+@ IF ITEM HAVE 203 && ORDER HAVE 108 THEN GO_DOWN SUC1
+@ IF NUM HAVE 108 && ORDER NOTHAVE 108 THEN GO_BASIC_EVENT
+@ IF ORDER HAVE 108 THEN GO_DOWN NEXT1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "要做什麼呢？"
+@ TALK "  "
+@ SELECT 255 255 255
+CASE "談關於製作魔藥的事。" GO_DOWN STEP1
+CASE "關於魔藥。" GO_BASIC_EVENT
+SELECT_END
+
+* STEP1
+@ IF ORDER HAVE 108 THEN GO_DOWN NEXT1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 6 "魔女" 210 210 210
+@ COLOR 210 210 210
+@ TALK "你就是那位奉上天之命來對抗魔怪的"
+@ TALK "退魔師對吧？"
+@ TALK "你想知道製作魔藥的方法嗎？"
+@ TALK "製作它需要有很多材料。"
+@ TALK "其中有個叫龍之眼淚的神藥，"
+@ TALK "如果沒有它什麼魔藥都不能做。"
+@ TALK "唉……，現在已經沒有材料可以製作魔藥了。"
+@ TALK "你想再聽嗎？"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "對，我想知道更多……。" GO_DOWN T1
+CASE "不了，下次再聽好了。" GO_DOWN END
+SELECT_END
+
+* NEXT1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 6 "魔女" 210 210 210
+@ COLOR 210 210 210
+@ TALK "我拜託的事怎麼樣了？"
+@ WAIT
+@ IF ITEM HAVE 203 THEN GO_DOWN SUC1
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "放心，我很快就會幫你找來。" GO_DOWN END
+CASE "我是為別的事情來的。" GO_BASIC_EVENT
+SELECT_END
+@ END
+
+* T1
+@ CLEAR_BUFFER
+@ FACE 6 "魔女" 210 210 210
+@ COLOR 210 210 210
+@ TAKL "以前還很容易取得到龍之眼淚。"
+@ TALK "可是現在已經變成是很貴重的藥材了。"
+@ TALK "聽說是有個魔怪，"
+@ TALK "把龍之眼淚蒐集起來供自己使用。"
+@ TALK "不過我覺得有什麼不對勁，"
+@ TALK "看它這樣一定有什麼詭計！"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "那隻魔怪到底在哪裡？"
+@ TALK "我去把它殺死將龍之眼淚"
+@ TALK "帶回來。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 6 "魔女" 210 210 210
+@ COLOR 210 210 210
+@ TALK "我也不是知道的很詳細，"
+@ TALK "聽說是住在嘉拉山谷的雙頭魔神，"
+@ TALK "它本來是千鬼神的好朋友，因為得罪了它。"
+@ TALK "所以現在就自己到這世上以欺負人類為樂。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "千鬼神的好朋友？"
+@ TALK "可是我在嘉拉山谷的時候，"
+@ TALK "並沒有看到它？"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 6 "魔女" 210 210 210
+@ COLOR 210 210 210
+@ TALK "那是因為它身體是透明的，"
+@ TALK "如果不仔細看就看不到。"
+@ TALK "你現在已經知道關於雙頭魔神的消息了，"
+@ TALK "所以應該找得到。"
+@ TALK "你可以幫我將雙頭魔神殺死拿到龍之眼淚嗎？"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "好，我幫你。" GO_DOWN OK1
+CASE "抱歉，現在沒辦法。" GO_DOWN NO1
+SELECT_END
+
+* OK1
+@ CLEAR_BUFFER
+@ FACE 6 "魔女" 210 210 210
+@ COLOR 210 210 210
+@ TALK "謝謝，我相信你。"
+@ TALK "需要的話，"
+@ TALK "我可以用空間移動把你帶到它在的地方。"
+@ IF ORDER_SPACE NOTHAVE THEN GO_DOWN NO_SPACE
+@ ORDER 108 "尋找龍之眼淚"
+MENT "殺死嘉拉山谷的雙頭魔神帶回"
+MENT "龍之眼淚。"
+MENT "將龍之眼淚拿給東方村的魔女。"
+ORDER_END
+@ GIVE NUM_TO_ALL 108
+@ LOCATE_ENEMY 3 78 45 31 63 203
+@ UNSEAL 3
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "好，現在就幫我移動。" GO_DOWN TT1
+CASE "不用了，跟同僚慢慢過去好了。" GO_DOWN END
+SELECT_END
+* TT1
+@ CLEAR_BUFFER
+@ FACE 6 "魔女" 210 210 210
+@ COLOR 210 210 210
+@ TALK "那要做空間移動了。"
+@ WAIT
+@ PLAY 41.WAV
+@ WARP 3 89 10
+@ END
+
+* NO1
+@ CLEAR_BUFFER
+@ FACE 6 "魔女" 210 210 210
+@ COLOR 210 210 210
+@ TALK "你根本都不為我們這些退魔師著想。"
+@ TALK "只要多一點心一定會幫忙的，"
+@ TALK "以後我們會更加疲累。"
+@ TALK "只好找別的退魔師幫忙了。"
+@ WAIT
+@ END
+
+* SUC1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "把龍之眼淚拿回來了。"
+@ CLEAR_BUFFER
+@ FACE 6 "魔女" 210 210 210
+@ COLOR 210 210 210
+@ TALK "真是謝謝你，"
+@ TALK "現在可以繼續製作魔藥來幫助退魔師了。"
+@ TALK "好，你想要什麼報酬？"
+@ TALK "選擇精靈術、火壁術、火彈術、恢復術。"
+@ TALK "你想要法術的馬上幫你昇兩級，請選擇。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "<精靈術>" GO_DOWN T3
+CASE "<火壁術>" GO_DOWN T4
+CASE "<火彈術>" GO_DOWN T5
+CASE "<恢復術>" GO_DOWN T6
+SELECT_END
+* T3
+@ GIVE MAGIC 4 2
+@ PLAY 42.WAV
+@ GO_DOWN T7
+* T4
+@ GIVE MAGIC 2 2
+@ PLAY 42.WAV
+@ GO_DOWN T7
+* T5
+@ GIVE MAGIC 3 2
+@ PLAY 42.WAV
+@ GO_DOWN T7
+* T6
+@ GIVE MAGIC 10 2
+@ PLAY 42.WAV
+@ GO_DOWN T7
+* T7
+@ CLEAR_BUFFER
+@ FACE 6 "魔女" 210 210 210
+@ COLOR 210 210 210
+@ TALK "我已經將你要的魔法幫你提升了。"
+@ TALK "希望你持續不斷努力成為了不起的退魔師。"
+@ TALK "再見！"
+@ REMOVE ITEM 203
+@ REMOVE_ORDER 108
+@ REMOVE NUM_TO_ALL 108
+@ CHANGE 0
+@ WAIT
+@ END
+
+
+
+=========================================================
+     / 拿小桐菇給珠寶商
+=========================================================
+109 : 飛仙村珠寶商 
+     拿十個小桐菇來.在小桐江.由溏鬼魔神守著.
+     把菇賣給道具商人會有很大的效果.這些菇是魔怪在吃的...
+
+# 109
+# 16
+# 7
+# "珠寶商"
+# FLOW
+# 123
+@ IF NUM HAVE 109 && ORDER NOTHAVE 109 THEN GO_BASIC_EVENT
+@ IF ORDER HAVE 109 THEN GO_DOWN NEXT1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "要怎麼辦呢？"
+@ TALK "  "
+@ SELECT 255 255 255
+CASE "詢問取得好珠寶的方法" GO_DOWN STEP1
+CASE "關於物品" GO_BASIC_EVENT
+SELECT_END
+
+* STEP1
+@ IF ORDER HAVE 109 THEN GO_DOWN NEXT1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 11 "珠寶商" 210 210 210
+@ COLOR 210 210 210
+@ TALK "想要得到好珠寶嗎？"
+@ TALK "這是既困難又容易的一件事。"
+@ TALK "                           "
+@ TALK "只要有錢就好了。"
+@ TALK "既然談到了，如果你幫我個忙我可以送你，"
+@ TALK "你想要的珠寶。"
+@ TALK "怎麼樣？要聽聽看嗎？"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "好，我有興趣。" GO_DOWN T1
+CASE "不了，下次再聽好了。" GO_DOWN NO1
+SELECT_END
+
+* NEXT1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 11 "珠寶商" 210 210 210
+@ COLOR 210 210 210
+@ TALK "你有幫我拿小桐菇回來嗎？"
+@ IF ITEM HAVE 212 THEN GO_DOWN SUC1
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "不要擔心，我會幫你處理。" GO_DOWN END
+CASE "要怎麼才能拿到小桐菇？" GO_DOWN T1
+CASE "我是為了別的事情來的。" GO_BASIC_EVENT
+SELECT_END
+@ END
+
+* T1
+@ CLEAR_BUFFER
+@ FACE 11 "珠寶商" 210 210 210
+@ COLOR 210 210 210
+@ TALK "我接到個不錯的生意，"
+@ TALK "這村莊的道具商人正在找尋小桐菇。"
+@ TALK "所以我想把小桐菇賣給那個商人。"
+@ TALK "那傢伙老是在炫耀自己去過西域村，"
+@ TALK "真是好笑……。"
+@ TALK "所以，你去幫我把小桐菇拿來。"
+@ TALK "那我就送你想要的珠寶，如何？"
+@ WAIT
+@ IF ORDER HAVE 109 THEN GO_DOWN NEXT2
+@ CLEAR_BUFFER
+@ TALK "要試試看嗎。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "好，我幫你做這件事。" GO_DOWN OK1
+CASE "抱歉，現在沒辦法。" GO_DOWN NO1
+CASE "我是為了別的事情來的。" GO_BASIC_EVENT
+SELECT_END
+
+* NEXT2
+@ TALK "現在明白了吧？那快去把小桐菇拿來吧。"
+@ WAIT
+@ END
+
+* OK1
+@ CLEAR_BUFFER
+@ FACE 11 "珠寶商" 210 210 210
+@ COLOR 210 210 210
+@ TALK "謝謝，現在我來告訴你它所在的地方。"
+@ TALK "在小東江南東方有一棟房子，"
+@ TALK "那棟房子本來是種植菇的地方。"
+@ TALK "可是現在已被那些魔怪佔領無法再去採菇了。"
+@ TALK "殺掉名為溏鬼魔神的魔怪他們應該就可以拿到菇，"
+@ TALK "那拜託你了。" 
+@ IF ORDER_SPACE NOTHAVE THEN GO_DOWN NO_SPACE
+@ ORDER 109 "尋找小桐菇"
+MENT "到小東江東南方找小桐菇。"
+MENT "殺掉那裡的溏鬼魔神就可以拿到小桐菇。"
+MENT "把小桐菇拿給飛仙村的珠寶商"
+MENT "就可以拿到自己想要的珠寶。"
+ORDER_END
+@ LOCATE_ENEMY 10 84 57 43 54 212
+@ LOCATE_ENEMY 10 88 55 43 44 195
+@ LOCATE_ENEMY 10 85 54 43 41 102
+@ LOCATE_ENEMY 10 80 53 6 25 196
+@ LOCATE_ENEMY 10 81 52 6 31 154
+@ LOCATE_ENEMY 10 78 55 6 26 167
+@ LOCATE_ENEMY 10 80 51 6 27 0
+@ GIVE NUM_TO_ALL 109
+@ UNSEAL 10
+@ UNSEAL 14
+@ UNSEAL 6
+@ WAIT
+@ END
+
+* NO1
+@ CLEAR_BUFFER
+@ FACE 11 "珠寶商" 210 210 210
+@ COLOR 210 210 210
+@ TALK "是嗎？這本是筆好生意呢！真遺憾！"
+@ TALK "不管什麼時候，"
+@ TALK "如果想法改變了隨時歡迎你回來慢走！"
+@ WAIT
+@ END
+
+* SUC1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "拿小桐菇回來了，"
+@ TALK "溏鬼那傢伙真厲害。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 11 "珠寶商" 210 210 210
+@ COLOR 210 210 210
+@ TALK "謝謝你！！我現在可以拿它來做生意了。"
+@ TALK "除了那一個道具商人外，"
+@ TALK "應該還有很多人想得到這菇。"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "那麼，該給你報酬了。"
+@ TALK "我上次是說要給什麼的？"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "要求最好的寶劍" GO_DOWN SUC2
+CASE "要求想要的珠寶" GO_DOWN SUC3
+SELECT_END
+* SUC2
+@ CLEAR_BUFFER
+@ FACE 11 "珠寶商" 210 210 210
+@ COLOR 210 210 210
+@ TALK "真的嗎？我有說要給寶劍的嗎？"
+@ TALK "奇怪，我不記得有說那種話？"
+@ TALK "我並沒有寶劍那種東西啊！"
+@ TALK "我是賣珠寶的，並不是賣武器的。"
+@ TALK "真抱歉，那給你3000枚銅幣好了。"
+@ TALK "將就一下就收下它吧。"
+@ REMOVE ITEM 212
+@ GIVE MONEY 3000
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "現在回想一下，當初好像是說要給珠寶的？"
+@ TALK "我真是只會打架，頭腦卻很差。"
+@ TALK "只好拿這些錢回去了。"
+@ REMOVE_ORDER 109
+@ REMOVE NUM_TO_ALL 109
+@ WAIT
+@ END
+
+* SUC3
+@ CLEAR_BUFFER
+@ FACE 11 "珠寶商" 210 210 210
+@ COLOR 210 210 210
+@ TALK "對了，我說好要給珠寶的嗎？"
+@ TALK "來，我推薦這幾個珠寶，"
+@ TALK "隨便挑挑看，選你個想要的。"
+@ TALK "價錢都差不多，所以不管選哪個都一樣。"
+@ WAIT
+@ CLEAR_BUFFER
+@ BOX BLUE 6
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "選哪一個好呢？"
+@ COLOR 250 100 200
+@ SELECT 255 255 255
+CASE "<血流之戒>" GO_DOWN STEP1
+CASE "<帝王之戒>" GO_DOWN STEP2
+CASE "<十字項鍊>" GO_DOWN STEP3
+CASE "<幸運項鍊>" GO_DOWN STEP4
+SELECT_END
+* STEP1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 11 "珠寶商" 210 210 210
+@ COLOR 210 210 210
+@ TALK "要血流之戒嗎？拿去吧！"
+@ GIVE ITEM 120 1
+@ REMOVE ITEM 212
+@ REMOVE_ORDER 109
+@ REMOVE NUM_TO_ALL 109
+@ CHANGE 0
+@ WAIT
+@ END
+* STEP2
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 11 "珠寶商" 210 210 210
+@ COLOR 210 210 210
+@ TALK "要帝王之戒嗎？拿去吧！"
+@ GIVE ITEM 124 1
+@ REMOVE ITEM 212
+@ REMOVE_ORDER 109
+@ REMOVE NUM_TO_ALL 109
+@ CHANGE 0
+@ WAIT
+@ END
+* STEP1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 11 "珠寶商" 210 210 210
+@ COLOR 210 210 210
+@ TALK "要十字項鍊嗎？拿去吧！"
+@ GIVE ITEM 132 1
+@ REMOVE ITEM 212
+@ REMOVE_ORDER 109
+@ REMOVE NUM_TO_ALL 109
+@ CHANGE 0
+@ WAIT
+@ END
+* STEP1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 11 "珠寶商" 210 210 210
+@ COLOR 210 210 210
+@ TALK "要幸運項鍊嗎？拿去吧！"
+@ GIVE ITEM 134 1
+@ REMOVE ITEM 212
+@ REMOVE_ORDER 109
+@ REMOVE NUM_TO_ALL 109
+@ CHANGE 0
+@ WAIT
+@ END
+
+
+# 110
+# 16
+# 3
+# "商人"
+# FLOW
+# 123
+@ IF ORDER NOTHAVE 109 THEN GO_BASIC_EVENT
+@ CLEAR_BUFFER
+@ BOX BLUE 3
+@ FACE 5 "商人" 206 0 103
+@ COLOR 206 0 103
+@ TALK "我是來往西域村的商人。"
+@ TALK "你需要什麼東西嗎？"
+@ WAIT
+* BAL1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "<關於物品>" GO_DOWN A9-1
+CASE "<關於西域村>" GO_DOWN A9-2
+CASE ""
+CASE "<結束談話>" GO_UP 道具商人指令1
+SELECT_END
+@ END
+* A9-1
+@ CLEAR_BUFFER
+@ FACE 5 "商人" 206 0 103
+@ COLOR 206 0 103
+@ TALK "我有你想要的東西小桐菇喔！"
+@ TALK ""
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "<關於小桐菇>" GO_DOWN A9-1-1
+CASE "<尋問關於物品的事>" GO_UP 道具商人指令1
+SELECT_END
+@ END
+* A9-1-1
+@ CLEAR_BUFFER
+@ FACE 5 "商人" 206 0 103
+@ COLOR 206 0 103
+@ TALK "小桐菇不是好吃的東西嗎？"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 253 253 0
+@ COLOR 253 253 0
+@ TALK "你說什麼？小桐菇是好吃的東西？"
+@ TALK "小桐菇是只有魔怪才會吃的東西！"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 5 "商人" 206 0 103
+@ COLOR 206 0 103
+@ TALK "只有魔怪才會吃的？"
+@ WAIT
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 253 253 0
+@ COLOR 253 253 0
+@ TALK "還有你怎麼會知道"
+@ TALK "我要找小桐菇？"
+@ TALK ""
+@ TALK "你是誰？"
+@ WAIT
+@ CLEAR_BUFFER
+@ BOX RED 5
+@ FACE 5 "加拉高士" 255 0 0
+@ COLOR 253 0 0
+@ TALK "哈！被拆穿了。"
+@ TALK "我是這世代最厲害的小偷“加拉高士”！"
+@ TALK "聽說你們是很厲害的退魔師。"
+@ TALK ""
+@ WAIT
+@ TALK "我是代表魔怪來對付你們的。"
+@ WAIT
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 253 253 0
+@ COLOR 253 253 0
+@ TALK "這傢伙……，我就覺得不對勁！"
+@ WAIT
+@ CLEAR_BUFFER
+@ BOX RED 5
+@ FACE 5 "加拉高士" 255 0 0
+@ COLOR 255 0 0
+@ TALK "哼……知道也沒用！"
+@ TALK "拿命來吧！！"
+@ LOCATE_ENEMY 16 22 10 40 50 24 
+@ REMOVE_OBJECT THIS
+@ WAIT
+@ END
+
+* A9-2
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 5 "商人" 206 0 103
+@ COLOR 206 0 103
+@ TALK "西域村？西域村我就很熟了。"
+@ TALK "已經去過很多次呢。"
+@ TALK "西域以小桐菇為主食，"
+@ TALK "用它來煮著吃、烤著吃還釀成酒來喝……等。"
+@ TALK "              "
+@ TALK "我也最愛那個了。"
+@ GO_UP BAL1
+@ END
+
+
+
+
+=========================================================
+     / 向數釘的魔法師求救.將敵人變成石頭.
+=========================================================
+111 : 說數釘有魔法師很難過的去,以提供援助為由要求
+     金錢. 
+
+# 111
+# 6
+# 1
+# "魔法師"
+# BASIC
+# 100
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 11 "魔法師" 250 200 200
+@ COLOR 210 210 210
+@ TALK "是退魔師吧，這裡過去的數釘是很危險的地方。"
+@ TALK "如果打算就這樣過去的話，"
+@ TALK "就像是把寶貴的命丟掉一樣，"
+@ TALK "需要的話我可以幫忙，我有種神秘的力量。"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "我可以把數釘的魔怪都變成石頭。"
+@ TALK "代價是男生1400枚銅幣，女生是1000枚銅幣。"
+@ WAIT
+@ UNSEAL 14
+@ IF NUM HAVE 111 THEN GO_DOWN NEXT1
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "好，請幫我施法。" GO_DOWN T1
+CASE "我不需要那種魔法。" GO_DOWN END
+SELECT_END
+* NEXT1
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "你是不是又想騙我？"
+@ TALK "上次我付你錢的後，"
+@ TALK "當我一進到數釘魔法就解開了。"
+@ TALK "你是故意想害死我才解開的吧？你是誰！"
+@ WAIT
+@ CLEAR_BUFFER
+@ CHANGE_GOS 68
+@ BOX RED 5
+@ FACE 18 "鐵怪物" 250 100 100
+@ COLOR 250 100 100
+@ TALK "哈哈，觀察力很靈敏嗎。"
+@ TALK "沒錯，我是受命來幹掉你的"
+@ TALK "鐵怪物。"
+@ TALK "來拿命來吧。"
+@ WAIT
+@ LOCATE_ENEMY 6 4 59 17 38 10
+@ REMOVE NUM_TO_ALL 111
+@ REMOVE_OBJECT THIS
+@ END
+
+* T1
+@ CLEAR_BUFFER
+@ FACE 11 "魔法師" 250 200 200
+@ COLOR 210 210 210
+@ IF NUM HAVE 3 THEN GO_DOWN T2
+@ IF MONEY GE 1400 THEN GO_DOWN OK1
+@ TALK "你是男生所以要付1400枚銅幣。"
+@ TALK "看你好像沒錢，"
+@ TALK "走吧。"
+@ WATI
+@ END
+* T2
+@ IF MONEY GE 1000 THEN GO_DOWN OK1
+@ TALK "本來因為你是女生只想收1000枚銅幣。"
+@ TALK "看你好像沒錢，"
+@ TALK "走吧。"
+@ WATI
+@ END
+
+* OK1
+@ TALK "那我要開始唸咒語了。"
+@ TALK "在敵人還沒醒過來之前趕快動身，"
+@ TALK "       "
+@ TALK "伊瞎啦……魔怪們化為石頭……。"
+@ TALK "       "
+@ PLAY 34.WAV
+@ IF LEVEL GE 16 THEN GO_DOWN S1
+@ IF LEVEL GE 12 THEN GO_DOWN S2
+@ IF LEVEL GE 8 THEN GO_DOWN S3
+@ IF LEVEL GE 5 THEN GO_DOWN S4
+@ IF LEVEL GE 3 THEN GO_DOWN S5
+@ STONE 14 1500
+@ GO_DOWN S6
+* S1
+@ STONE 14 150
+@ GIVE NUM 111
+@ GO_DOWN S6
+* S2
+@ STONE 14 900
+@ GO_DOWN S6
+* S3
+@ STONE 14 1000
+@ GO_DOWN S6
+* S4
+@ STONE 14 1150
+@ GO_DOWN S6
+* S5
+@ STONE 14 1300
+@ GO_DOWN S6
+* S6
+@ IF NUM HAVE 3 THEN GO_DOWN S7
+@ REMOVE MONEY 1400
+@ END
+* S7
+@ REMOVE MONEY 1000
+@ END
+
+
+
+=========================================================
+     / 覬覦鐵匠之水晶小石子
+=========================================================
+
+113 : 覬覦水晶小石子.
+    103年西域村.鐵匠.覬覦道具商人之水晶小石子.
+# 113
+# 15
+# 1
+# "鐵匠"
+# FLOW
+# 102
+@ IF NUM HAVE 44 THEN GO_BASIC_EVENT
+@ IF ITEM HAVE 204 THEN GO_DOWN SUC1
+@ IF NUM HAVE 28 THEN GO_DOWN T1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "要怎麼辦呢？"
+@ TALK "  "
+@ SELECT 255 255 255
+CASE "談話" GO_DOWN STEP1
+CASE "關於物品" GO_BASIC_EVENT
+SELECT_END
+
+* STEP1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 8 "鐵匠" 210 210 210
+@ COLOR 210 210 210
+@ TALK "歡迎你，想知道什麼事情嗎？"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+* Q1
+@ SELECT 255 255 255
+CASE "關於西域村" GO_DOWN STEP1
+CASE "關於好武器" GO_DOWN STEP2
+CASE "放棄." GO_DOWN END
+SELECT_END
+* STEP1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 8 "鐵匠" 210 210 210
+@ COLOR 210 210 210
+@ TALK "西域村本來是個好地方，"
+@ TALK "在以前從外界來的旅客最先到達的地方就是這裡。"
+@ TALK "你應該也是吧！"
+@ TALK "只是現在因為有太多的魔怪。"
+@ TALK "所以已經很久沒有旅客來往了。"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "真的已經好久沒看到你這種旅客了，"
+@ TALK "從別人口中聽到多些"
+@ TALK "有關這世界的傳說也不是件壞事。"
+@ WAIT
+@ GO_UP Q1
+* STEP2
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 8 "鐵匠" 210 210 210
+@ COLOR 210 210 210
+@ IF NUM HAVE 44 THEN GO_DOWN SN1
+@ TALK "要做好武器需要好的材料，"
+@ TALK "雖然這村裡賣道具的人那兒有，"
+@ TALK "可是他就是不要賣給我，其實不是。"
+@ TALK "雖然他稱它為水晶小石子"
+@ TALK "我知道它的價值。"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "那水晶小石子不是石頭是叫金鋼石的物品。"
+@ TALK "好像在別的世界也稱它為鑽石，"
+@ TALK "名字並不重要，"
+@ TALK "只要有金鋼石就可以製作出比現在更好的武器。"
+@ TALK "因為金鋼石擁有一種比任何金屬都強的特性，"
+@ TALK "所以可以將金屬磨的很尖銳。"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "那傢伙上次我說要付5000枚銅幣也不賣。"
+@ TALK "其實如果付上億萬，他不想賣我也沒辦法。"
+@ TALK "如果發現像水晶小石子的物體就拿給我。"
+@ TALK "我會幫你估個好價錢。"
+@ WAIT
+@ GIVE NUM_TO_ALL 28
+@ GO_UP Q1
+@ END
+* SN1
+@ TALK "做好武器需要金鋼石，"
+@ TALK "那是個長的像水晶小石子的東西。"
+@ TALK "現在應該沒必要談它。"
+@ WAIT
+@ GO_BASIC_EVENT
+@ END
+* T1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 8 "鐵匠" 210 210 210
+@ COLOR 210 210 210
+@ TALK "有找到上次說的水晶小石子，不金鋼石嗎？"
+@ TALK "拿給我吧！"
+@ TALK "這應該比拿給他會更有利益。"
+@ WAIT
+@ GO_BASIC_EVENT
+@ END
+* SUC1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 8 "鐵匠" 210 210 210
+@ COLOR 210 210 210
+@ TALK "啊！你手中那像石頭的東西。"
+@ TALK "那不就是金鋼石嗎？"
+@ TALK "你是從哪兒拿到的？"
+@ TALK "你要不要賣給我？"
+@ TALK "我付你5000枚銅幣，不7000枚銅幣。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "賣給他" GO_DOWN S1
+CASE "拒絕" GO_DOWN S2
+SELECT_END
+* S1
+@ CLEAR_BUFFER
+@ FACE 8 "鐵匠" 210 210 210
+@ COLOR 210 210 210
+@ TALK "真的嗎？要賣給我嗎？"
+@ TALK "哇！真是意外的收獲，謝謝你。"
+@ TALK "好，今天很高興就付你7000銅幣再加上這隻長劍好了。"
+@ TALK "給你。"
+@ GIVE MONEY 7000
+@ GIVE ITEM 5 1
+@ REMOVE ITEM 204
+@ GIVE NUM_TO_ALL 113
+@ REMOVE NUM_TO_ALL 28
+@ IF ORDER HAVE 107 THEN REMOVE_ORDER 107
+@ CHANGE 0
+@ WAIT
+@ END
+* S1
+@ CLEAR_BUFFER
+@ FACE 8 "鐵匠" 210 210 210
+@ COLOR 210 210 210
+@ TALK "請你想清楚再來找我。"
+@ TALK "你就會明白的，"
+@ TALK "我的提議比道具商人的好太多了。"
+@ WAIT
+@ END
+
+
+
+=========================================================
+     / 拿鳳凰羽毛給道具商人
+=========================================================
+114 : 鳳凰之羽探索.
+    114年.東方村.道具商人.拿鳳凰之羽給他.
+    放火之魔女(30)在付予洞裡.殺死可得到道具(202).拿給他就可以選擇
+    很多道具中的一些.
+# 114
+# 18
+# 4
+# "道具商人"
+# FLOW
+# 114
+@ IF LEARN_MAGIC THEN GO_UP MAGIC_STOP
+@ IF NUM HAVE 114 && ORDER NOTHAVE 114 THEN GO_BASIC_EVENT
+@ IF ORDER HAVE 114 THEN GO_DOWN NEXT1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "要怎麼辦呢？"
+@ TALK "  "
+@ SELECT 255 255 255
+CASE "得到好道具的方法" GO_DOWN STEP1
+CASE "關於物品" GO_BASIC_EVENT
+SELECT_END
+
+* STEP1
+@ IF ORDER HAVE 109 THEN GO_DOWN NEXT1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 5 "道具商人" 210 210 210
+@ COLOR 210 210 210
+@ TALK "好道具是嗎？"
+@ TALK "不如尋找適合自己的道具，"
+@ TALK "才更重要。"
+@ TALK "首先要了解自己的能力，"
+@ TALK "再來準備需要的道具。"
+@ TALK "然後在適當的時候用它才是重要。"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "不過，你有聽過鳳凰之羽嗎？"
+@ TALK "那羽毛有可以複製出很多道具的能力。"
+@ TALK "怎麼樣？你想聽更多關於羽毛的事嗎？"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "當然，請繼續講。" GO_DOWN T1
+CASE "不用了。下次再聽好了。" GO_DOWN NO1
+SELECT_END
+
+* NEXT1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 5 "道具商人" 210 210 210
+@ COLOR 210 210 210
+@ TALK "你有幫我拿到鳳凰之羽嗎？"
+@ IF ITEM HAVE 202 THEN GO_DOWN SUC1
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "好！別擔心，我會幫你處理。" GO_DOWN END
+CASE "啊？要怎麼拿到鳳凰之羽呢？" GO_DOWN T1
+CASE "我是為別的事情來的。" GO_BASIC_EVENT
+SELECT_END
+@ END
+
+* T1
+@ CLEAR_BUFFER
+@ FACE 5 "道具商人" 210 210 210
+@ COLOR 210 210 210
+@ TALK "那鳳凰之羽在傳說中的火魔女手中，"
+@ TALK "不過並沒有人看過她。"
+@ TALK "因為只要看過她的人都會當場被她殺死，"
+@ TALK "所以只有傳說流傳下來。"
+@ TALK "據傳說是在付予洞裡……"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "去付予洞的方法是在村莊中央的噴水池前，"
+@ TALK "唸咒語就可以了。"
+@ WAIT
+@ CLEAR_BUFFER
+@ IF ORDER HAVE 114 THEN GO_DOWN NEXT2
+@ CLEAR_BUFFER
+@ TALK "可以幫我拿鳳凰之羽嗎？"
+@ TALK "報酬我會以現金付款。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "好，我幫你。" GO_DOWN OK1
+CASE "抱歉，現在有點難。" GO_DOWN NO1
+CASE "我是為別的事情來的。" GO_BASIC_EVENT
+SELECT_END
+
+* NEXT2
+@ TALK "現在明白了吧？"
+@ TALK "那快到噴水池前唸咒語吧！"
+@ WAIT
+@ END
+
+* OK1
+@ CLEAR_BUFFER
+@ FACE 5 "道具商人" 210 210 210
+@ COLOR 210 210 210
+@ TALK "謝謝！！那請你到噴水池前唸咒語吧。"
+@ TALK "咒語是“戰士們的血將流成江河”"
+@ TALK "這樣就可以空間移動到付予洞。"
+@ TALK "從這開始殺死火魔女的事情，"
+@ TALK "就要看你的能力了。"
+@ IF ORDER_SPACE NOTHAVE THEN GO_DOWN NO_SPACE
+@ ORDER 114 "尋找鳳凰之羽"
+MENT "在東方村中央的噴水池前唸咒語，"
+MENT "就可以空間移動到付予洞。"
+MENT "在這裡殺死火之魔女取得鳳凰之羽。"
+MENT "將找到的鳳凰羽毛帶回給東方村的道具商人，"
+MENT "他會支付一筆可觀的金錢。"
+MENT "咒語是“戰士們的血將流成江河”"
+ORDER_END
+@ LOCATE_ENEMY 22 16 15 30 44 202
+@ LOCATE_ENEMY 22 18 20 13 20 196
+@ LOCATE_ENEMY 22 14 21 13 21 195
+@ LOCATE_ENEMY 22 17 13 13 18 0
+@ LOCATE_ENEMY 22 16 20 13 14 153
+@ LOCATE_ENEMY 22 16 10 13 18 155
+@ LOCATE_ENEMY 22 13 12 13 19 158
+@ LOCATE_ENEMY 22 20 23 13 16 159
+@ LOCATE_ENEMY 22 15 23 13 20 152
+@ GIVE NUM_TO_ALL 114
+@ UNSEAL 22
+@ WAIT
+@ END
+
+* NO1
+@ CLEAR_BUFFER
+@ FACE 5 "道具商人" 210 210 210
+@ COLOR 210 210 210
+@ TALK "是嗎？真可惜，它本來可以幫你帶來很多收入的。"
+@ TALK "等你改變心意後再來吧。"
+@ WAIT
+@ END
+
+* SUC1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "這是你要的鳳凰之羽。"
+@ TALK "來，請付約定好的酬勞。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 5 "道具商人" 210 210 210
+@ COLOR 210 210 210
+@ TALK "喔！沒錯，這是真的鳳凰之羽，太厲害了。"
+@ TALK "好，這是給你報酬。報酬是8000銅幣。"
+@ TALK "怎麼樣，很難拿得到的一筆錢吧？"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "好。這些就足夠了。" GO_DOWN T3
+CASE "不要，我要換成道具。" GO_DOWN T4
+SELECT_END
+* T3
+@ CLEAR_BUFFER
+@ FACE 5 "道具商人" 210 210 210
+@ COLOR 210 210 210
+@ TALK "很好的決定，現金是最好的。"
+@ TALK "再多加四瓶藥給你好了。"
+@ TALK "這裡。"
+@ GIVE MONEY 8000
+@ GIVE ITEM 162 4
+@ REMOVE ITEM 202
+@ REMOVE_ORDER 114
+@ CHANGE 0
+@ WAIT
+@ END
+* T4
+@ CLEAR_BUFFER
+@ FACE 5 "道具商人" 210 210 210
+@ COLOR 210 210 210
+@ TALK "不要，我要拿道具。"
+@ TALK "沒問題，反正我多的是道具。"
+@ TALK "給你兩個水晶、五根人蔘、五個飛鷹之羽"
+@ TALK "和清流之戒。"
+@ TALK "這樣的報酬更合你的意吧？"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "知道了。這些可以接受。" GO_DOWN T5
+CASE "不要，還是收現金好了！！" GO_UP T3
+SELECT_END
+* T5
+@ CLEAR_BUFFER
+@ FACE 5 "道具商人" 210 210 210
+@ COLOR 210 210 210
+@ TALK "好，那這些道具就給你了。"
+@ TALK "這鳳凰的羽毛值得換這些道具。"
+@ GIVE ITEM 195 2
+@ GIVE ITEM 167 5
+@ GIVE ITEM 155 5
+@ GIVE ITEM 119 1
+@ REMOVE ITEM 202
+@ REMOVE_ORDER 114
+@ CHANGE 0
+@ WAIT
+@ END
+
+
+
+# 115
+# 18
+# 21
+# "功力之噴水池"
+# BASIC
+# 100
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "唸咒語." GO_DOWN T1
+CASE "喝水." GO_DOWN T2
+SELECT_END
+* T1
+@ IF NUM NOTHAVE 114 THEN GO_DOWN NO2
+@ CLEAR_BUFFER
+@ TALK "要唸哪一個咒語呢？"
+@ SELECT 255 255 255
+CASE "“戰士們的血將流成江河”" GO_DOWN T3
+CASE "“英雄之腳步呼喚千里馬”" GO_DOWN T4
+CASE "“以強烈的戰士之力呼喚你”" GO_DOWN T5
+SELECT_END
+* NO2
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "可是咒語是什麼呢？"
+@ TALK "要知道咒語……，終有一天會知道吧。"
+@ WAIT
+@ END
+* T3
+@ IF MAGIC LE 35 THEN GO_DOWN N1
+@ WARP 22 53 13
+@ END
+* T4
+@ IF MAGIC LE 45 THEN GO_DOWN N1
+@ WARP 21 40 14
+@ END
+* T5
+@ IF MAGIC LE 60 THEN GO_DOWN N1
+@ WARP 20 19 19
+@ END
+* N1
+@ CLEAR_BUFFER
+@ FACE NO
+@ BOX RED 3
+@ COLOR 255 60 60
+@ TALK "你的魔法能力不足。"
+@ WAIT
+@ END
+* T2
+@ CLEAR_BUFFER
+@ FACE NO
+@ BOX RED 3
+@ COLOR 255 60 60
+@ TALK "以你的智慧添滿生命及元氣。"
+@ FULL_LIFE
+@ FULL_MANA
+@ DECREASE BRAIN 1
+@ WAIT
+@ END
+
+
+
+# 116
+# 15
+# 21
+# "魔之噴水池"
+# BASIC
+# 100
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "丟銅板" GO_DOWN T1
+CASE "喝水" GO_DOWN T2
+CASE "施咒" GO_DOWN T4
+SELECT_END
+* T1
+@ CLEAR_BUFFER
+@ IF MONEY LE 9 THEN GO_DOWN NO1
+@ CLEAR_BUFFER
+@ COLOR 250 250 0
+@ TALK "祝長命百歲。"
+@ REMOVE MONEY 10
+@ PLAY COIN.WAV
+@ WAIT
+@ END
+* NO1
+@ CLEAR_BUFFER
+@ COLOR 250 250 0
+@ TALK "啊，錢已剩不多了。"
+@ WAIT
+@ END
+* T2
+@ CLEAR_BUFFER
+@ COLOR 250 250 0
+@ TALK "噁，怎麼這水這麼髒？"
+@ TALK "以後再也不要喝這髒水了。"
+@ WAIT
+@ END
+* T4
+@ IF NUM NOTHAVE 114 THEN GO_DOWN NO2
+@ CLEAR_BUFFER
+@ TALK "要唸哪一個咒語呢？"
+@ SELECT 255 255 255
+CASE "“戰士們的血將流成江河”" GO_DOWN T3
+CASE "“英雄之腳步呼喚千里馬”" GO_DOWN T4
+CASE "“以強烈的戰士之力呼喚你”" GO_DOWN T5
+SELECT_END
+* NO2
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "可是咒語是什麼呢？"
+@ TALK "要知道咒語……，終有一天會知道吧。"
+@ WAIT
+@ END
+* T3
+@ IF MAGIC LE 50 THEN GO_DOWN N1
+@ WARP 22 53 13
+@ END
+* T4
+@ IF MAGIC LE 45 THEN GO_DOWN N1
+@ WARP 21 40 14
+@ END
+* T5
+@ IF MAGIC LE 65 THEN GO_DOWN N1
+@ WARP 20 19 19
+@ END
+* N1
+@ CLEAR_BUFFER
+@ FACE NO
+@ BOX RED 3
+@ COLOR 255 60 60
+@ TALK "你的魔法能力不足。"
+@ WAIT
+@ END
+
+
+
+=========================================================
+     / 挖掘關於北貴城村之魔女的陰謀
+=========================================================
+117  : 關於把人聚集在峽谷再將他們殺死的北貴城村之魔女的單位
+   119年.北貴城村之珠寶商.
+   關於與魔怪串通好將人送到峽谷的魔女的故事.
+   把魔女從村莊去除掉.
+   ORDER 117. NUM_TO_ALL 117
+# 117
+# 17
+# 7
+# "珠寶商"
+# FLOW
+# 119
+@ IF NUM HAVE 117 && ORDER NOTHAVE 117 THEN GO_BASIC_EVENT
+@ IF ORDER HAVE 117 THEN GO_DOWN NEXT1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ TALK "要怎麼辦呢？"
+@ TALK "  "
+@ SELECT 255 255 255
+CASE "關心村莊的氣氛" GO_DOWN STEP1
+CASE "關於物品" GO_BASIC_EVENT
+SELECT_END
+
+* STEP1
+@ IF ORDER HAVE 117 THEN GO_DOWN NEXT1
+@ IF NUM HAVE 26 THEN GO_DOWN NEXT2
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 11 "珠寶商" 210 210 210
+@ COLOR 210 210 210
+@ TALK "最近這村莊裏的人很不安，"
+@ TALK "是因為那魔女謊稱說要幫助訓練，"
+@ TALK "結果把人帶到峽谷中再殺死。"
+@ TALK "我上次有看過，她好像有和魔怪串通。"
+@ TALK "請你去查查看。"
+@ TALK "那魔女雖然看起來很和藹，"
+@ TALK "其實心理卻是藏著很邪惡的心。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "我去揭發魔女的真面目。" GO_DOWN T1
+CASE "我沒興趣。" GO_DOWN END
+SELECT_END
+
+* NEXT2
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 11 "珠寶商" 210 210 210
+@ COLOR 210 210 210
+@ TALK "村裡的魔女消失了，都是你們這些退魔師的功勞。"
+@ TALK "真是謝謝你，"
+@ TALK "為了感謝你。"
+@ TALK "這是村民的誠意，3735枚銅幣。請收下。"
+@ GIVE MONEY 3735
+@ WAIT
+@ CHANGE 0
+@ END
+
+* NEXT1
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 11 "珠寶商" 210 210 210
+@ COLOR 210 210 210
+@ TALK "你找出魔法所魔女的秘密了嗎？"
+@ TALK "前一陣子，"
+@ TALK "我才看到魔女和那些魔怪在一起。"
+@ WAIT
+@ GO_BASIC_EVENT
+@ END
+
+* T1
+@ CLEAR_BUFFER
+@ FACE 11 "珠寶商" 210 210 210
+@ COLOR 210 210 210
+@ TALK "果然名不虛傳，"
+@ TALK "希望你幫我們殺死魔女拯救村莊。"
+@ WAIT
+@ CLEAR_BUFFER
+@ IF ORDER HAVE 117 THEN GO_DOWN END
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "好，我幫你。" GO_DOWN OK1
+CASE "抱歉，現在有點難。" GO_DOWN END
+CASE "我是為別的事情來的。" GO_BASIC_EVENT
+SELECT_END
+
+* OK1
+@ CLEAR_BUFFER
+@ FACE 11 "珠寶商" 210 210 210
+@ COLOR 210 210 210
+@ TALK "謝謝。"
+@ IF ORDER_SPACE NOTHAVE THEN GO_DOWN NO_SPACE
+@ ORDER 117 "揭發北貴城魔女之秘密"
+MENT "據說北貴城魔女很可疑。"
+MENT "去找魔女揭發秘密。"
+ORDER_END
+@ GIVE NUM_TO_ALL 117
+@ WAIT
+@ END
+
+
+
+# 118
+# 15
+# 1
+# "鐵匠"
+# FLOW
+# 101
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 8 "鐵匠" 210 210 210
+@ COLOR 210 210 210
+@ TALK "喔……你是退魔師吧！好久沒看到退魔師了。"
+@ TALK "最近很難看得到退魔師了，"
+@ TALK "在以前偶爾才有一兩隻魔怪的時候，還滿不錯的。"
+@ TALK "自從千鬼神復活後，"
+@ TALK "倒變成那些魔怪在狩獵退魔師了。"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "真不知道世界要變成什麼樣子了，"
+@ TALK "真要眼睜睜地看著那些魔怪佔領這世界嗎？"
+@ TALK "真叫人著急……。"
+@ WAIT
+@ CHANGE 0
+@ GO_BASIC_EVENT
+@ END
+
+
+
+# 119
+# 15
+# 5
+# "魔女"
+# FLOW
+# 101
+@ IF LEARN_MAGIC THEN GO_UP MAGIC_STOP
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 6 "魔女" 210 210 210
+@ COLOR 210 210 210
+@ TALK "你是來狩獵魔怪的嗎？"
+@ TALK "唉……，你沒看到村莊周圍嗎？"
+@ TALK "各式各樣的魔怪圍繞在村莊周圍，"
+@ TALK "因為那些魔怪沒有注意到我們，"
+@ TALK "所以還能保住性命。"
+@ TALK "不過只要有一天它們注意到了，我們就……。"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "真不知道世界要變成什麼樣子了。"
+@ TALK "不是說亂世出英雄嗎，英雄到底在哪裡。"
+@ TALK "最近每天都是過著坐立難安的日子，"
+@ TALK "你也找別的出路吧。"
+@ TALK "你看起來還很年輕，"
+@ TALK "看是要和魔怪合力，還是找對抗它們的方法。"
+@ TALK "唉，真無力。"
+@ WAIT
+@ CHANGE 0
+@ GO_BASIC_EVENT
+@ END
+
+
+# 121
+# 15
+# 12
+# "退魔師亞莎奴貝"
+# BASIC
+# 100
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 9 "亞莎奴貝" 210 210 210
+@ COLOR 210 210 210
+@ TALK "你是退魔師嗎？幸會！！"
+@ TALK "在這樣的亂世，竟有人敢自稱退魔師。"
+@ TALK "真是讓我驚訝。"
+@ TALK "呼……！已經有很多膽小鬼"
+@ TALK "放棄做退魔師拔腿而跑了。"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "我是這世代最有勇氣的退魔師！"
+@ TALK "當然，還沒有名氣。"
+@ TALK "不過你不是也一樣嗎？不是有人說亂世出英雄嗎？"
+@ TALK "我也覺得那句話是對的！"
+@ TALK "而且我將會坐上那王座！"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "你也是覬覦那個位子的退魔師嗎？"
+@ TALK "不過只要有我在，抱歉！你應該沒機會！"
+@ TALK "你要不要當我的手下？"
+@ TALK "這是可是你的榮幸！你將會感激我的。"
+@ WAIT
+* S1
+@ CLEAR_BUFFER
+@ FACE HERO 250 250 0
+@ COLOR 250 250 0
+@ SELECT 255 255 255
+CASE "<你的目標是什麼？>" GO_DOWN T1
+CASE "<拒絕談話。>" GO_DOWN T2
+SELECT_END
+* T1
+@ CLEAR_BUFFER
+@ FACE 9 "亞莎奴貝" 210 210 210
+@ COLOR 210 210 210
+@ TALK "想知道我的目標嗎？"
+@ TALK "嗯……說的也是，"
+@ TALK "看到像我這樣偉大的武士，"
+@ TALK "想要學習應該是每一個武士的心願。"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "我的目的就是把使這世界陷入混亂的千鬼神殺死。"
+@ TALK "首先為了要對抗千鬼神，我需要一把痛哭之劍。"
+@ TALK "唯有那一把劍才能夠殺死千鬼神，"
+@ TALK "不過，因為那把劍藏在地底魔界。"
+@ TALK "所以我打算要去地下世界找它。"
+@ WAIT
+@ END
+* T2
+@ CLEAR_BUFFER
+@ TALK "不好意思，我有更重要的使命。"
+@ WAIT
+@ CLEAR_BUFFER
+@ FACE 9 "亞莎奴貝" 210 210 210
+@ COLOR 210 210 210
+@ TALK "是嗎？真遺憾。"
+@ TALK "下次有機會希望能一起共事！"
+@ TALK "那……保重！"
+@ WAIT
+@ END
+
+
+# 122
+# 16
+# 1
+# "鐵匠"
+# FLOW
+# 102
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 8 "鐵匠" 210 210 210
+@ COLOR 210 210 210
+@ TALK "這世界完了，完蛋了。"
+@ TALK "啊……真不知道我們這些人們要如何對抗"
+@ TALK "這些看來無數的魔怪。"
+@ TALK "也許只能依靠神的奇蹟了。"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "我只是擔心，像我們這麼墮落的人們，"
+@ TALK "還有依靠神的餘地嗎。"
+@ TALK "像我們這種奸詐的人們只有在困難的時候"
+@ TALK "才會找神。"
+@ TALK "人們就只能這麼的"
+@ TALK "奸詐和懦弱嗎？"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "這樣怎麼還能說人比魔怪還優越呢．"
+@ TALK "現在這世界已經逐步踏上滅亡之路了！"
+@ TALK "預言中的末日終於要開始了，"
+@ TALK "你也丟下無謂的心來懺悔吧！"
+@ WAIT
+@ CHANGE 0
+@ GO_BASIC_EVENT
+@ END
+
+
+# 123
+# 16
+# 1
+# "鐵匠"
+# FLOW
+# 106
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE 8 "鐵匠" 210 210 210
+@ COLOR 210 210 210
+@ TALK "你…有過死亡的經驗嗎？"
+@ TALK "看來你應該是個退魔師吧……。"
+@ TALK "通常退魔師都會經歷過許多的死亡吧。"
+@ TALK "我最近為了面對死亡而做準備。"
+@ TALK "因為不知道魔怪何時會攻進來，"
+@ TALK "魔怪若攻進來的話。"
+@ TALK "我將會與它們作戰壯烈的死去！"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "這世界還是有存在著"
+@ TALK "不畏懼魔怪的人。"
+@ TALK "假如你也看到魔怪……。"
+@ TALK "要抱持著無懼的心去對抗"
+@ TALK "這樣就能贏！"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "曾有人說過："
+@ TALK "“天助自助者，否則將天誅地滅！”"
+@ WAIT
+@ CHANGE 0
+@ GO_BASIC_EVENT
+@ END
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+========================================================
+                    舜間項目
+========================================================
+
+151 :看到石像因此解開現在的繪製圖的封印.
+# 151
+# 17
+# 5
+# "石像"
+# FLOW
+# 100
+@ CLEAR_BUFFER
+@ FACE NO
+@ BOX BLUE 5
+@ COLOR 255 60 60
+@ TALK "就如黑暗的力量與光明本是一體，"
+@ TALK "所有的一切事物都回到原點吧！"
+@ TALK "現在，所有的魔怪都復活甦醒。"
+@ WAIT
+@ UNSEAL CURMAP
+@ CHANGE 0
+@ END
+
+152 : 看到石像因此所有繪製圖的敵人變成石頭. 300
+# 152
+# 17
+# 5
+# "石像"
+# FLOW
+# 100
+@ CLEAR_BUFFER
+@ FACE NO
+@ BOX BLUE 5
+@ COLOR 255 60 60
+@ TALK "奉天帝之命，"
+@ TALK "擾亂這世界的魔怪都化為石頭吧。"
+@ WAIT
+@ STONE CURMAP 300
+@ CHANGE 0
+@ END
+
+153 :看到石像因此所有繪製圖的敵人變成石頭.500
+# 153
+# 17
+# 5
+# "石像"
+# FLOW
+# 100
+@ CLEAR_BUFFER
+@ FACE NO
+@ BOX BLUE 5
+@ COLOR 255 60 60
+@ TALK "奉上天皇帝之命，"
+@ TALK "擾亂這世界的魔怪都化為石頭吧。"
+@ WAIT
+@ STONE CURMAP 500
+@ CHANGE 0
+@ END
+
+154 :看到石像因此所有繪製圖的敵人變成石頭.700
+# 154
+# 17
+# 5
+# "石像"
+# FLOW
+# 100
+@ CLEAR_BUFFER
+@ FACE NO
+@ BOX BLUE 5
+@ COLOR 255 60 60
+@ TALK "奉天帝之命，"
+@ TALK "擾亂這世界的魔怪都化為石頭吧。"
+@ WAIT
+@ STONE CURMAP 700
+@ CHANGE 0
+@ END
+
+155 : 看桌子並產生水晶道具
+# 155
+# 17
+# 5
+# "桌子"
+# FLOW
+# 100
+@ GIVE ITEM 195 1
+@ CHANGE 0
+@ END
+
+156 : 看桌子並產生人蔘道具
+# 156
+# 17
+# 5
+# "桌子"
+# FLOW
+# 100
+@ GIVE ITEM 168 1
+@ CHANGE 0
+@ END
+
+157 : 看石像並增加1智慧
+# 157
+# 17
+# 5
+# "石像"
+# FLOW
+# 100
+@ CLEAR_BUFFER
+@ FACE NO
+@ BOX BLUE 5
+@ COLOR 255 60 60
+@ TALK "如果你能覺悟真正的正義，"
+@ TALK "那將會是比力量還要強的能力。"
+@ TALK "你所能相信的就是你的想法。"
+@ TALK ""
+@ WAIT
+@ COLOR 255 250 250
+@ TALK "   *** 增加１點智慧 ***"
+@ INCREASE BRAIN 1
+@ CHANGE 0
+@ END
+
+158 :看石像並增加1敏捷
+# 158
+# 17
+# 5
+# "石像"
+# FLOW
+# 100
+@ CLEAR_BUFFER
+@ FACE NO
+@ BOX BLUE 5
+@ COLOR 255 60 60
+@ TALK "要承認自己的能力，"
+@ TALK "並提醒自已風還要快。"
+@ TALK ""
+@ WAIT
+@ COLOR 255 250 250
+@ TALK "   *** 增加１點敏捷 ***"
+@ INCREASE DEXTERITY 1
+@ CHANGE 0
+@ END
+
+159 :看石像並增加1力量
+# 159
+# 17
+# 5
+# "石像"
+# FLOW
+# 100
+@ CLEAR_BUFFER
+@ FACE NO
+@ BOX BLUE 5
+@ COLOR 255 60 60
+@ TALK "真正的力量，並不單純在於肉體上。"
+@ TALK "將你的精神，與肉體合為一。"
+@ TALK " "
+@ WAIT
+@ COLOR 255 250 250
+@ TALK "   *** 增加１點力量 ***"
+@ INCREASE STRENGTH 1
+@ CHANGE 0
+@ END
+
+160 :看石像並增加1體力
+# 160
+# 17
+# 5
+# "石像"
+# FLOW
+# 100
+@ CLEAR_BUFFER
+@ FACE NO
+@ BOX BLUE 5
+@ COLOR 255 60 60
+@ TALK "肉體，只是安置在精神的延長線上，"
+@ TALK "現在已叫醒了你純潔的心，"
+@ TALK "你的肉體也將一起成長。"
+@ TALK ""
+@ WAIT
+@ COLOR 255 250 250
+@ TALK "   *** 增加１點體力 ***"
+@ INCREASE HEALTH 1
+@ CHANGE 0
+@ END
+
+161 :看石像並增加１點魔力
+# 161
+# 17
+# 5
+# "石像"
+# FLOW
+# 100
+@ CLEAR_BUFFER
+@ FACE NO
+@ BOX BLUE 5
+@ COLOR 255 60 60
+@ TALK "要與大自然溶為一體，"
+@ TALK "你的身體，也是大自然的一部份。"
+@ TALK "若能覺悟那一點，"
+@ TALK "就可以感覺得到真正魔法的力量。"
+@ TALK ""
+@ WAIT
+@ COLOR 255 250 250
+@ TALK "   *** 增加１點魔法 ***"
+@ INCREASE MAGIC 1
+@ CHANGE 0
+@ END
+
+162 :看桌子並產生學業成就符
+# 162
+# 17
+# 5
+# "桌子"
+# FLOW
+# 100
+@ GIVE ITEM 178 1
+@ CHANGE 0
+@ END
+
+163 :看桌子並產生敵感符道具
+# 163
+# 17
+# 5
+# "桌子"
+# FLOW
+# 100
+@ GIVE ITEM 179 1
+@ CHANGE 0
+@ END
+
+164 :看桌子並產生金銀自來符道具
+# 164
+# 17
+# 5
+# "桌子"
+# FLOW
+# 100
+@ GIVE ITEM 180 1
+@ CHANGE 0
+@ END
+
+165 :看桌子並產生疾病消免符道具
+# 165
+# 17
+# 5
+# "桌子"
+# FLOW
+# 100
+@ GIVE ITEM 181 1
+@ CHANGE 0
+@ END
+
+166 :看桌子並產生退魔符道具
+# 166
+# 17
+# 5
+# "桌子"
+# FLOW
+# 100
+@ GIVE ITEM 176 1
+@ CHANGE 0
+@ END
+
+167 :看桌子並產生赤甲符道具
+# 167
+# 17
+# 5
+# "桌子"
+# FLOW
+# 100
+@ GIVE ITEM 177 1
+@ CHANGE 0
+@ END
+
+168 :看桌子並產生光明之眼道具。
+# 168
+# 17
+# 5
+# "桌子"
+# FLOW
+# 100
+@ GIVE ITEM 196 1
+@ CHANGE 0
+@ END
+
+169 :看桌子並產生人蔘道具。
+# 169
+# 17
+# 5
+# "桌子"
+# FLOW
+# 100
+@ GIVE ITEM 167 1
+@ CHANGE 0
+@ END
+
+170 :看石像並充滿生命力。
+# 170
+# 17
+# 5
+# " "
+# FLOW
+# 100
+@ CLEAR_BUFFER
+@ FACE NO
+@ BOX BLUE 5
+@ COLOR 255 60 60
+@ TALK "肉體的疲勞將消失。"
+@ WAIT
+@ FULL_LIFE
+@ CHANGE 0
+@ END
+
+171 :看石像並充滿精力。
+# 171
+# 17
+# 5
+# " "
+# FLOW
+# 100
+@ CLEAR_BUFFER
+@ FACE NO
+@ BOX BLUE 5
+@ COLOR 255 60 60
+@ TALK "精神的疲勞將消失。"
+@ WAIT
+@ FULL_MANA
+@ CHANGE 0
+@ END
+
+172 :看石像並充滿精力和生命力。
+# 172
+# 17
+# 5
+# " "
+# FLOW
+# 100
+@ CLEAR_BUFFER
+@ FACE NO
+@ BOX BLUE 5
+@ COLOR 255 60 60
+@ TALK "精神與肉體的疲勞將消失。"
+@ WAIT
+@ FULL_LIFE
+@ FULL_MANA
+@ CHANGE 0
+@ END
+
+
+
+180 :看石像門將開啟.
+# 180
+# 17
+# 5
+# "石像"
+# FLOW
+# 100
+@ CLEAR_BUFFER
+@ FACE NO
+@ BOX BLUE 5
+@ COLOR 255 60 60
+@ TALK "確定是先者後再開路。"
+@ WAIT
+@ REMOVE_OBJECT THIS
+@ REMOVE_OBJECT CURMAP 31
+@ REMOVE_OBJECT CURMAP 32
+@ REMOVE_OBJECT CURMAP 33
+@ REMOVE_OBJECT CURMAP 34
+@ REMOVE_OBJECT CURMAP 35
+@ END
+
+181 :看石像門將開啟.
+# 181
+# 17
+# 5
+# "石像"
+# FLOW
+# 100
+@ CLEAR_BUFFER
+@ FACE NO
+@ BOX BLUE 5
+@ COLOR 255 60 60
+@ TALK "確定是先者後再開路。"
+@ WAIT
+@ REMOVE_OBJECT THIS
+@ REMOVE_OBJECT CURMAP 36
+@ REMOVE_OBJECT CURMAP 37
+@ REMOVE_OBJECT CURMAP 38
+@ REMOVE_OBJECT CURMAP 39
+@ REMOVE_OBJECT CURMAP 40
+@ END
+
+
+
+190 :移動空間(峽谷至東方村)
+# 190
+# 21
+# 1
+# "東方村移動"
+# FLOW
+# 100
+@ WARP 18 5 22
+@ END
+
+191 :移動空間(付予洞至付予洞)
+# 191
+# 21
+# 1
+# "峽谷中的移動"
+# BASIC
+# 100
+@ WARP 22 48 81
+@ END
+
+192 :移動空間(付予洞至東方村)
+# 192
+# 21
+# 1
+# "東方村移動"
+# BASIC
+# 100
+@ WARP 18 18 19
+@ END
+
+193 :移動空間(付予洞至仙魔鬼城洞)
+# 193
+# 21
+# 1
+# "仙魔鬼城洞移動"
+# FLOW
+# 100
+@ WARP 20 110 84
+@ END
+
+194 :移動空間(仙魔鬼城洞至東方村)
+# 194
+# 21
+# 1
+# "東方村移動"
+# FLOW
+# 100
+@ WARP 18 18 19
+@ END
+
+195 :移動空間(仙魔鬼城洞至西域村)
+# 195
+# 21
+# 1
+# "西域村移動"
+# FLOW
+# 100
+@ WARP 15 42 39
+@ END
+
+196 :移動空間(仙魔鬼城洞至光明地理)
+# 196
+# 21
+# 1
+# "光明地理移動"
+# FLOW
+# 100
+@ WARP 6 62 43
+@ END
+
+
+* NO_SPACE
+@ CLEAR_BUFFER
+@ BOX BLUE 5
+@ FACE HERO 0 0 255
+@ COLOR 0 0 200
+@ TALK "對了！要先解決別的事情，"
+@ TALK "抱歉，因為之前，已有了很多別人的委託，"
+@ TALK "所以，現在無法幫你。"
+@ WAIT
+@ CLEAR_BUFFER
+@ TALK "必須先解決受託的事情，"
+@ TALK "過於困難的事情就丟掉好了。"
+@ WAIT
+@ END
+
+* 結束
+@ END
+* END
+@ END
+
+
+
+
+

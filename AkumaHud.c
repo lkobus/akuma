@@ -115,6 +115,62 @@ enum { SELECT_ALL = 3, FOCUS_FIRST = 4, LOOT_KEY = 7, BINDING_COUNT = 8 };
 static unsigned bindings[BINDING_COUNT] = {VK_F5, VK_F6, VK_F7, VK_F4,
     VK_F5 | 512, VK_F6 | 512, VK_F7 | 512, VK_MENU};
 static unsigned binding_down, party_selection, party_present;
+
+// Akuma's own keyboard actions, in the order of its key tables (0x421d8c / 0x421e30): menu, the ten
+// quick items, character, items, quests, map, weapons tab, items tab and Space. The launcher
+// passes the key chosen for each one in AKUMA_NATIVE_KEYS; we translate it back to the native key
+// before the game sees the message and block a native key whose action was moved away.
+enum { NATIVE_ACTIONS = 18 };
+static const unsigned char native_default[NATIVE_ACTIONS] = {VK_ESCAPE, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
+    'C', 'I', 'M', 'W', 'A', 'S', VK_SPACE};
+// A user key is a virtual key plus modifier bits (256 Shift, 512 Ctrl, 1024 Alt), like the custom bindings.
+static unsigned short native_user[NATIVE_ACTIONS];
+static unsigned char native_blocked[256], native_translated[256];
+static int hint_action = -1;
+// Counters for the network log: how often the engine draws world tiles / presents a frame.
+static volatile unsigned long tile_calls, present_calls;
+
+static void configure_native_keys(void)
+{
+    char configured[160] = "";
+    for (unsigned i = 0; i < NATIVE_ACTIONS; ++i) native_user[i] = native_default[i];
+    DWORD length = GetEnvironmentVariableA("AKUMA_NATIVE_KEYS", configured, sizeof(configured));
+    if (length && length < sizeof(configured)) {
+        const char *start = configured;
+        for (unsigned i = 0; i < NATIVE_ACTIONS; ++i) {
+            char *end;
+            unsigned long value = strtoul(start, &end, 10);
+            if (end == start || (*end != ',' && *end != '\0')) break;
+            native_user[i] = value > 2047 ? 0 : (unsigned short)value;
+            if (*end == '\0') break;
+            start = end + 1;
+        }
+    }
+    memset(native_blocked, 0, sizeof(native_blocked));
+    memset(native_translated, 0, sizeof(native_translated));
+    for (unsigned i = 0; i < NATIVE_ACTIONS; ++i)
+        if (native_user[i] != native_default[i]) native_blocked[native_default[i]] = 1;
+}
+
+// Name of a key (plus modifiers) for tooltips: "Q", "Ctrl+Q", "Space", "F3"…
+static int native_key_name(unsigned combo, WCHAR *out, int capacity)
+{
+    unsigned vk = combo & 255;
+    int length = 0;
+    out[0] = 0;
+    if (combo & 512) length = lstrlenW(lstrcatW(out, L"Ctrl+"));
+    if (combo & 1024) length = lstrlenW(lstrcatW(out, L"Alt+"));
+    if (combo & 256) length = lstrlenW(lstrcatW(out, L"Shift+"));
+    WCHAR *tail = out + length;
+    int room = capacity - length;
+    if (room < 8) return length;
+    if ((vk >= '0' && vk <= '9') || (vk >= 'A' && vk <= 'Z')) { tail[0] = (WCHAR)vk; tail[1] = 0; return length + 1; }
+    if (vk == VK_ESCAPE) return length + lstrlenW(lstrcpynW(tail, L"Esc", room));
+    if (vk == VK_SPACE) return length + lstrlenW(lstrcpynW(tail, L"Space", room));
+    if (vk >= VK_F1 && vk <= VK_F12) return length + wsprintfW(tail, L"F%u", vk - VK_F1 + 1);
+    int named = GetKeyNameTextW((LONG)(MapVirtualKeyW(vk, 0) << 16), tail, room);
+    return length + (named > 0 ? named : 0);
+}
 static const unsigned char *party_map;
 static int party_map_id;
 static unsigned item_code_page = 1252;
@@ -149,6 +205,7 @@ static Panel quest_panel;
 static BOOL quest_ready, quest_empty, presented_quest, dialogue_ready, presented_dialogue;
 static Panel dialogue_panel;
 static BOOL presented_menu, sidebar_ready, open_journal_pending, sidebar_click;
+static BOOL item_in_hand;   // an item is held on the mouse outside the character sheet (set by paint_grabbed_item)
 static BOOL world_map_ready, pause_ready, presented_world_map, presented_pause;
 static BOOL drawing_full_world_map;
 static POINT world_map_part;
@@ -253,6 +310,18 @@ static BOOL world_draw_active(void)
 static BOOL world_view_active(void)
 {
     return world_draw_active() && !GAME_PAUSED && !*(const DWORD *)(GAME_VIEW + 0xE4);
+}
+
+// In multiplayer the engine keeps simulating and drawing the world behind the character, map and
+// ESC menus (the log shows tile draws and the session clock still advancing), so the HUD keeps
+// rendering the wide world there instead of freezing a snapshot. Single player really pauses.
+// Create livemenu.disable next to the game to go back to the frozen backdrop.
+static BOOL live_menus = TRUE;
+
+static BOOL mp_live_world(void)
+{
+    const unsigned char *view = GAME_VIEW;
+    return live_menus && NET_MULTI && view && view[0x8C] == 1;
 }
 
 // English strings the original engine draws itself (gameplay notices) or that live in its
@@ -573,6 +642,7 @@ static unsigned char *row(void *pixels, LONG pitch, int y)
 __declspec(dllexport) HRESULT WINAPI DrawTileOverlay(IDirectDrawSurface3 *target, DWORD x,
     DWORD y, IDirectDrawSurface3 *tiles, RECT *tile_rect, DWORD flags)
 {
+    ++tile_calls;
     DDSURFACEDESC src = {0}, dst = {0};
     src.dwSize = sizeof(src);
     dst.dwSize = sizeof(dst);
@@ -643,7 +713,7 @@ __declspec(dllexport) void WINAPI HudBeginWorld(unsigned char *map)
         }
     }
     if (!wide_mode || !show_hud || GAME_SCENE != CAMPAIGN_SCENE
-        || !world_draw_active() || !map || map[0x10] < NATIVE_WIDE_COLUMNS) return;
+        || !(world_draw_active() || mp_live_world()) || !map || map[0x10] < NATIVE_WIDE_COLUMNS) return;
 
     CameraView previous_view = frame_view;
     frame_view = (CameraView){NATIVE_WIDE_COLUMNS, VIEW_HEIGHT};
@@ -1213,7 +1283,7 @@ static const QuestLead quest_leads[] = {
          L"Choose “OK!”, then “Tell me more”, and agree to fetch the gift in Mantis Village.",
          L"“좋아”, “더 말해줘”를 선택하고 만티스 마을에서 선물을 가져오겠다고 하세요.",
          L"選擇「好!」,再選「多告訴我一些」,並答應去螳螂村取回禮物。"}},
-    {103, 0, {L"Lojista", L"Shopkeeper", L"상점 주인", L"店主"},
+    {103, 0, {L"Lojista", L"Shopkeeper", L"상점 주인", L"商人"},
         {L"Pergunte sobre os demônios perto da vila.",
          L"Ask about the demons around the village.",
          L"마을 주변의 악마에 대해 물어보세요.",
@@ -1794,13 +1864,25 @@ static void paint_name_hint(HDC dc, const char *label, int x, int y, BOOL align_
     WCHAR text[160];
     int bytes = (int)strnlen(label, 159);
     int chars = bytes ? MultiByteToWideChar(item_code_page, 0, label, bytes, text, COUNT(text)) : 0;
+    if (chars && hint_action >= 0 && native_user[hint_action] != native_default[hint_action]) {
+        // The tooltip ends with the key in parentheses, "CHARACTER (C)": show the key now in use.
+        int open = chars - 1;
+        while (open > 0 && text[open] != L'(' && text[open] != 0xFF08) --open;
+        WCHAR name[24] = L"";
+        int length = native_user[hint_action] ? native_key_name(native_user[hint_action], name, COUNT(name)) : 0;
+        if (open > 0 && length > 0 && open + 1 + length + 1 < (int)COUNT(text)) {
+            memcpy(text + open + 1, name, (size_t)length * sizeof(WCHAR));
+            text[open + 1 + length] = L')';
+            chars = open + 2 + length;
+        }
+    }
     if (chars && hud_language == CHINESE) {
         // Some names reach the HUD in English; show the Chinese name when we have one.
         static const WCHAR *const names[][2] = {
-            {L"Blacksmith", L"鐵匠"}, {L"Shopkeeper", L"店主"}, {L"Item Merchant", L"道具商人"},
-            {L"Village Chief", L"村長"}, {L"Witch", L"女巫"}, {L"Jeweler", L"珠寶商"}, {L"Trainer", L"教官"},
-            {L"Retired General", L"退役將軍"}, {L"White Lady", L"白衣夫人"},
-            {L"Eastern Demon", L"東方惡魔"}, {L"Western Demon", L"西方惡魔"},
+            {L"Blacksmith", L"鐵匠"}, {L"Shopkeeper", L"商人"}, {L"Item Merchant", L"道具商人"},
+            {L"Village Chief", L"村長"}, {L"Witch", L"魔女"}, {L"Jeweler", L"珠寶商"}, {L"Trainer", L"教練"},
+            {L"Retired General", L"退役將軍"}, {L"White Lady", L"夏大嬸兒"},
+            {L"Eastern Demon", L"秤魔王"}, {L"Western Demon", L"雙頭魔神"},
         };
         for (unsigned n = 0; n < COUNT(names); ++n)
             if (chars == lstrlenW(names[n][0]) && !wcsncmp(text, names[n][0], (size_t)chars)) {
@@ -1830,7 +1912,10 @@ static void paint_hover_hint(HDC dc, RECT *occupied)
     if (orb >= 0) {
         Panel button = placed_panel(NAV_START + orb);
         const char *label = ((GameString)(uintptr_t)0x47E180)(menu_ids[orb]);
+        static const int orb_actions[] = {11, 12, 13, 14, 0};   // character, items, quests, map, menu
+        hint_action = orb < (int)COUNT(orb_actions) ? orb_actions[orb] : -1;
         paint_name_hint(dc, label, button.x - 7, button.y + button.height / 2, TRUE, occupied);
+        hint_action = -1;
     } else if (world_hint_count && (quick_item_hint || over_world(pointer_x, pointer_y))) {
         const unsigned char *map = GAME_MAP;
         if (npc_name_index >= 0 && map) {
@@ -2192,10 +2277,32 @@ static void paint_netplay_overlays(IDirectDrawSurface3 *target)
 
 static void paint_text_overlays(IDirectDrawSurface3 *target)
 {
-    if (presented_pause) return;
+    if (presented_pause) {
+        // Online the game does not pause: keep the player list working behind the ESC menu, darkened
+        // like the rest of the screen.
+        if (NET_MULTI && GAME_SCENE == CAMPAIGN_SCENE && presented_hud && sidebar_ready) {
+            HDC dc;
+            if (SUCCEEDED(IDirectDrawSurface3_GetDC(target, &dc))) {
+                paint_party_panel(dc);
+                IDirectDrawSurface3_ReleaseDC(target, dc);
+            }
+            DDSURFACEDESC pixels = {0};
+            pixels.dwSize = sizeof(pixels);
+            if (SUCCEEDED(IDirectDrawSurface3_Lock(target, NULL, &pixels, DDLOCK_WAIT, NULL))) {
+                unsigned mask = pixels.ddpfPixelFormat.dwRBitMask == 0x7C00 ? 0x7BDE : 0xF7DE;
+                RECT frame = party_frame();
+                for (int y = max(frame.top, 0); y < min(frame.bottom, HEIGHT); ++y) {
+                    uint16_t *to = (uint16_t *)row(pixels.lpSurface, pixels.lPitch, y);
+                    for (int x = max(frame.left, 0); x < min(frame.right, WIDE_WIDTH); ++x) to[x] = pause_shade(to[x], mask);
+                }
+                IDirectDrawSurface3_Unlock(target, NULL);
+            }
+        }
+        return;
+    }
     paint_netplay_overlays(target);
     if (presented_menu && !presented_world_map && pointer_x >= 0 && pointer_x < SIDE_X
-        && pointer_y >= 0 && pointer_y < BELT_Y && hovered_orb() < 0) {
+        && pointer_y >= 0 && pointer_y < BELT_Y && hovered_orb() < 0 && item_in_hand) {
         MapRect sheet = {campaign_menu.x, campaign_menu.y, campaign_menu.width, campaign_menu.height};
         HDC dc;
         if (!in_rect(&sheet, pointer_x, pointer_y) && SUCCEEDED(IDirectDrawSurface3_GetDC(target, &dc))) {
@@ -2307,27 +2414,46 @@ static BOOL grab_background_ready, menu_outside;
 // near its native cursor. Lift the pixels that differ from the empty pit.
 static void paint_grabbed_item(const DDSURFACEDESC *src, const DDSURFACEDESC *dst)
 {
-    if (!presented_menu || presented_pause || presented_world_map) return;
+    if (!presented_menu || presented_pause || presented_world_map) {
+        item_in_hand = FALSE;
+        return;
+    }
     if (!menu_outside) {
         for (int y = 0; y < GRAB_H; ++y)
             memcpy(grab_background[y], (const uint16_t *)row(src->lpSurface, src->lPitch,
                 DROP_Y - GRAB_BACK_Y + y) + DROP_X - GRAB_BACK_X, sizeof(grab_background[y]));
         grab_background_ready = TRUE;
+        item_in_hand = FALSE;
         return;
     }
     if (!grab_background_ready || pointer_x < 0 || pointer_y < 0) return;
+    // The engine draws the held item at the pointer we fake inside the native column. Take only the
+    // pixels that changed around that spot: a window the size of the biggest item, and never the native
+    // header or portrait panels, whose animated pixels would otherwise be pasted too (stray orbs).
+    int changed = 0;
     for (int y = 0; y < GRAB_H; ++y) {
+        if (y < GRAB_BACK_Y - 72 || y >= GRAB_BACK_Y + 72) continue;
         const uint16_t *from = (const uint16_t *)row(src->lpSurface, src->lPitch,
             DROP_Y - GRAB_BACK_Y + y) + DROP_X - GRAB_BACK_X;
         int ty = pointer_y + y - GRAB_BACK_Y;
         if (ty < 0 || ty >= BELT_Y) continue;
+        int source_y = DROP_Y - GRAB_BACK_Y + y;
         uint16_t *to = (uint16_t *)row(dst->lpSurface, dst->lPitch, ty);
         for (int x = 0; x < GRAB_W; ++x) {
+            if (x < GRAB_BACK_X - 56 || x >= GRAB_BACK_X + 72) continue;
             int tx = pointer_x + x - GRAB_BACK_X;
             if (tx < WORLD_TOP || tx >= SIDE_X || from[x] == grab_background[y][x]) continue;
+            int source_x = DROP_X - GRAB_BACK_X + x;
+            BOOL panel = FALSE;
+            for (unsigned i = 0; i < NAV_START && !panel; ++i)
+                panel = source_x >= hud[i].x && source_x < hud[i].x + hud[i].width
+                    && source_y >= hud[i].y && source_y < hud[i].y + hud[i].height;
+            if (panel) continue;
             to[tx] = from[x];
+            ++changed;
         }
     }
+    item_in_hand = changed >= 12;
 }
 
 static void drop_held_item(HWND window)
@@ -2652,6 +2778,26 @@ static void paint_full_world_map(const DDSURFACEDESC *dst)
     }
 }
 
+// Paints the live wide world (from the terrain copy taken at the end of the engine's world pass)
+// behind a menu, and keeps the snapshot used by the ESC backdrop up to date.
+static void paint_live_world(const DDSURFACEDESC *src, const DDSURFACEDESC *dst, int right)
+{
+    static uint16_t live_native[HEIGHT][GAME_WIDTH];
+    DDSURFACEDESC fake = *src;
+    fake.lpSurface = live_native;
+    fake.lPitch = sizeof(live_native[0]);
+    int native_rows = NATIVE_BELT_Y - WORLD_TOP, native_width = WORLD_RIGHT - WORLD_TOP;
+    for (int y = 0; y < native_rows; ++y) {
+        memcpy(live_native[WORLD_TOP + y] + WORLD_TOP, terrain[y], (size_t)native_width * 2);
+        memcpy(row(dst->lpSurface, dst->lPitch, WORLD_TOP + y) + WORLD_TOP * 2, terrain[y], (size_t)native_width * 2);
+    }
+    paint_world(&fake, dst, right, displayed_view, FALSE, VIEW_HEIGHT);
+    int limit = min(right, SIDE_X);
+    for (int y = WORLD_TOP; y < BELT_Y; ++y)
+        memcpy(world_snapshot[y] + WORLD_TOP, row(dst->lpSurface, dst->lPitch, y) + WORLD_TOP * 2,
+            (size_t)(limit - WORLD_TOP) * 2);
+}
+
 static void paint(const DDSURFACEDESC *src, const DDSURFACEDESC *dst, BOOL lateral, BOOL menu)
 {
     presented_map = (MapView){0};
@@ -2670,6 +2816,8 @@ static void paint(const DDSURFACEDESC *src, const DDSURFACEDESC *dst, BOOL later
             memcpy(to + SCENE_WIDTH, hud_wood[y], (WIDE_WIDTH - SCENE_WIDTH) * sizeof(*to));
             if (menu) memcpy(to, world_snapshot[y], sizeof(world_snapshot[y]));
         }
+        if (menu && mp_live_world() && wide_frame && !world_render_failed)
+            paint_live_world(src, dst, overflow_ready ? WIDE_RIGHT : NATIVE_WIDE_RIGHT);
         if (!menu) {
             map_frame.x = clamp(map_frame.x, 16, presented_world_right - 16 - map_frame.width);
             copy_panel(src, dst, &scene);
@@ -2789,6 +2937,8 @@ __declspec(dllexport) HRESULT WINAPI HudMode(GameVideo *video, DWORD width, DWOR
     char configured[96] = "", exclusive[2] = "", pixels[2] = "", language[3] = "", marker[2] = "";
     wasd_camera = GetEnvironmentVariableA("AKUMA_WASD_CAMERA", camera_keys, sizeof(camera_keys)) == 1
         && camera_keys[0] == '1';
+    configure_native_keys();
+    live_menus = GetFileAttributesA("livemenu.disable") == INVALID_FILE_ATTRIBUTES;
     DWORD length = GetEnvironmentVariableA("AKUMA_BINDINGS", configured, sizeof(configured));
     if (length && length < sizeof(configured)) {
         char *start = configured;
@@ -3260,6 +3410,25 @@ static void leave_net_session(void)
 __declspec(dllexport) LRESULT CALLBACK HudWindow(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
 {
     if (message == WM_CLOSE || message == WM_DESTROY) leave_net_session();
+    if (message == WM_KILLFOCUS) memset(native_translated, 0, sizeof(native_translated));
+    if (message == WM_KEYDOWN || message == WM_KEYUP || message == WM_SYSKEYDOWN || message == WM_SYSKEYUP) {
+        unsigned key = (unsigned)wparam & 255;
+        if (message == WM_KEYDOWN || message == WM_SYSKEYDOWN) {
+            // The chosen key (with the modifiers held right now) stands in for the action's own key.
+            unsigned combo = key | held_modifiers(key);
+            int hit = -1;
+            for (unsigned i = 0; i < NATIVE_ACTIONS; ++i)
+                if (native_user[i] == combo && combo != native_default[i]) hit = (int)i;
+            if (hit >= 0) {
+                native_translated[key] = native_default[hit];
+                wparam = native_default[hit];
+            } else if (native_blocked[key]) return 0;
+        } else if (native_translated[key]) {
+            // Release the translated key even if the modifier was let go first.
+            wparam = native_translated[key];
+            native_translated[key] = 0;
+        } else if (native_blocked[key]) return 0;
+    }
     BOOL key_down = message == WM_KEYDOWN || message == WM_SYSKEYDOWN;
     BOOL key_up = message == WM_KEYUP || message == WM_SYSKEYUP;
     if (key_down || key_up) {
@@ -3567,10 +3736,17 @@ static void net_log_party(void)
     last = now;
     const unsigned char *map = GAME_MAP;
     char line[3072];
-    int length = wsprintfA(line, "%lu P scene=%lu multi=%lu host=%lu me=%lu map=%lx wide=%d hud=%d zoom=%u chat=%lu pause=%lu held=%d menu=%d",
+    static unsigned long last_tiles;
+    unsigned long tiles_now = tile_calls;
+    // tiles = world tile draws since the previous line; clock = the engine's session clock (0x49B8E8);
+    // view = the view's menu flag (+0xE4); dlg = pause owner flag (0x49B8DC). If "tiles" stays above
+    // zero while pause=1 the engine keeps drawing the world behind a menu.
+    int length = wsprintfA(line, "%lu P scene=%lu multi=%lu host=%lu me=%lu map=%lx wide=%d hud=%d zoom=%u chat=%lu pause=%lu held=%d menu=%d tiles=%lu clock=%lu view=%lu dlg=%lu",
         now - net_log_start, GAME_SCENE, NET_MULTI, NET_HOST, NET_LOCAL_ID, (unsigned long)(uintptr_t)map,
         wide_mode, show_hud, zoom_level, GAME_CHAT_OPEN, *(const DWORD *)(uintptr_t)0x49B8E0,
-        loot_held(), presented_menu);
+        loot_held(), presented_menu, tiles_now - last_tiles, *(const DWORD *)(uintptr_t)0x49B8E8,
+        GAME_VIEW ? *(const DWORD *)(GAME_VIEW + 0xE4) : 0, *(const DWORD *)(uintptr_t)0x49B8DC);
+    last_tiles = tiles_now;
     if (map) {
         // map+0x14AAC holds up to 20 heroes: the local ones (a1) and, in multiplayer, the
         // other players' (a0). The HUD party code only accepts a1.
@@ -3676,8 +3852,19 @@ static BOOL CALLBACK scale_dialog_child(HWND child, LPARAM param)
         HFONT bigger = CreateFontIndirectA(&face);
         if (bigger) SendMessageA(child, WM_SETFONT, (WPARAM)bigger, TRUE);
     }
+    int new_height = (int)((box.bottom - box.top) * job->scale);
+    if (!lstrcmpA(name, "ComboBox")) {
+        // For a combo box the window height is the drop-down height too. The closed height we read is
+        // only the selection field, so keep room for the list or it collapses and only the first
+        // entry (for instance "2 players") can be picked.
+        LRESULT rows = SendMessageA(child, CB_GETCOUNT, 0, 0), item = SendMessageA(child, CB_GETITEMHEIGHT, 0, 0);
+        if (rows < 1 || rows == CB_ERR) rows = 6;
+        if (rows > 10) rows = 10;
+        if (item <= 0 || item == CB_ERR) item = new_height;
+        new_height += (int)(rows * item) + 6;
+    }
     MoveWindow(child, job->offset_x + (int)(box.left * job->scale), job->offset_y + (int)(box.top * job->scale),
-        (int)((box.right - box.left) * job->scale), (int)((box.bottom - box.top) * job->scale), TRUE);
+        (int)((box.right - box.left) * job->scale), new_height, TRUE);
     return TRUE;
 }
 

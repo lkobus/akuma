@@ -1,12 +1,14 @@
 # Chinese support (Traditional / zh-TW)
 
-**Status: engine support is in (development build, in-game test pending); the translation is a
-small sample.** The launcher has a Taiwan flag that starts the game with the `zh` language: Big5
-font charset, `Microsoft JhengHei`, code page 950. Interface strings come from
-`translations-zh.txt` and NPC lines from `dialogues-zh.json`; anything missing falls back to
-English. A player reported that a Big5 `.evt` dropped into the game came out garbled; that is what
-this fixes. Your own `sam-zh.evt`, `under-zh.evt`, `multi1-zh.evt` and `multi2-zh.evt` can replace
-the generated ones.
+**Status: supported.** The launcher has a Taiwan flag that starts the game with the `zh` language: Big5
+font charset, `Microsoft JhengHei`, code page 950. The Chinese text is the original zhTW release's: its NPC
+scripts and dialogue, interface table and map banners live in [`zh-original/`](../../zh-original) and are
+copied over the generated files by the build, with the Western (English CD) data underneath. They were
+supplied by the community member nGuC, who also proofread `translations-zh.txt`, the generated fallback
+(`translations-zh.txt` plus the machine-drafted `dialogues-zh.json`) used when those files are removed.
+
+The original scripts are from a slightly different revision of the game than the English CD (a few dozen
+logic commands per file differ), so play the main quests after changing them.
 
 ## Why a Big5 `.evt` shows garbage
 
