@@ -15,6 +15,11 @@
   Não mexe em dados do jogo, saves, música nem no ddraw. Para o pacote completo
   e para a release continue usando build.ps1 e make_overlay.ps1.
 
+.PARAMETER ZhOriginal
+  Pasta (procurada recursivamente) com arquivos do lançamento zhTW original: lang-zh.gos,
+  icon1-zh.gos, icon10-zh.gos e sam/under/multi1/multi2-zh.evt. Copiados por cima dos gerados,
+  só para teste. Não são versionados (direitos autorais): veja docs/wiki/Chinese-Support.md.
+
 .PARAMETER Localize
   Regenera os arquivos de idioma (lang-*.gos, menuicon*/icon* e *.evt por idioma, incluindo zh)
   na pasta do jogo a partir de translations*.txt e dialogues*.json.
@@ -68,6 +73,7 @@ param(
     [switch]$DialogScale,
     [switch]$NoDialogScale,
     [switch]$Localize,
+    [string]$ZhOriginal = '',
     [switch]$NoInstall,
     [switch]$Second,
     [string]$SecondGame = (Join-Path $PSScriptRoot 'dist\jogo-2\Akuma-Portatil')
@@ -109,6 +115,18 @@ if ($Localize -and -not $NoInstall) {
     if ($LASTEXITCODE) { throw 'Falha ao preparar os rotulos do menu.' }
     & python (Join-Path $PSScriptRoot 'localize_dialogues.py') $gamePath (Join-Path $PSScriptRoot 'dialogues.json')
     if ($LASTEXITCODE) { throw 'Falha ao preparar os dialogos.' }
+}
+
+if ($ZhOriginal -and -not $NoInstall) {
+    $zhTargets = @{ 'multi1-zh.evt' = ''; 'multi2-zh.evt' = ''; 'sam-zh.evt' = ''; 'under-zh.evt' = '';
+        'lang-zh.gos' = 'img'; 'icon1-zh.gos' = 'img'; 'icon10-zh.gos' = 'img' }
+    Get-ChildItem -LiteralPath $ZhOriginal -Recurse -File | ForEach-Object {
+        $key = $_.Name.ToLowerInvariant()
+        if ($zhTargets.ContainsKey($key)) {
+            Copy-Item -LiteralPath $_.FullName -Destination (Join-Path (Join-Path $gamePath $zhTargets[$key]) $key) -Force
+            Write-Host "zhTW original: $key"
+        }
+    }
 }
 
 $flag = Join-Path $gamePath 'netlog.enable'

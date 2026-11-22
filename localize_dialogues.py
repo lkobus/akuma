@@ -29,9 +29,10 @@ SPEAKERS = {
 
 
 ZH_SPEAKERS = {
-    "Blacksmith": "鐵匠", "Shopkeeper": "店主", "Item Merchant": "道具商人", "Village Chief": "村長",
-    "Witch": "女巫", "Jeweler": "珠寶商", "Trainer": "教官", "Retired General": "退役將軍",
-    "White Lady": "白衣夫人", "Eastern Demon": "東方惡魔", "Western Demon": "西方惡魔",
+    # Names as in the original zhTW release (nGuC).
+    "Blacksmith": "鐵匠", "Shopkeeper": "商人", "Item Merchant": "道具商人", "Village Chief": "村長",
+    "Witch": "魔女", "Jeweler": "珠寶商", "Trainer": "教練", "Retired General": "退役將軍",
+    "White Lady": "夏大嬸兒", "Eastern Demon": "秤魔王", "Western Demon": "雙頭魔神",
 }
 
 

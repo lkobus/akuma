@@ -1262,7 +1262,7 @@ static const QuestLead quest_leads[] = {
          L"Choose “OK!”, then “Tell me more”, and agree to fetch the gift in Mantis Village.",
          L"“좋아”, “더 말해줘”를 선택하고 만티스 마을에서 선물을 가져오겠다고 하세요.",
          L"選擇「好!」,再選「多告訴我一些」,並答應去螳螂村取回禮物。"}},
-    {103, 0, {L"Lojista", L"Shopkeeper", L"상점 주인", L"店主"},
+    {103, 0, {L"Lojista", L"Shopkeeper", L"상점 주인", L"商人"},
         {L"Pergunte sobre os demônios perto da vila.",
          L"Ask about the demons around the village.",
          L"마을 주변의 악마에 대해 물어보세요.",
@@ -1858,10 +1858,10 @@ static void paint_name_hint(HDC dc, const char *label, int x, int y, BOOL align_
     if (chars && hud_language == CHINESE) {
         // Some names reach the HUD in English; show the Chinese name when we have one.
         static const WCHAR *const names[][2] = {
-            {L"Blacksmith", L"鐵匠"}, {L"Shopkeeper", L"店主"}, {L"Item Merchant", L"道具商人"},
-            {L"Village Chief", L"村長"}, {L"Witch", L"女巫"}, {L"Jeweler", L"珠寶商"}, {L"Trainer", L"教官"},
-            {L"Retired General", L"退役將軍"}, {L"White Lady", L"白衣夫人"},
-            {L"Eastern Demon", L"東方惡魔"}, {L"Western Demon", L"西方惡魔"},
+            {L"Blacksmith", L"鐵匠"}, {L"Shopkeeper", L"商人"}, {L"Item Merchant", L"道具商人"},
+            {L"Village Chief", L"村長"}, {L"Witch", L"魔女"}, {L"Jeweler", L"珠寶商"}, {L"Trainer", L"教練"},
+            {L"Retired General", L"退役將軍"}, {L"White Lady", L"夏大嬸兒"},
+            {L"Eastern Demon", L"秤魔王"}, {L"Western Demon", L"雙頭魔神"},
         };
         for (unsigned n = 0; n < COUNT(names); ++n)
             if (chars == lstrlenW(names[n][0]) && !wcsncmp(text, names[n][0], (size_t)chars)) {
