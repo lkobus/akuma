@@ -65,6 +65,13 @@ try {
     if ($LASTEXITCODE) { throw 'Falha ao preparar os rótulos do menu.' }
     & python (Join-Path $PSScriptRoot 'localize_dialogues.py') $payload $dialoguePath
     if ($LASTEXITCODE) { throw 'Falha ao preparar os diálogos.' }
+    # Traditional Chinese: the original zhTW release's scripts and tables replace the generated zh files
+    # (see zh-original\README.md).
+    $zhOriginal = Join-Path $PSScriptRoot 'zh-original'
+    foreach ($file in Get-ChildItem -LiteralPath $zhOriginal -File -Filter '*-zh.*') {
+        $folder = if ($file.Extension -eq '.gos') { Join-Path $payload 'Img' } else { $payload }
+        Copy-Item -LiteralPath $file.FullName -Destination (Join-Path $folder $file.Name) -Force
+    }
 
     Remove-Item -LiteralPath (Join-Path $payload 'AKUMA.EXE'), (Join-Path $payload 'AKUMAUN.EXE')
     Copy-Item -LiteralPath $wrapperLicense -Destination (Join-Path $payload 'LICENSE-cnc-ddraw.txt')

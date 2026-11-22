@@ -8,7 +8,7 @@ The scan script is `.work/scan_strings.py` (not tracked); it writes `.work/scan_
 |---|---|---|
 | `img/lang.gos` (541 strings: menus, tooltips, items, spells, monsters, maps, stats) | `translations.txt` (pt/ko/en), `translations-zh.txt` (zh) → `localize.py` | pt, ko, en, zh. In zh, invented proper names (Glucyn, Hellminor…) stay in English. |
 | Menu and map banners (`menuicon*.gos`, `icon1*.gos`) | `menu_labels.py` (rendered with the language's font) | pt, ko, en, zh |
-| NPC dialogue (`sam`, `under`, `multi1`, `multi2` `.evt`) | `dialogues.json` (pt/ko), `dialogues-zh.json` (zh), `localize_dialogues.py` | pt, ko, en (original), zh (machine draft + hand-written choices and speaker names) |
+| NPC dialogue (`sam`, `under`, `multi1`, `multi2` `.evt`) | `dialogues.json` (pt/ko), `dialogues-zh.json` (zh), `localize_dialogues.py` | pt, ko, en (original), zh (the original zhTW release's scripts from `zh-original/`; machine draft only as a fallback) |
 | Launcher (`Jogar.exe`) | `Launcher.cs` | pt, en, ko, zh (captions) |
 | Remastered HUD texts (quest panel, party list, drop hint) | `AkumaHud.c` tables | pt, en, ko, zh |
 | Native status line under the world (ATK/DEF/…) | ANSI text redrawn by the HUD; converted with the language's code page | all |

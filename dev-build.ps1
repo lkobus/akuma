@@ -16,9 +16,8 @@
   e para a release continue usando build.ps1 e make_overlay.ps1.
 
 .PARAMETER ZhOriginal
-  Pasta (procurada recursivamente) com arquivos do lançamento zhTW original: lang-zh.gos,
-  icon1-zh.gos, icon10-zh.gos e sam/under/multi1/multi2-zh.evt. Copiados por cima dos gerados,
-  só para teste. Não são versionados (direitos autorais): veja docs/wiki/Chinese-Support.md.
+  Pasta (procurada recursivamente) com outra versão dos arquivos zhTW (lang-zh.gos, icon1-zh.gos,
+  icon10-zh.gos e sam/under/multi1/multi2-zh.evt), copiados por cima de zh-original\ para testes.
 
 .PARAMETER Localize
   Regenera os arquivos de idioma (lang-*.gos, menuicon*/icon* e *.evt por idioma, incluindo zh)
@@ -115,6 +114,11 @@ if ($Localize -and -not $NoInstall) {
     if ($LASTEXITCODE) { throw 'Falha ao preparar os rotulos do menu.' }
     & python (Join-Path $PSScriptRoot 'localize_dialogues.py') $gamePath (Join-Path $PSScriptRoot 'dialogues.json')
     if ($LASTEXITCODE) { throw 'Falha ao preparar os dialogos.' }
+    # Same as build.ps1: the original zhTW files replace the generated zh ones.
+    foreach ($file in Get-ChildItem -LiteralPath (Join-Path $PSScriptRoot 'zh-original') -File -Filter '*-zh.*') {
+        $folder = if ($file.Extension -eq '.gos') { Join-Path $gamePath 'img' } else { $gamePath }
+        Copy-Item -LiteralPath $file.FullName -Destination (Join-Path $folder $file.Name) -Force
+    }
 }
 
 if ($ZhOriginal -and -not $NoInstall) {
