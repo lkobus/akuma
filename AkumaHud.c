@@ -205,6 +205,7 @@ static Panel quest_panel;
 static BOOL quest_ready, quest_empty, presented_quest, dialogue_ready, presented_dialogue;
 static Panel dialogue_panel;
 static BOOL presented_menu, sidebar_ready, open_journal_pending, sidebar_click;
+static BOOL item_in_hand;   // an item is held on the mouse outside the character sheet (set by paint_grabbed_item)
 static BOOL world_map_ready, pause_ready, presented_world_map, presented_pause;
 static BOOL drawing_full_world_map;
 static POINT world_map_part;
@@ -2301,7 +2302,7 @@ static void paint_text_overlays(IDirectDrawSurface3 *target)
     }
     paint_netplay_overlays(target);
     if (presented_menu && !presented_world_map && pointer_x >= 0 && pointer_x < SIDE_X
-        && pointer_y >= 0 && pointer_y < BELT_Y && hovered_orb() < 0 && loot_held()) {
+        && pointer_y >= 0 && pointer_y < BELT_Y && hovered_orb() < 0 && item_in_hand) {
         MapRect sheet = {campaign_menu.x, campaign_menu.y, campaign_menu.width, campaign_menu.height};
         HDC dc;
         if (!in_rect(&sheet, pointer_x, pointer_y) && SUCCEEDED(IDirectDrawSurface3_GetDC(target, &dc))) {
@@ -2413,27 +2414,46 @@ static BOOL grab_background_ready, menu_outside;
 // near its native cursor. Lift the pixels that differ from the empty pit.
 static void paint_grabbed_item(const DDSURFACEDESC *src, const DDSURFACEDESC *dst)
 {
-    if (!presented_menu || presented_pause || presented_world_map) return;
+    if (!presented_menu || presented_pause || presented_world_map) {
+        item_in_hand = FALSE;
+        return;
+    }
     if (!menu_outside) {
         for (int y = 0; y < GRAB_H; ++y)
             memcpy(grab_background[y], (const uint16_t *)row(src->lpSurface, src->lPitch,
                 DROP_Y - GRAB_BACK_Y + y) + DROP_X - GRAB_BACK_X, sizeof(grab_background[y]));
         grab_background_ready = TRUE;
+        item_in_hand = FALSE;
         return;
     }
     if (!grab_background_ready || pointer_x < 0 || pointer_y < 0) return;
+    // The engine draws the held item at the pointer we fake inside the native column. Take only the
+    // pixels that changed around that spot: a window the size of the biggest item, and never the native
+    // header or portrait panels, whose animated pixels would otherwise be pasted too (stray orbs).
+    int changed = 0;
     for (int y = 0; y < GRAB_H; ++y) {
+        if (y < GRAB_BACK_Y - 72 || y >= GRAB_BACK_Y + 72) continue;
         const uint16_t *from = (const uint16_t *)row(src->lpSurface, src->lPitch,
             DROP_Y - GRAB_BACK_Y + y) + DROP_X - GRAB_BACK_X;
         int ty = pointer_y + y - GRAB_BACK_Y;
         if (ty < 0 || ty >= BELT_Y) continue;
+        int source_y = DROP_Y - GRAB_BACK_Y + y;
         uint16_t *to = (uint16_t *)row(dst->lpSurface, dst->lPitch, ty);
         for (int x = 0; x < GRAB_W; ++x) {
+            if (x < GRAB_BACK_X - 56 || x >= GRAB_BACK_X + 72) continue;
             int tx = pointer_x + x - GRAB_BACK_X;
             if (tx < WORLD_TOP || tx >= SIDE_X || from[x] == grab_background[y][x]) continue;
+            int source_x = DROP_X - GRAB_BACK_X + x;
+            BOOL panel = FALSE;
+            for (unsigned i = 0; i < NAV_START && !panel; ++i)
+                panel = source_x >= hud[i].x && source_x < hud[i].x + hud[i].width
+                    && source_y >= hud[i].y && source_y < hud[i].y + hud[i].height;
+            if (panel) continue;
             to[tx] = from[x];
+            ++changed;
         }
     }
+    item_in_hand = changed >= 12;
 }
 
 static void drop_held_item(HWND window)
