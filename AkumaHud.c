@@ -311,6 +311,18 @@ static BOOL world_view_active(void)
     return world_draw_active() && !GAME_PAUSED && !*(const DWORD *)(GAME_VIEW + 0xE4);
 }
 
+// In multiplayer the engine keeps simulating and drawing the world behind the character, map and
+// ESC menus (the log shows tile draws and the session clock still advancing), so the HUD keeps
+// rendering the wide world there instead of freezing a snapshot. Single player really pauses.
+// Create livemenu.disable next to the game to go back to the frozen backdrop.
+static BOOL live_menus = TRUE;
+
+static BOOL mp_live_world(void)
+{
+    const unsigned char *view = GAME_VIEW;
+    return live_menus && NET_MULTI && view && view[0x8C] == 1;
+}
+
 // English strings the original engine draws itself (gameplay notices) or that live in its
 // multiplayer dialog resources. They are not in lang.gos, so they are translated here.
 // Columns: Portuguese, Korean, Traditional Chinese. English keeps the original text.
@@ -700,7 +712,7 @@ __declspec(dllexport) void WINAPI HudBeginWorld(unsigned char *map)
         }
     }
     if (!wide_mode || !show_hud || GAME_SCENE != CAMPAIGN_SCENE
-        || !world_draw_active() || !map || map[0x10] < NATIVE_WIDE_COLUMNS) return;
+        || !(world_draw_active() || mp_live_world()) || !map || map[0x10] < NATIVE_WIDE_COLUMNS) return;
 
     CameraView previous_view = frame_view;
     frame_view = (CameraView){NATIVE_WIDE_COLUMNS, VIEW_HEIGHT};
@@ -2264,10 +2276,32 @@ static void paint_netplay_overlays(IDirectDrawSurface3 *target)
 
 static void paint_text_overlays(IDirectDrawSurface3 *target)
 {
-    if (presented_pause) return;
+    if (presented_pause) {
+        // Online the game does not pause: keep the player list working behind the ESC menu, darkened
+        // like the rest of the screen.
+        if (NET_MULTI && GAME_SCENE == CAMPAIGN_SCENE && presented_hud && sidebar_ready) {
+            HDC dc;
+            if (SUCCEEDED(IDirectDrawSurface3_GetDC(target, &dc))) {
+                paint_party_panel(dc);
+                IDirectDrawSurface3_ReleaseDC(target, dc);
+            }
+            DDSURFACEDESC pixels = {0};
+            pixels.dwSize = sizeof(pixels);
+            if (SUCCEEDED(IDirectDrawSurface3_Lock(target, NULL, &pixels, DDLOCK_WAIT, NULL))) {
+                unsigned mask = pixels.ddpfPixelFormat.dwRBitMask == 0x7C00 ? 0x7BDE : 0xF7DE;
+                RECT frame = party_frame();
+                for (int y = max(frame.top, 0); y < min(frame.bottom, HEIGHT); ++y) {
+                    uint16_t *to = (uint16_t *)row(pixels.lpSurface, pixels.lPitch, y);
+                    for (int x = max(frame.left, 0); x < min(frame.right, WIDE_WIDTH); ++x) to[x] = pause_shade(to[x], mask);
+                }
+                IDirectDrawSurface3_Unlock(target, NULL);
+            }
+        }
+        return;
+    }
     paint_netplay_overlays(target);
     if (presented_menu && !presented_world_map && pointer_x >= 0 && pointer_x < SIDE_X
-        && pointer_y >= 0 && pointer_y < BELT_Y && hovered_orb() < 0) {
+        && pointer_y >= 0 && pointer_y < BELT_Y && hovered_orb() < 0 && loot_held()) {
         MapRect sheet = {campaign_menu.x, campaign_menu.y, campaign_menu.width, campaign_menu.height};
         HDC dc;
         if (!in_rect(&sheet, pointer_x, pointer_y) && SUCCEEDED(IDirectDrawSurface3_GetDC(target, &dc))) {
@@ -2724,6 +2758,26 @@ static void paint_full_world_map(const DDSURFACEDESC *dst)
     }
 }
 
+// Paints the live wide world (from the terrain copy taken at the end of the engine's world pass)
+// behind a menu, and keeps the snapshot used by the ESC backdrop up to date.
+static void paint_live_world(const DDSURFACEDESC *src, const DDSURFACEDESC *dst, int right)
+{
+    static uint16_t live_native[HEIGHT][GAME_WIDTH];
+    DDSURFACEDESC fake = *src;
+    fake.lpSurface = live_native;
+    fake.lPitch = sizeof(live_native[0]);
+    int native_rows = NATIVE_BELT_Y - WORLD_TOP, native_width = WORLD_RIGHT - WORLD_TOP;
+    for (int y = 0; y < native_rows; ++y) {
+        memcpy(live_native[WORLD_TOP + y] + WORLD_TOP, terrain[y], (size_t)native_width * 2);
+        memcpy(row(dst->lpSurface, dst->lPitch, WORLD_TOP + y) + WORLD_TOP * 2, terrain[y], (size_t)native_width * 2);
+    }
+    paint_world(&fake, dst, right, displayed_view, FALSE, VIEW_HEIGHT);
+    int limit = min(right, SIDE_X);
+    for (int y = WORLD_TOP; y < BELT_Y; ++y)
+        memcpy(world_snapshot[y] + WORLD_TOP, row(dst->lpSurface, dst->lPitch, y) + WORLD_TOP * 2,
+            (size_t)(limit - WORLD_TOP) * 2);
+}
+
 static void paint(const DDSURFACEDESC *src, const DDSURFACEDESC *dst, BOOL lateral, BOOL menu)
 {
     presented_map = (MapView){0};
@@ -2742,6 +2796,8 @@ static void paint(const DDSURFACEDESC *src, const DDSURFACEDESC *dst, BOOL later
             memcpy(to + SCENE_WIDTH, hud_wood[y], (WIDE_WIDTH - SCENE_WIDTH) * sizeof(*to));
             if (menu) memcpy(to, world_snapshot[y], sizeof(world_snapshot[y]));
         }
+        if (menu && mp_live_world() && wide_frame && !world_render_failed)
+            paint_live_world(src, dst, overflow_ready ? WIDE_RIGHT : NATIVE_WIDE_RIGHT);
         if (!menu) {
             map_frame.x = clamp(map_frame.x, 16, presented_world_right - 16 - map_frame.width);
             copy_panel(src, dst, &scene);
@@ -2862,6 +2918,7 @@ __declspec(dllexport) HRESULT WINAPI HudMode(GameVideo *video, DWORD width, DWOR
     wasd_camera = GetEnvironmentVariableA("AKUMA_WASD_CAMERA", camera_keys, sizeof(camera_keys)) == 1
         && camera_keys[0] == '1';
     configure_native_keys();
+    live_menus = GetFileAttributesA("livemenu.disable") == INVALID_FILE_ATTRIBUTES;
     DWORD length = GetEnvironmentVariableA("AKUMA_BINDINGS", configured, sizeof(configured));
     if (length && length < sizeof(configured)) {
         char *start = configured;
