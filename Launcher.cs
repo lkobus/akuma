@@ -300,9 +300,11 @@ internal sealed class Launcher : Form, IMessageFilter
     private static string KeyText(int value)
     {
         int key = value & 255;
-        if (value < 256 && ((key >= '0' && key <= '9') || (key >= 'A' && key <= 'Z'))) return ((char)key).ToString();
-        if (value == 27) return "Esc";
-        return new KeysConverter().ConvertToString((Keys)((value & 255) | ((value & 1792) << 8)));
+        string prefix = ((value & 512) != 0 ? "Ctrl+" : "") + ((value & 1024) != 0 ? "Alt+" : "") + ((value & 256) != 0 ? "Shift+" : "");
+        if ((key >= '0' && key <= '9') || (key >= 'A' && key <= 'Z')) return prefix + (char)key;
+        if (key == 27) return prefix + "Esc";
+        string name = new KeysConverter().ConvertToString((Keys)key);
+        return prefix + name;
     }
 
     // Keys the launcher or the game window keep for themselves, whatever action asks for them.
@@ -341,7 +343,7 @@ internal sealed class Launcher : Form, IMessageFilter
         if (up && !(modifier && key == pendingModifier)) return true;
         int binding = key == Keys.Back ? 0 : (int)key | (modifier ? 0 : (((int)ModifierKeys >> 8) & 1792));
         pendingModifier = Keys.None;
-        if (ReservedBinding(binding) || (capturing >= CustomBindings && binding > 255)
+        if (ReservedBinding(binding)
             || (binding != 0 && Array.Exists(bindings, value => value == binding)
             && bindings[capturing] != binding))
         {

@@ -123,8 +123,9 @@ static unsigned binding_down, party_selection, party_present;
 enum { NATIVE_ACTIONS = 18 };
 static const unsigned char native_default[NATIVE_ACTIONS] = {VK_ESCAPE, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
     'C', 'I', 'M', 'W', 'A', 'S', VK_SPACE};
-static unsigned char native_user[NATIVE_ACTIONS];
-static unsigned char native_translate[256], native_blocked[256];
+// A user key is a virtual key plus modifier bits (256 Shift, 512 Ctrl, 1024 Alt), like the custom bindings.
+static unsigned short native_user[NATIVE_ACTIONS];
+static unsigned char native_blocked[256], native_translated[256];
 static int hint_action = -1;
 // Counters for the network log: how often the engine draws world tiles / presents a frame.
 static volatile unsigned long tile_calls, present_calls;
@@ -140,28 +141,35 @@ static void configure_native_keys(void)
             char *end;
             unsigned long value = strtoul(start, &end, 10);
             if (end == start || (*end != ',' && *end != '\0')) break;
-            native_user[i] = value > 255 ? 0 : (unsigned char)value;
+            native_user[i] = value > 2047 ? 0 : (unsigned short)value;
             if (*end == '\0') break;
             start = end + 1;
         }
     }
-    memset(native_translate, 0, sizeof(native_translate));
     memset(native_blocked, 0, sizeof(native_blocked));
-    for (unsigned i = 0; i < NATIVE_ACTIONS; ++i) {
-        if (native_user[i] == native_default[i]) continue;
-        native_blocked[native_default[i]] = 1;
-        if (native_user[i]) native_translate[native_user[i]] = native_default[i];
-    }
+    memset(native_translated, 0, sizeof(native_translated));
+    for (unsigned i = 0; i < NATIVE_ACTIONS; ++i)
+        if (native_user[i] != native_default[i]) native_blocked[native_default[i]] = 1;
 }
 
-// Name of a key for tooltips ("Q", "Space", "F3"…).
-static int native_key_name(unsigned vk, WCHAR *out, int capacity)
+// Name of a key (plus modifiers) for tooltips: "Q", "Ctrl+Q", "Space", "F3"…
+static int native_key_name(unsigned combo, WCHAR *out, int capacity)
 {
-    if ((vk >= '0' && vk <= '9') || (vk >= 'A' && vk <= 'Z')) { out[0] = (WCHAR)vk; out[1] = 0; return 1; }
-    if (vk == VK_ESCAPE) return lstrlenW(lstrcpynW(out, L"Esc", capacity));
-    if (vk == VK_SPACE) return lstrlenW(lstrcpynW(out, L"Space", capacity));
-    if (vk >= VK_F1 && vk <= VK_F12) return wsprintfW(out, L"F%u", vk - VK_F1 + 1);
-    return GetKeyNameTextW((LONG)(MapVirtualKeyW(vk, 0) << 16), out, capacity);
+    unsigned vk = combo & 255;
+    int length = 0;
+    out[0] = 0;
+    if (combo & 512) length = lstrlenW(lstrcatW(out, L"Ctrl+"));
+    if (combo & 1024) length = lstrlenW(lstrcatW(out, L"Alt+"));
+    if (combo & 256) length = lstrlenW(lstrcatW(out, L"Shift+"));
+    WCHAR *tail = out + length;
+    int room = capacity - length;
+    if (room < 8) return length;
+    if ((vk >= '0' && vk <= '9') || (vk >= 'A' && vk <= 'Z')) { tail[0] = (WCHAR)vk; tail[1] = 0; return length + 1; }
+    if (vk == VK_ESCAPE) return length + lstrlenW(lstrcpynW(tail, L"Esc", room));
+    if (vk == VK_SPACE) return length + lstrlenW(lstrcpynW(tail, L"Space", room));
+    if (vk >= VK_F1 && vk <= VK_F12) return length + wsprintfW(tail, L"F%u", vk - VK_F1 + 1);
+    int named = GetKeyNameTextW((LONG)(MapVirtualKeyW(vk, 0) << 16), tail, room);
+    return length + (named > 0 ? named : 0);
 }
 static const unsigned char *party_map;
 static int party_map_id;
@@ -3325,11 +3333,24 @@ static void leave_net_session(void)
 __declspec(dllexport) LRESULT CALLBACK HudWindow(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
 {
     if (message == WM_CLOSE || message == WM_DESTROY) leave_net_session();
-    if ((message == WM_KEYDOWN || message == WM_KEYUP || message == WM_SYSKEYDOWN || message == WM_SYSKEYUP)
-        && !(GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_MENU) & 0x8000)) {
+    if (message == WM_KILLFOCUS) memset(native_translated, 0, sizeof(native_translated));
+    if (message == WM_KEYDOWN || message == WM_KEYUP || message == WM_SYSKEYDOWN || message == WM_SYSKEYUP) {
         unsigned key = (unsigned)wparam & 255;
-        if (native_translate[key]) wparam = native_translate[key];
-        else if (native_blocked[key]) return 0;
+        if (message == WM_KEYDOWN || message == WM_SYSKEYDOWN) {
+            // The chosen key (with the modifiers held right now) stands in for the action's own key.
+            unsigned combo = key | held_modifiers(key);
+            int hit = -1;
+            for (unsigned i = 0; i < NATIVE_ACTIONS; ++i)
+                if (native_user[i] == combo && combo != native_default[i]) hit = (int)i;
+            if (hit >= 0) {
+                native_translated[key] = native_default[hit];
+                wparam = native_default[hit];
+            } else if (native_blocked[key]) return 0;
+        } else if (native_translated[key]) {
+            // Release the translated key even if the modifier was let go first.
+            wparam = native_translated[key];
+            native_translated[key] = 0;
+        } else if (native_blocked[key]) return 0;
     }
     BOOL key_down = message == WM_KEYDOWN || message == WM_SYSKEYDOWN;
     BOOL key_up = message == WM_KEYUP || message == WM_SYSKEYUP;
