@@ -126,6 +126,8 @@ static const unsigned char native_default[NATIVE_ACTIONS] = {VK_ESCAPE, '1', '2'
 static unsigned char native_user[NATIVE_ACTIONS];
 static unsigned char native_translate[256], native_blocked[256];
 static int hint_action = -1;
+// Counters for the network log: how often the engine draws world tiles / presents a frame.
+static volatile unsigned long tile_calls, present_calls;
 
 static void configure_native_keys(void)
 {
@@ -619,6 +621,7 @@ static unsigned char *row(void *pixels, LONG pitch, int y)
 __declspec(dllexport) HRESULT WINAPI DrawTileOverlay(IDirectDrawSurface3 *target, DWORD x,
     DWORD y, IDirectDrawSurface3 *tiles, RECT *tile_rect, DWORD flags)
 {
+    ++tile_calls;
     DDSURFACEDESC src = {0}, dst = {0};
     src.dwSize = sizeof(src);
     dst.dwSize = sizeof(dst);
@@ -3635,10 +3638,17 @@ static void net_log_party(void)
     last = now;
     const unsigned char *map = GAME_MAP;
     char line[3072];
-    int length = wsprintfA(line, "%lu P scene=%lu multi=%lu host=%lu me=%lu map=%lx wide=%d hud=%d zoom=%u chat=%lu pause=%lu held=%d menu=%d",
+    static unsigned long last_tiles;
+    unsigned long tiles_now = tile_calls;
+    // tiles = world tile draws since the previous line; clock = the engine's session clock (0x49B8E8);
+    // view = the view's menu flag (+0xE4); dlg = pause owner flag (0x49B8DC). If "tiles" stays above
+    // zero while pause=1 the engine keeps drawing the world behind a menu.
+    int length = wsprintfA(line, "%lu P scene=%lu multi=%lu host=%lu me=%lu map=%lx wide=%d hud=%d zoom=%u chat=%lu pause=%lu held=%d menu=%d tiles=%lu clock=%lu view=%lu dlg=%lu",
         now - net_log_start, GAME_SCENE, NET_MULTI, NET_HOST, NET_LOCAL_ID, (unsigned long)(uintptr_t)map,
         wide_mode, show_hud, zoom_level, GAME_CHAT_OPEN, *(const DWORD *)(uintptr_t)0x49B8E0,
-        loot_held(), presented_menu);
+        loot_held(), presented_menu, tiles_now - last_tiles, *(const DWORD *)(uintptr_t)0x49B8E8,
+        GAME_VIEW ? *(const DWORD *)(GAME_VIEW + 0xE4) : 0, *(const DWORD *)(uintptr_t)0x49B8DC);
+    last_tiles = tiles_now;
     if (map) {
         // map+0x14AAC holds up to 20 heroes: the local ones (a1) and, in multiplayer, the
         // other players' (a0). The HUD party code only accepts a1.
