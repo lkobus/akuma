@@ -115,6 +115,52 @@ enum { SELECT_ALL = 3, FOCUS_FIRST = 4, LOOT_KEY = 7, BINDING_COUNT = 8 };
 static unsigned bindings[BINDING_COUNT] = {VK_F5, VK_F6, VK_F7, VK_F4,
     VK_F5 | 512, VK_F6 | 512, VK_F7 | 512, VK_MENU};
 static unsigned binding_down, party_selection, party_present;
+
+// Akuma's own keyboard actions, in the order of its key tables (0x421d8c / 0x421e30): menu, the ten
+// quick items, character, items, quests, map, weapons tab, items tab and Space. The launcher
+// passes the key chosen for each one in AKUMA_NATIVE_KEYS; we translate it back to the native key
+// before the game sees the message and block a native key whose action was moved away.
+enum { NATIVE_ACTIONS = 18 };
+static const unsigned char native_default[NATIVE_ACTIONS] = {VK_ESCAPE, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
+    'C', 'I', 'M', 'W', 'A', 'S', VK_SPACE};
+static unsigned char native_user[NATIVE_ACTIONS];
+static unsigned char native_translate[256], native_blocked[256];
+static int hint_action = -1;
+
+static void configure_native_keys(void)
+{
+    char configured[160] = "";
+    for (unsigned i = 0; i < NATIVE_ACTIONS; ++i) native_user[i] = native_default[i];
+    DWORD length = GetEnvironmentVariableA("AKUMA_NATIVE_KEYS", configured, sizeof(configured));
+    if (length && length < sizeof(configured)) {
+        const char *start = configured;
+        for (unsigned i = 0; i < NATIVE_ACTIONS; ++i) {
+            char *end;
+            unsigned long value = strtoul(start, &end, 10);
+            if (end == start || (*end != ',' && *end != '\0')) break;
+            native_user[i] = value > 255 ? 0 : (unsigned char)value;
+            if (*end == '\0') break;
+            start = end + 1;
+        }
+    }
+    memset(native_translate, 0, sizeof(native_translate));
+    memset(native_blocked, 0, sizeof(native_blocked));
+    for (unsigned i = 0; i < NATIVE_ACTIONS; ++i) {
+        if (native_user[i] == native_default[i]) continue;
+        native_blocked[native_default[i]] = 1;
+        if (native_user[i]) native_translate[native_user[i]] = native_default[i];
+    }
+}
+
+// Name of a key for tooltips ("Q", "Space", "F3"…).
+static int native_key_name(unsigned vk, WCHAR *out, int capacity)
+{
+    if ((vk >= '0' && vk <= '9') || (vk >= 'A' && vk <= 'Z')) { out[0] = (WCHAR)vk; out[1] = 0; return 1; }
+    if (vk == VK_ESCAPE) return lstrlenW(lstrcpynW(out, L"Esc", capacity));
+    if (vk == VK_SPACE) return lstrlenW(lstrcpynW(out, L"Space", capacity));
+    if (vk >= VK_F1 && vk <= VK_F12) return wsprintfW(out, L"F%u", vk - VK_F1 + 1);
+    return GetKeyNameTextW((LONG)(MapVirtualKeyW(vk, 0) << 16), out, capacity);
+}
 static const unsigned char *party_map;
 static int party_map_id;
 static unsigned item_code_page = 1252;
@@ -1794,6 +1840,18 @@ static void paint_name_hint(HDC dc, const char *label, int x, int y, BOOL align_
     WCHAR text[160];
     int bytes = (int)strnlen(label, 159);
     int chars = bytes ? MultiByteToWideChar(item_code_page, 0, label, bytes, text, COUNT(text)) : 0;
+    if (chars && hint_action >= 0 && native_user[hint_action] != native_default[hint_action]) {
+        // The tooltip ends with the key in parentheses, "CHARACTER (C)": show the key now in use.
+        int open = chars - 1;
+        while (open > 0 && text[open] != L'(' && text[open] != 0xFF08) --open;
+        WCHAR name[24] = L"";
+        int length = native_user[hint_action] ? native_key_name(native_user[hint_action], name, COUNT(name)) : 0;
+        if (open > 0 && length > 0 && open + 1 + length + 1 < (int)COUNT(text)) {
+            memcpy(text + open + 1, name, (size_t)length * sizeof(WCHAR));
+            text[open + 1 + length] = L')';
+            chars = open + 2 + length;
+        }
+    }
     if (chars && hud_language == CHINESE) {
         // Some names reach the HUD in English; show the Chinese name when we have one.
         static const WCHAR *const names[][2] = {
@@ -1830,7 +1888,10 @@ static void paint_hover_hint(HDC dc, RECT *occupied)
     if (orb >= 0) {
         Panel button = placed_panel(NAV_START + orb);
         const char *label = ((GameString)(uintptr_t)0x47E180)(menu_ids[orb]);
+        static const int orb_actions[] = {11, 12, 13, 14, 0};   // character, items, quests, map, menu
+        hint_action = orb < (int)COUNT(orb_actions) ? orb_actions[orb] : -1;
         paint_name_hint(dc, label, button.x - 7, button.y + button.height / 2, TRUE, occupied);
+        hint_action = -1;
     } else if (world_hint_count && (quick_item_hint || over_world(pointer_x, pointer_y))) {
         const unsigned char *map = GAME_MAP;
         if (npc_name_index >= 0 && map) {
@@ -2789,6 +2850,7 @@ __declspec(dllexport) HRESULT WINAPI HudMode(GameVideo *video, DWORD width, DWOR
     char configured[96] = "", exclusive[2] = "", pixels[2] = "", language[3] = "", marker[2] = "";
     wasd_camera = GetEnvironmentVariableA("AKUMA_WASD_CAMERA", camera_keys, sizeof(camera_keys)) == 1
         && camera_keys[0] == '1';
+    configure_native_keys();
     DWORD length = GetEnvironmentVariableA("AKUMA_BINDINGS", configured, sizeof(configured));
     if (length && length < sizeof(configured)) {
         char *start = configured;
@@ -3260,6 +3322,12 @@ static void leave_net_session(void)
 __declspec(dllexport) LRESULT CALLBACK HudWindow(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
 {
     if (message == WM_CLOSE || message == WM_DESTROY) leave_net_session();
+    if ((message == WM_KEYDOWN || message == WM_KEYUP || message == WM_SYSKEYDOWN || message == WM_SYSKEYUP)
+        && !(GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_MENU) & 0x8000)) {
+        unsigned key = (unsigned)wparam & 255;
+        if (native_translate[key]) wparam = native_translate[key];
+        else if (native_blocked[key]) return 0;
+    }
     BOOL key_down = message == WM_KEYDOWN || message == WM_SYSKEYDOWN;
     BOOL key_up = message == WM_KEYUP || message == WM_SYSKEYUP;
     if (key_down || key_up) {
@@ -3676,8 +3744,19 @@ static BOOL CALLBACK scale_dialog_child(HWND child, LPARAM param)
         HFONT bigger = CreateFontIndirectA(&face);
         if (bigger) SendMessageA(child, WM_SETFONT, (WPARAM)bigger, TRUE);
     }
+    int new_height = (int)((box.bottom - box.top) * job->scale);
+    if (!lstrcmpA(name, "ComboBox")) {
+        // For a combo box the window height is the drop-down height too. The closed height we read is
+        // only the selection field, so keep room for the list or it collapses and only the first
+        // entry (for instance "2 players") can be picked.
+        LRESULT rows = SendMessageA(child, CB_GETCOUNT, 0, 0), item = SendMessageA(child, CB_GETITEMHEIGHT, 0, 0);
+        if (rows < 1 || rows == CB_ERR) rows = 6;
+        if (rows > 10) rows = 10;
+        if (item <= 0 || item == CB_ERR) item = new_height;
+        new_height += (int)(rows * item) + 6;
+    }
     MoveWindow(child, job->offset_x + (int)(box.left * job->scale), job->offset_y + (int)(box.top * job->scale),
-        (int)((box.right - box.left) * job->scale), (int)((box.bottom - box.top) * job->scale), TRUE);
+        (int)((box.right - box.left) * job->scale), new_height, TRUE);
     return TRUE;
 }
 

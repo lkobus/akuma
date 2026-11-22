@@ -74,12 +74,44 @@ internal sealed class Launcher : Form, IMessageFilter
     private readonly Label originalKeys = new Label { AutoSize = true };
     private readonly Label bindingHint = new Label { AutoSize = true, MaximumSize = new Size(470, 0) };
     private readonly Button resetBindings = new Button { AutoSize = true };
-    private readonly Label[] bindingLabels = new Label[8];
-    private readonly Button[] bindingButtons = new Button[8];
-    private readonly int[] bindings = new int[8];
+    private const int CustomBindings = 8;
+    // Akuma's own keyboard actions, in the order of the game's key tables (WM_KEYDOWN/WM_KEYUP).
+    // The game ignores everything else on the keyboard, so these are all it can be asked to remap.
+    private static readonly int[] NativeKeys = {27, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
+        'C', 'I', 'M', 'W', 'A', 'S', 32};
+    private static readonly string[][] NativeNames = {
+        new[] {"Menu / voltar", "Menu / back", "메뉴 / 뒤로", "選單 / 返回"},
+        new[] {"Item rápido 1", "Quick item 1", "빠른 아이템 1", "快捷道具 1"},
+        new[] {"Item rápido 2", "Quick item 2", "빠른 아이템 2", "快捷道具 2"},
+        new[] {"Item rápido 3", "Quick item 3", "빠른 아이템 3", "快捷道具 3"},
+        new[] {"Item rápido 4", "Quick item 4", "빠른 아이템 4", "快捷道具 4"},
+        new[] {"Item rápido 5", "Quick item 5", "빠른 아이템 5", "快捷道具 5"},
+        new[] {"Item rápido 6", "Quick item 6", "빠른 아이템 6", "快捷道具 6"},
+        new[] {"Item rápido 7", "Quick item 7", "빠른 아이템 7", "快捷道具 7"},
+        new[] {"Item rápido 8", "Quick item 8", "빠른 아이템 8", "快捷道具 8"},
+        new[] {"Item rápido 9", "Quick item 9", "빠른 아이템 9", "快捷道具 9"},
+        new[] {"Item rápido 10", "Quick item 10", "빠른 아이템 10", "快捷道具 10"},
+        new[] {"Personagem", "Character", "캐릭터", "角色資訊"},
+        new[] {"Itens", "Items", "아이템", "道具"},
+        new[] {"Missões", "Quests", "임무", "任務"},
+        new[] {"Mapa mundial", "World map", "세계 지도", "世界地圖"},
+        new[] {"Aba de armas", "Weapons tab", "무기 탭", "武器分頁"},
+        new[] {"Aba de itens", "Items tab", "아이템 탭", "道具分頁"},
+        new[] {"Ação nativa (Espaço)", "Native action (Space)", "기본 동작 (스페이스)", "原生動作 (空白鍵)"} };
+    private readonly Label[] bindingLabels = new Label[CustomBindings + NativeKeys.Length];
+    private readonly Button[] bindingButtons = new Button[CustomBindings + NativeKeys.Length];
+    private readonly int[] bindings = new int[CustomBindings + NativeKeys.Length];
+    private readonly Label nativeHeader = new Label { AutoSize = true, Font = new Font("Segoe UI", 10, FontStyle.Bold) };
     private int capturing = -1;
     private Keys pendingModifier;
-    private static readonly int[] DefaultBindings = {116, 117, 118, 115, 628, 629, 630, 18};
+    private static readonly int[] DefaultBindings = MakeDefaults();
+    private static int[] MakeDefaults()
+    {
+        var all = new int[CustomBindings + NativeKeys.Length];
+        Array.Copy(new[] {116, 117, 118, 115, 628, 629, 630, 18}, all, CustomBindings);
+        Array.Copy(NativeKeys, 0, all, CustomBindings, NativeKeys.Length);
+        return all;
+    }
     private readonly CheckBox exclusiveParty = new CheckBox { AutoSize = true };
     private readonly CheckBox clickMarker = new CheckBox { AutoSize = true };
     private readonly CheckBox smoothCamera = new CheckBox { AutoSize = true };
@@ -189,7 +221,7 @@ internal sealed class Launcher : Form, IMessageFilter
         AddWide(layout, vsync);
         AddWide(layout, showFps);
         AddWide(layout, intro);
-        for (int i = 0; i < bindingButtons.Length; ++i)
+        for (int i = 0; i < CustomBindings; ++i)
         {
             int slot = i;
             int row = controls.RowCount++;
@@ -207,6 +239,18 @@ internal sealed class Launcher : Form, IMessageFilter
         AddWide(controls, smoothCamera);
         AddWide(controls, resetBindings);
         AddWide(controls, bindingHint);
+        AddWide(controls, nativeHeader);
+        for (int i = CustomBindings; i < bindingButtons.Length; ++i)
+        {
+            int slot = i;
+            int row = controls.RowCount++;
+            controls.RowStyles.Add(new RowStyle(SizeType.Absolute, 32));
+            bindingLabels[i] = new Label { AutoSize = true, Anchor = AnchorStyles.Left };
+            bindingButtons[i] = new Button { Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter };
+            bindingButtons[i].Click += delegate { capturing = slot; pendingModifier = Keys.None; ShowBindings(); };
+            controls.Controls.Add(bindingLabels[i], 0, row);
+            controls.Controls.Add(bindingButtons[i], 1, row);
+        }
         resetBindings.Click += delegate { Array.Copy(DefaultBindings, bindings, bindings.Length); CancelCapture(); };
         AcceptButton = play;
 
@@ -246,21 +290,37 @@ internal sealed class Launcher : Form, IMessageFilter
             int value = bindings[i];
             string key = value == 0 ? TextInLanguage("Desativado", "Disabled", "사용 안 함") :
                 value == (int)Keys.Menu ? "Alt" : value == (int)Keys.ControlKey ? "Ctrl" :
-                new KeysConverter().ConvertToString((Keys)((value & 255) | ((value & 1792) << 8)));
+                KeyText(value);
             bindingButtons[i].Text = i == capturing ? TextInLanguage("Pressione uma tecla…", "Press a key…", "키를 누르세요…") : key;
         }
         bindingHint.Text = TextInLanguage("Clique em um atalho para editar. Backspace limpa e Esc cancela.",
             "Click a shortcut to edit. Backspace clears it and Esc cancels.", "단축키를 클릭해 편집하세요. Backspace로 지우고 Esc로 취소합니다.");
     }
 
-    private static bool ReservedBinding(int binding)
+    private static string KeyText(int value)
+    {
+        int key = value & 255;
+        if (value < 256 && ((key >= '0' && key <= '9') || (key >= 'A' && key <= 'Z'))) return ((char)key).ToString();
+        if (value == 27) return "Esc";
+        return new KeysConverter().ConvertToString((Keys)((value & 255) | ((value & 1792) << 8)));
+    }
+
+    // Keys the launcher or the game window keep for themselves, whatever action asks for them.
+    private static bool SystemKey(int binding)
     {
         const int alt = 1024, control = 512;
         if (binding == (alt | (int)Keys.Enter) || binding == (control | (int)Keys.Tab)) return true;
-        if ((binding >= (int)Keys.F8 && binding <= (int)Keys.F10) || binding == (int)Keys.F12) return true;
-        if (binding >= (int)Keys.D0 && binding <= (int)Keys.D9) return true;
-        return Array.IndexOf(new[] {(int)Keys.Tab, (int)Keys.Enter, (int)Keys.Space, (int)Keys.ShiftKey, (int)Keys.Left,
-            (int)Keys.Right, (int)Keys.Up, (int)Keys.Down, 'A', 'C', 'D', 'I', 'M', 'S', 'V', 'W'}, binding) >= 0;
+        int key = binding & 255;
+        if (key == (int)Keys.F8 || key == (int)Keys.F9 || key == (int)Keys.F10 || key == (int)Keys.F12) return true;
+        return Array.IndexOf(new[] {(int)Keys.Tab, (int)Keys.Enter, (int)Keys.ShiftKey, (int)Keys.ControlKey,
+            (int)Keys.Menu, (int)Keys.Left, (int)Keys.Right, (int)Keys.Up, (int)Keys.Down, 'D', 'V'}, key) >= 0;
+    }
+
+    // A key is taken when another action already has it, so the game's own keys (A, C, 1…) are
+    // free to move as soon as their action is moved; only system keys are always off limits.
+    private static bool ReservedBinding(int binding)
+    {
+        return SystemKey(binding);
     }
 
     public bool PreFilterMessage(ref Message msg)
@@ -281,7 +341,8 @@ internal sealed class Launcher : Form, IMessageFilter
         if (up && !(modifier && key == pendingModifier)) return true;
         int binding = key == Keys.Back ? 0 : (int)key | (modifier ? 0 : (((int)ModifierKeys >> 8) & 1792));
         pendingModifier = Keys.None;
-        if (ReservedBinding(binding) || (binding != 0 && Array.Exists(bindings, value => value == binding)
+        if (ReservedBinding(binding) || (capturing >= CustomBindings && binding > 255)
+            || (binding != 0 && Array.Exists(bindings, value => value == binding)
             && bindings[capturing] != binding))
         {
             bindingHint.Text = TextInLanguage("Tecla em uso. Escolha outra combinação.",
@@ -506,6 +567,12 @@ internal sealed class Launcher : Form, IMessageFilter
         }
         bindingLabels[3].Text = actions[1];
         bindingLabels[7].Text = actions[3];
+        nativeHeader.Text = TextInLanguage("Atalhos nativos do Akuma", "Akuma's own shortcuts", "아쿠마 기본 단축키", "Akuma 原生快捷鍵");
+        for (int i = 0; i < NativeKeys.Length; ++i)
+        {
+            string[] names = NativeNames[i];
+            bindingLabels[CustomBindings + i].Text = TextInLanguage(names[0], names[1], names[2], names[3]);
+        }
         resetBindings.Text = TextInLanguage("Restaurar atalhos", "Restore shortcuts", "단축키 복원");
         originalKeys.Text = TextInLanguage(
             "Akuma\n\n0–9    Itens rápidos\nC       Personagem\nI        Itens\nM      Missões\nW      Mapa mundial (com WASD desligado)\nEsc   Menu ou voltar\nSetas   Câmera\n\nRemaster\n\nF8    Zoom\nF9    Minimapa\nF10  HUD\nAlt+Enter    Tela cheia\nCtrl+Tab     Soltar mouse",
@@ -597,6 +664,13 @@ internal sealed class Launcher : Form, IMessageFilter
         Native.WriteIni(LauncherIni, "online", "nick", nick.Text.Trim());
     }
 
+    private string JoinBindings(int start, int count)
+    {
+        var parts = new string[count];
+        for (int i = 0; i < count; ++i) parts[i] = bindings[start + i].ToString(CultureInfo.InvariantCulture);
+        return String.Join(",", parts);
+    }
+
     private void StartGame(object sender, EventArgs args)
     {
         try
@@ -628,8 +702,9 @@ internal sealed class Launcher : Form, IMessageFilter
             start.EnvironmentVariables["CNC_DDRAW_CONFIG_FILE"] = WrapperIni;
             start.EnvironmentVariables["AKUMA_WIDE_HUD"] = wideHud.Checked ? "1" : "0";
             start.EnvironmentVariables["AKUMA_WASD_CAMERA"] = wasdCamera.Checked ? "1" : "0";
-            start.EnvironmentVariables["AKUMA_BINDINGS"] = String.Join(",", Array.ConvertAll(bindings,
-                value => value.ToString(CultureInfo.InvariantCulture)));
+            start.EnvironmentVariables["AKUMA_BINDINGS"] = JoinBindings(0, CustomBindings);
+            // Key the player chose for each of the game's own actions (same order as NativeKeys).
+            start.EnvironmentVariables["AKUMA_NATIVE_KEYS"] = JoinBindings(CustomBindings, NativeKeys.Length);
             start.EnvironmentVariables["AKUMA_LANGUAGE"] = LanguageCodes[language.SelectedIndex];
             start.EnvironmentVariables["AKUMA_EXCLUSIVE_PARTY"] = exclusiveParty.Checked ? "1" : "0";
             start.EnvironmentVariables["AKUMA_CLICK_MARKER"] = clickMarker.Checked ? "1" : "0";
